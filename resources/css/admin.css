@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "anjoman";
+    src: url("../../public/media/font/Anjoman Regular.ttf");
+}
+
+@font-face {
+    font-family: "samim";
+    src: url("../../public/media/font/Samim.ttf");
+}
+
+@font-face {
+    font-family: "parastoo";
+    src: url("../../public/media/font/Parastoo.ttf");
+}
+
+@font-face {
+    font-family: "tanha";
+    src: url("../../public/media/font/Tanha.ttf");
+}
+
+@font-face {
+    font-family: "vazir";
+    src: url("../../public/media/font/Vazir.ttf");
+}
+
+@font-face {
+    font-family: "sahel";
+    src: url("../../public/media/font/Sahel.ttf");
+}
+
+@font-face {
+    font-family: "shabnam";
+    src: url("../../public/media/font/Shabnam.ttf");
+}
+
+@font-face {
+    font-family: "yekan";
+    src: url("../../public/media/font/Yekan.ttf");
+}
+
+@font-face {
+    font-family: "nastaliq";
+    src: url("../../public/media/font/Nastaliq.ttf");
+}
+
+@layer base {
+    * {
+        font-family: 'anjoman';
+        text-align: right;
+        direction: rtl;
+        transition: 1s;
+    }
+
+    .document-editor__editable {
+        background-color: white !important;
+    }
+
+    .document-editor {
+        @apply border-[3px] border-adminprimary-100 border-solid rounded-md;
+    }
+
+    div.document-editor__editable ul {
+        margin-right: 30px !important;
+    }
+    div.document-editor__editable ol {
+        margin-right: 30px !important;
+    }
+}
+
+@layer utilities {
+    div.en * {
+        text-align: left;
+        direction: ltr;
+    }
+}
+
+@layer components {
+    .input-admin {
+        @apply flex flex-row-reverse items-center justify-center border-[2px] border-solid dark:border-black border-adminprimary-100 rounded-md p-2 my-1 bg-white dark:bg-dark-100 hover:border-adminprimary-100 dark:hover:border-adminprimary-200 focus:border-[10px];
+    }
+
+    .input-admin div {
+        @apply flex justify-center items-center dark:bg-dark-100 dark:text-white bg-white text-black;
+        width: 20px;
+    }
+
+    .input-admin div div {
+        @apply flex justify-center items-center border-[2px] p-1 border-solid border-red-500 w-6 h-6;
+    }
+
+    .input-admin div i {
+        @apply text-red-500;
+    }
+
+    .input-admin input {
+        @apply dark:bg-dark-100 dark:text-white bg-white text-black;
+        width: calc(100% - 20px);
+        height: 100%;
+    }
+
+    button.submit {
+        @apply font-parastoo text-lg w-40 mr-1 cursor-pointer hover:font-bold text-white bg-gradient-to-l from-adminprimary-100 border-adminprimary-100 p-2 rounded-r-md;
+    }
+
+    .text {
+        @apply text-black dark:text-white;
+    }
+
+    /* HTML: <div class="loader"></div> */
+   /* HTML: <div class="loader"></div> */
+/* HTML: <div class="loader"></div> */
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 50px;
+    aspect-ratio: 1;
+    display: grid;
+  }
+  .loader::before,
+  .loader::after {    
+    content:"";
+    grid-area: 1/1;
+    --c:no-repeat radial-gradient(farthest-side,#25b09b 92%,#0000);
+    background: 
+      var(--c) 50%  0, 
+      var(--c) 50%  100%, 
+      var(--c) 100% 50%, 
+      var(--c) 0    50%;
+    background-size: 12px 12px;
+    animation: l12 1s infinite;
+  }
+  .loader::before {
+    margin: 4px;
+    filter: hue-rotate(45deg);
+    background-size: 8px 8px;
+    animation-timing-function: linear
+  }
+  
+  @keyframes l12 { 
+    100%{transform: rotate(.5turn)}
+  }
+}

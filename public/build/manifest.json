@@ -1,0 +1,136 @@
+{
+  "__commonjsHelpers-Cpj98o6Y.js": {
+    "file": "assets/_commonjsHelpers-Cpj98o6Y.js",
+    "name": "_commonjsHelpers"
+  },
+  "_axios-BaVkx4tQ.css": {
+    "file": "assets/axios-BaVkx4tQ.css",
+    "src": "_axios-BaVkx4tQ.css"
+  },
+  "_axios-ByLvdZbW.js": {
+    "file": "assets/axios-ByLvdZbW.js",
+    "name": "axios",
+    "css": [
+      "assets/axios-BaVkx4tQ.css"
+    ]
+  },
+  "_filepond-plugin-image-edit-D88b7BcX.js": {
+    "file": "assets/filepond-plugin-image-edit-D88b7BcX.js",
+    "name": "filepond-plugin-image-edit",
+    "css": [
+      "assets/filepond-plugin-image-edit-KDVwCfhD.css"
+    ]
+  },
+  "_filepond-plugin-image-edit-KDVwCfhD.css": {
+    "file": "assets/filepond-plugin-image-edit-KDVwCfhD.css",
+    "src": "_filepond-plugin-image-edit-KDVwCfhD.css"
+  },
+  "public/media/font/Anjoman Regular.ttf": {
+    "file": "assets/Anjoman Regular-CsqEU7M6.ttf",
+    "src": "public/media/font/Anjoman Regular.ttf"
+  },
+  "public/media/font/Nastaliq.ttf": {
+    "file": "assets/Nastaliq-L3PFnoLP.ttf",
+    "src": "public/media/font/Nastaliq.ttf"
+  },
+  "public/media/font/Parastoo.ttf": {
+    "file": "assets/Parastoo-Dc_T8-bN.ttf",
+    "src": "public/media/font/Parastoo.ttf"
+  },
+  "public/media/font/Sahel.ttf": {
+    "file": "assets/Sahel-Bz1d-W5f.ttf",
+    "src": "public/media/font/Sahel.ttf"
+  },
+  "public/media/font/Samim.ttf": {
+    "file": "assets/Samim-CZiLCXcO.ttf",
+    "src": "public/media/font/Samim.ttf"
+  },
+  "public/media/font/Sans.ttf": {
+    "file": "assets/Sans-22QVupO0.ttf",
+    "src": "public/media/font/Sans.ttf"
+  },
+  "public/media/font/Shabnam.ttf": {
+    "file": "assets/Shabnam-BVaNDFfE.ttf",
+    "src": "public/media/font/Shabnam.ttf"
+  },
+  "public/media/font/Tanha.ttf": {
+    "file": "assets/Tanha-CCleMQG3.ttf",
+    "src": "public/media/font/Tanha.ttf"
+  },
+  "public/media/font/Vazir.ttf": {
+    "file": "assets/Vazir-BUvEX7mJ.ttf",
+    "src": "public/media/font/Vazir.ttf"
+  },
+  "public/media/font/Yekan.ttf": {
+    "file": "assets/Yekan-Bga02df0.ttf",
+    "src": "public/media/font/Yekan.ttf"
+  },
+  "resources/css/admin.css": {
+    "file": "assets/admin-BRIQwD2X.css",
+    "src": "resources/css/admin.css",
+    "isEntry": true
+  },
+  "resources/css/auth.css": {
+    "file": "assets/auth-BT_09Qmk.css",
+    "src": "resources/css/auth.css",
+    "isEntry": true
+  },
+  "resources/css/panel.css": {
+    "file": "assets/panel-B5v0pCuZ.css",
+    "src": "resources/css/panel.css",
+    "isEntry": true
+  },
+  "resources/css/user.css": {
+    "file": "assets/user-J_ACWoIy.css",
+    "src": "resources/css/user.css",
+    "isEntry": true
+  },
+  "resources/js/admin.js": {
+    "file": "assets/admin-DhnzjALI.js",
+    "name": "admin",
+    "src": "resources/js/admin.js",
+    "isEntry": true,
+    "imports": [
+      "_axios-ByLvdZbW.js",
+      "_filepond-plugin-image-edit-D88b7BcX.js",
+      "__commonjsHelpers-Cpj98o6Y.js"
+    ]
+  },
+  "resources/js/auth.js": {
+    "file": "assets/auth-I2RhNbtz.js",
+    "name": "auth",
+    "src": "resources/js/auth.js",
+    "isEntry": true,
+    "imports": [
+      "_axios-ByLvdZbW.js"
+    ]
+  },
+  "resources/js/panel.js": {
+    "file": "assets/panel-DlvRh3Vt.js",
+    "name": "panel",
+    "src": "resources/js/panel.js",
+    "isEntry": true,
+    "imports": [
+      "_axios-ByLvdZbW.js",
+      "_filepond-plugin-image-edit-D88b7BcX.js"
+    ]
+  },
+  "resources/js/user.js": {
+    "file": "assets/user-C-sRw9kv.js",
+    "name": "user",
+    "src": "resources/js/user.js",
+    "isEntry": true,
+    "imports": [
+      "_axios-ByLvdZbW.js",
+      "__commonjsHelpers-Cpj98o6Y.js"
+    ],
+    "css": [
+      "assets/user-C585fwd1.css"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-Cr1BV_sL.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true
+  }
+}
