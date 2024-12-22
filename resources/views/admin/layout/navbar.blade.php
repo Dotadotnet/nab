@@ -2,7 +2,7 @@
     <div class="container main-nav">
 
         <div class="main-nav-end mt-1">
-            <button class=" mt-1 sidebar-toggle transparent-btn" title="Menu" type="button">
+            <button class="  sidebar-toggle transparent-btn" title="Menu" type="button">
                 <span class="sr-only">Toggle menu</span>
                 <span class="icon menu-toggle--gray" aria-hidden="true"></span>
             </button>
@@ -15,7 +15,7 @@
             <div style="margin:0px 10px;" class="nav-user-wrapper">
                 <button href="##" class="nav-user-btn dropdown-btn" title="My profile" type="button">
                     <span class="sr-only">My profile</span>
-                    <span class="nav-user-img mt-[10px]">
+                    <span class="nav-user-img ">
                         <picture>
                             <img src="{{ Storage::url(Auth::guard('admin')->user()->img) }}" alt="User name">
                         </picture>

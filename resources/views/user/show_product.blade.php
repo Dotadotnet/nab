@@ -27,7 +27,7 @@
                         <div
                             class=" text pr-0 w-full   absolute flex justify-center -top-8 opacity-50 md:pr-2 text-md sm:text-lg scale-90 ">
                             <span
-                                class="before:h-0.5 w-full inline-block before:-right-2 before:absolute before:bg-black before:dark:bg-white before:rounded-xl before:top-4 scale-90 before:w-full relative">
+                                class="before:h-0.5 w-full inline-block scale-90 before:w-full relative">
                                 <b class="inline-block">{!! App\Helpers\Helper::price($price) !!}</b>
                             </span>
                         </div>
@@ -353,7 +353,9 @@
                 '<span>تومان<span/>';
             return result.trim() === '<span>تومان<span/>' ? '0 تومان' : result.trim();
         }
-            window.axios({
+
+        window.addEventListener('load',() =>{
+   window.axios({
                 method: 'get',
                 url: '/api/product/category/' + category_id,
             }).then(function(response) {
@@ -442,6 +444,7 @@
             }).catch(() => {}).then(() => {
                 window.reload_button_add_cart_events()
             })
+        })
 
 
         

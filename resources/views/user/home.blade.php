@@ -402,21 +402,24 @@
             }).catch(() => {}).then(() => {
                 window.reload_button_add_cart_events()
             })
-        })
 
 
 
 
 
-        window.addEventListener('load', () => {
+
+
+
+
             window.axios({
                 method: 'get',
                 url: '/api/all/blog',
             }).then(function(response) {
                 let data = response.data;
-                console.log(response.data);
+                console.log(document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML = 22222);
 
                 data.forEach(item => {
+
                     document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML += `    
 <div class="swiper-slide   ">
 <div class="flex w-full flex-col justify-center items-center">
@@ -480,11 +483,28 @@
                             prevEl: '.swiper-button-prev-blog',
                         },
                     });
-                }, 2000);
+                }, 3000);
 
             }).catch(() => {}).then(() => {
-                window.reload_button_add_cart_events()
             })
+
+
+
+
+
+
+
+
+
+
+        })
+
+
+
+
+
+        window.addEventListener('load', () => {
+         
         })
     </script>
 @endsection

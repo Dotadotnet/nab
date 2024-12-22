@@ -63,13 +63,13 @@ class ApiController extends Controller
         $blogs = Blog::all()->toArray();
         for ($i = 0; $i < count($blogs); $i++) {
             $blogs[$i]['link'] = '/blog/' . $blogs[$i]['id'];
-            foreach (glob(storage_path('app\public\img\blog') . '\*.*') as $file) {
-                $file_name = str_replace(storage_path('app\public\img\blog') . '\\', '', $file);
-                if (str_contains($blogs[$i]['amount'],  $file_name)) {
-                    $blogs[$i]['img'] = '/img/blog/' . $file_name;
-                    $blogs[$i]['data'] = explode(' ', Jalalian::forge($blogs[$i]['created_at'])->format('%d %B %Y h:m:s'));
-                }
+            $dom = \HTMLDomParser\DomFactory::load($blogs[$i]['amount']);
+            try {
+                $blogs[$i]['img'] = str_replace( env('APP_URL') . '/storage/' , '' , $dom->findOne('img')->getAttribute('src'));
+            } catch (\Throwable $th) {
+                $blogs[$i]['img'] = '/img/image/noimg.png';
             }
+            $blogs[$i]['data'] = explode(' ', Jalalian::forge($blogs[$i]['created_at'])->format('%d %B %Y h:m:s'));
         }
         unset($blogs[0]);
         return response(array_reverse($blogs));

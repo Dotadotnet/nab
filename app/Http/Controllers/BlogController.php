@@ -17,11 +17,11 @@ class BlogController extends Controller
         $blogs = Blog::all();
         for ($i = 0; $i < count($blogs); $i++) {
             $blogs[$i]['link'] = '/blog/' . $blogs[$i]['id'];
-            foreach (glob(storage_path('app\public\img\blog') . '\*.*') as $file) {
-                $file_name = str_replace(storage_path('app\public\img\blog') . '\\', '', $file);
-                if (str_contains($blogs[$i]['amount'],  $file_name)) {
-                    $blogs[$i]['img'] = '/img/blog/' . $file_name;
-                }
+            $dom = \HTMLDomParser\DomFactory::load($blogs[$i]['amount']);
+            try {
+                $blogs[$i]['img'] = str_replace( env('APP_URL') . '/storage/' , '' , $dom->findOne('img')->getAttribute('src'));
+            } catch (\Throwable $th) {
+                $blogs[$i]['img'] = '/img/image/noimg.png';
             }
         }
         return view('admin.edite_blog', ["blogs" => $blogs]);
@@ -98,19 +98,19 @@ class BlogController extends Controller
     public function destroy(string $id)
     {
         Blog::where(['id' => $id])->delete();
-        $blogs = Blog::all();
-        foreach (glob(storage_path('app\public\img\blog') . '\*.*') as $file) {
-            $file_name = str_replace(storage_path('app\public\img\blog') . '\\', '', $file);
-            $founded = false;
-            foreach ($blogs as $blog) {
-                if (str_contains($blog['amount'], $file_name)) {
-                    $founded = true;
-                }
-            }
-            if (!$founded) {
-                unlink($file);
-            }
-        }
+        // $blogs = Blog::all();
+        // foreach (glob(storage_path('app\public\img\blog') . '\*.*') as $file) {
+        //     $file_name = str_replace(storage_path('app\public\img\blog') . '\\', '', $file);
+        //     $founded = false;
+        //     foreach ($blogs as $blog) {
+        //         if (str_contains($blog['amount'], $file_name)) {
+        //             $founded = true;
+        //         }
+        //     }
+        //     if (!$founded) {
+        //         unlink($file);
+        //     }
+        // }
         return response('ok');
     }
 

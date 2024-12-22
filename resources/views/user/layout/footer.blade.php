@@ -19,7 +19,7 @@
             <span class="mr-4 text-md sm:text-lg"> <i class="fa fa-envelope" aria-hidden="true"></i>
                 انتقادات و پیشنهادات شما :</span>
             <a href="mailto:Aminiamiraliamini1400@outlook.com"
-                class="  md:mr-24 sm:mr-10 mr-3 text-md mt-3 hover:pr-5 hover:font-bold ">Aminiamiraliamini1400@outlook.com</a>
+                class="  md:mr-10 sm:mr-10 mr-3 text-md mt-3 hover:pr-5 hover:font-bold ">Aminiamiraliamini1400@outlook.com</a>
             <a href="/about" class="mr-4 text-md sm:text-lg hover:pr-5 hover:font-bold mt-3"> <i
                     class="fa translate-y-1 fa-info-circle" aria-hidden="true"></i>
                 درباره ما</a>
