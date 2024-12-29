@@ -9,7 +9,7 @@
     <div
         class=" z-40 w-full backdrop-blur flex-none transition-colors duration-500
         dark:bg-dark-opacity-30 bg-light-opacity-30 
-       p-2 shadow-xl shadow-primary-200 rounded-lg flex justify-between items-center overflow-hidden ">
+       px-2 shadow-xl shadow-primary-200 rounded-lg flex justify-between items-center overflow-hidden ">
         <a href="#bar">
             <button type="button"
                 class="text-white bg-gradient-to-br button-bar
@@ -20,9 +20,9 @@
                 <i class="fa fa-bars font-bold text-md sm:text-lg" aria-hidden="true"></i>
             </button>
         </a>
-        <a href="{{ env('APP_URL') }}" class=" inline relative w-32 ">
-            <img id="logo" src="{{ asset('image/Logo light.svg') }}"
-                class=" logo  absolute scale-100  lg:scale-150 left-0 sm:-top-[64px] -top-[56px] size-28 sm:size-32 ">
+        <a href="{{ env('APP_URL') }}" class=" flex justify-center  w-32 ">
+            <img id="logo" src="{{ asset('image/Logo light.png') }}"
+                class="  size-12 sm:size-16 ">
         </a>
         <div id="item_navbar" class=" hidden lg:flex w-full px-4">
             @foreach ($nav_items as $nav_item)
@@ -179,7 +179,7 @@
         </div>
        
 
-        <div class="h-full cart-shoping-main overflow-y-auto overflow-x-hidden px-3 justify-between">
+        <div class="h-full cart-shoping-main pt-2 overflow-y-auto overflow-x-hidden px-3 justify-between">
           {{-- <div class="flex  mt-3 ">
                 <div class="w-20" >
                   <img class="size-20 rounded-lg" src="" alt="">

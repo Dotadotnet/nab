@@ -11,6 +11,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Melipayamak\Users;
+use PDO;
 
 class UserAuthController extends Controller
 {
@@ -35,10 +36,11 @@ class UserAuthController extends Controller
         }
         $data = json_encode($data);
         VerifyPhones::where(['phone' => $phone])->delete();
-        $code_ver = rand(10000, 99999);
-        $link = route('verify_link', ['code' => $code_ver]);
+
+        $code_ver = substr(md5(rand(10000, 99999)), -20);
+        $link = route('verify_link', ['phone' => $phone, 'code' => $code_ver]);
         try {
-            sms::send("سلام کاربر گرامی به قنادی ناب خوش آمدید \n کد تایید شما : $code_ver", $phone); 
+            sms::send(". سلام لینک تایید شماره نقل ناب ، برای تایید شماره روی لینک زیر کیلیک بفرمایید \n $link", $phone);
         } catch (\Throwable $th) {
             return response(['phone' => ['شماره شما درست نمی باشد']]);
         }
@@ -50,7 +52,27 @@ class UserAuthController extends Controller
         $verify_phones->save();
         return response('ok');
     }
-    public function chack_verify($phone, $code)
+    public function chack_verify($phone)
+    {
+        $phone_veri = VerifyPhones::where(['phone' => $phone, 'data' => 'accept'])->get();
+        if (count($phone_veri) && time() - $phone_veri[0]->time < 200) {
+            $user_now = User::where(['phone' => $phone_veri[0]->phone])->get();
+            if (count($user_now)) {
+                VerifyPhones::where(['phone' => $phone, 'data' => 'accept'])->delete();
+                Auth::guard('user')->login($user_now[0], true);
+                if ($user_now[0]->name) {
+                    return response('cart');
+                } else {
+                    return response('profile');
+                }
+            } else {
+                return response('no');
+            }
+        } else {
+            return response('no');
+        }
+    }
+    public function link_verify($phone, $code)
     {
         $phone_veri = VerifyPhones::where(['phone' => $phone, 'code' => $code])->get();
         if (count($phone_veri) && time() - $phone_veri[0]->time < 200) {
@@ -63,29 +85,20 @@ class UserAuthController extends Controller
                 $user->save();
                 $user_now = User::where(['phone' => $phone_veri->phone])->get();
                 Auth::guard('user')->login($user_now[0], true);
-                VerifyPhones::where(['phone' => $phone, 'code' => $code])->delete();
-                return  response(['mess' => 'ok', 'redirect' => '/profile']);
+                VerifyPhones::where(['phone' => $phone, 'code' => $code])->update(['data' => 'accept']);
+                return redirect('/profile');
             } else {
                 Auth::guard('user')->login($user_now[0], true);
-                VerifyPhones::where(['phone' => $phone, 'code' => $code])->delete();
-                return  response(['mess' => 'ok', 'redirect' => '/cart']);
+                VerifyPhones::where(['phone' => $phone, 'code' => $code])->update(['data' => 'accept']);
+                return redirect('/cart');
             }
         } else {
-            return response(['mess' => 'no', 'redirect' => null]);
-        }
-    }
-    public function link_verify($code)
-    {
-        $phones = VerifyPhones::where(['code' => $code])->get();
-        if (count($phones)) {
-            $phone = $phones[0];
-            $data = json_decode($phone->data);
-            if (time() - $phone->time < 200) {
+            if (!count($phone_veri)) {
+                return redirect('/login')->with('error', 'لینک درست نیست دوباره درخواست کنید');
             } else {
-                return redirect('/register')->with('success', 'لینک منقضی شده است');
+                return redirect('/login')->with('error', 'لینک منقضی شده است');
             }
         }
-        return redirect('/register')->with('error', 'لینک درست نبود');
     }
     public function login(Request $request)
     {

@@ -556,7 +556,7 @@ html {
 
     .swiper-button-next,
     .swiper-button-prev {
-        @apply select-none rounded-full bg-primary-200 border-2 border-primary-100;
+        @apply select-none rounded-full bg-primary-200 ;
         width: 50px !important;
         height: 50px !important;
     }

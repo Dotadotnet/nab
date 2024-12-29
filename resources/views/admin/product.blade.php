@@ -1,6 +1,6 @@
 @extends('admin.layout.main')
 @section('title')
-    اضافه کردن دسته بندی
+    محصول
 @endsection
 @section('main')
     <?php
@@ -103,7 +103,6 @@
                         @if (isset($data->caption))
                             {!! $data->caption !!}
                         @else
-                            <p>توضیحات ...</p>
                         @endif
                     </div>
                 </div>

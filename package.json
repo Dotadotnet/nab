@@ -39,7 +39,7 @@
         "filepond-plugin-image-preview": "^4.6.12",
         "leaflet": "^1.9.4",
         "polipop": "^1.0.0",
-        "sortablejs": "^1.15.2",
+        "sortablejs": "^1.15.6",
         "tsc-init": "^2.1.0",
         "vite-plugin-inspect": "^0.10.3"
     }

@@ -46,6 +46,7 @@ Route::prefix('panel')->group(function () {
     Route::middleware('admin_auth')->group(function () {
         Route::post('/comment/{id}/replay/{value}', [CommentController::class, 'replay']);
         Route::post('/delete/block', [BlockUserController::class, 'deletePhone']);
+        Route::get('/selected-products', [ProductController::class, 'selectedProductsView']);
         Route::resource('admin', AdminController::class)->names('admin');
         Route::get('/order/{id}', [OrderController::class, 'getDataOrder']);
         Route::delete('/order/{id}', [OrderController::class, 'deleteOrder']);
@@ -76,8 +77,9 @@ Route::get('/login', function () {
     return view('user.register');
 })->name('login');
 Route::post('/verify/send', [UserAuthController::class, 'save_phone'])->name('send_sms');
-Route::get('/verify/{code}', [UserAuthController::class, 'link_verify'])->name('verify_link');
-Route::post('/verify/chack/{phone}/{code}', [UserAuthController::class, 'chack_verify'])->name('chack_verify');
+Route::get('/selected-items-api', [ProductController::class, 'selectedItemsApi']);
+Route::get('/verify/{phone}/{code}', [UserAuthController::class, 'link_verify'])->name('verify_link');
+Route::post('/verify-chack/{phone}', [UserAuthController::class, 'chack_verify'])->name('chack_verify');
 Route::get('/admin_login', [AdminAuthController::class, 'getLogin'])->name('admin_login');
 Route::post('/admin_login', [AdminAuthController::class, 'postLogin'])->name('adminLoginPost'); // admin_login
 Route::get('/admin_logout', [AdminAuthController::class, 'adminLogout'])->name('admin_logout');

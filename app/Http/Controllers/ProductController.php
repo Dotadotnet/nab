@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\Helper;
+use App\Models\Config;
 use App\Models\ShoppingCart;
 
 class ProductController extends Controller
@@ -37,7 +38,6 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|numeric|min:4',
             'image.*' => ['file', 'image', 'required'],
-            'caption' => 'required',
             'category' => 'required',
             'type' => 'required',
         ]);
@@ -54,7 +54,7 @@ class ProductController extends Controller
         $product->name = $request->name;
         $product->price = $request->price;
         $product->caption = $request->caption;
-        $product->off = (int)$request->off ? $request->off : null ;
+        $product->off = (int)$request->off ? $request->off : null;
         $product->category = $request->category;
         $product->type = $request->type;
         $product->img = json_encode($all_images);
@@ -79,19 +79,20 @@ class ProductController extends Controller
     {
         $data = Product::find($id);
         $name = $data->name;
-        return redirect(route('userShow',['category' => str_replace(' ','-',Category::find($data->category)->name) ,'name' => str_replace(' ','-',$name)]));
+        return redirect(route('userShow', ['category' => str_replace(' ', '-', Category::find($data->category)->name), 'name' => str_replace(' ', '-', $name)]));
     }
-    public function userShow($category,$name){
-        $id_category = Category::where(['name' => str_replace('-',' ',$category)])->get()[0]->id;
-        $data = ((Product::where(['category' => $id_category , 'name' => str_replace('-',' ',$name) ]))->get()[0]->toArray());
-        $data['category'] = [(Category::find($data['category']))->name,$data['category']];
+    public function userShow($category, $name)
+    {
+        $id_category = Category::where(['name' => str_replace('-', ' ', $category)])->get()[0]->id;
+        $data = ((Product::where(['category' => $id_category, 'name' => str_replace('-', ' ', $name)]))->get()[0]->toArray());
+        $data['category'] = [(Category::find($data['category']))->name, $data['category']];
         $data['imgs'] = [];
-        foreach(json_decode($data['img']) as $img){
-         array_push($data['imgs'],Storage::url($img));
+        foreach (json_decode($data['img']) as $img) {
+            array_push($data['imgs'], Storage::url($img));
         };
         $data['type'] = Helper::type_sell($data['type']);
         unset($data['img']);
-        return view('user.show_product',$data);
+        return view('user.show_product', $data);
     }
 
     /**
@@ -103,7 +104,6 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|numeric|min:4',
             'image.*' => ['file', 'required'],
-            'caption' => 'required',
             'category' => 'required',
             'type' => 'required',
         ]);
@@ -145,8 +145,25 @@ class ProductController extends Controller
         foreach (json_decode($data->img) as $img) {
             Storage::delete($img);
         }
-        ShoppingCart::where('product_id',$id)->delete();
+        ShoppingCart::where('product_id', $id)->delete();
         Product::where('id', $id)->delete();
         return response('File Deleted', 200);
+    }
+
+    public function selectedProductsView()
+    {
+        $selected = json_decode(Config::where(['key' => 'favorites'])->get()[0]->amount);
+        $product = Product::all();
+
+        return view('admin.selected_products', ['products' => $product, 'selecteds' => $selected]);
+    }
+    public function selectedItemsApi()
+    {
+        $ids = json_decode(Config::where(['key' => 'favorites'])->get()[0]->amount);
+        $result = [];
+        foreach ($ids as $id) {
+            array_push($result, Product::find($id));
+        }
+        return response($result);
     }
 }

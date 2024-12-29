@@ -27,8 +27,14 @@
                         <div
                             class=" text pr-0 w-full   absolute flex justify-center -top-8 opacity-50 md:pr-2 text-md sm:text-lg scale-90 ">
                             <span
-                                class="before:h-0.5 w-full inline-block scale-90 before:w-full relative">
-                                <b class="inline-block">{!! App\Helpers\Helper::price($price) !!}</b>
+                                class=" w-full inline scale-90">
+                                <b class="inline relative">
+                                    <div style="width:calc(100% + 8px)" class="absolute  z-10 flex justify-center items-center top-0 -right-1  h-full">
+                                              <div class="w-full bg-black rounded-sm   dark:bg-white h-0.5">
+                                                         
+                                              </div>
+                                    </div>
+                                    {!! App\Helpers\Helper::price($price) !!}</b>
                             </span>
                         </div>
                         قیمت : {{ $type }} <b>{!! App\Helpers\Helper::price($price - ($price / 100) * $off) !!}</b>
@@ -288,17 +294,18 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         const page_id = @json($id);
-        window.page_id = page_id;
+        window.page_id = page_id; 
         const category_id = @json($category[1]);
+        
         const pagination_divs = document.querySelectorAll('div.pagination-div div');
         const swiper = new Swiper(".swiper-pro", {
-            effect: "cube",
+            effect: "fade",
             grabCursor: true,
             loop: true,
             pauseOnMouseEnter: true,
             speed: 2000,
             autoplay: {
-                delay: 0,
+                delay: 2000,
                 disableOnInteraction: true,
             },
             cubeEffect: {

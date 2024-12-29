@@ -4,16 +4,26 @@
 @endsection
 @section('main')
     <div class=" w-full   ">
-        <div class="swiper-container relative swiper-one w-full h-[150px] sm:h-[200px] lg:h-[400px]   select-none	">
+        <div class="swiper-container relative swiper-one w-[100vw] lg:h-[30vw]  h-[50vw]   select-none	">
             <!-- Additional required wrapper -->
             <div class="swiper-wrapper select-none	 ">
                 <!-- Slides -->
                 @foreach ($events as $event)
-                    <a href="{{ $event->link }}" class="swiper-slide size-12 select-none	  ">
-                        <div class="size-full select-none	 flex items-center justify-center">
+                    <a href="{{ $event->link ? $event->link : '#null' }}" class="swiper-slide size-12 select-none	  ">
+                        <div class="size-full select-none relative	 flex items-center justify-center">
                             <img class=" select-none size-full object-cover " src="{{ '/storage/' . $event->img }}">
+                            @if ($event->caption)
+                                <div class="absolute  sm:h-1/2 flex  w-full justify-center sm:items-center bottom-0">
+                                    <div
+                                        class="w-[250%] lg:w-1/3 text scale-[0.65] sm:scale-100 dark:bg-dark-opacity-30 bg-light-opacity-30 p-3 backdrop-blur rounded-lg">
+                                        {!! $event->caption !!}
+                                    </div>
+                                </div>
+                                
+                            @endif
                         </div>
                     </a>
+                  
                 @endforeach
             </div>
             <div class="absolute  flex items-center size-full top-0 right-0">
@@ -62,16 +72,15 @@
             @foreach ($categorys as $category)
                 <a data-aos="fade-in" href="{{ '#category_' . $category['id'] }}">
                     <div
-                        class="sm:size-64 border-2 border-primary-200 dark:border-white group overflow-hidden rounded-xl shadow-md relative dark:shadow-gray-400 m-2 sm:m-5   dark:bg-gray-800 bg-white size-40">
+                        class="sm:size-64 border-2 border-primary-200 dark:border-white group overflow-hidden rounded-xl shadow-md relative shadow-black dark:shadow-gray-400 m-2 sm:m-5   dark:bg-gray-800 bg-white size-40">
                         <img class="size-full group-hover:scale-125" src="{{ '/storage/' . $category['img'] }}"
                             alt="">
-                        <div
-                            class="absolute flex flex-col justify-center dark:bg-[rgba(0,0,0,0.5)] bg-[rgba(255,255,255,0.5)]  top-0 right-0 size-full">
-                            <p class="text-lg font-bold text text-center sm:text-3xl">
+                        <div class="absolute flex flex-col justify-center bg-[rgba(0,0,0,0.5)]  top-0 right-0 size-full">
+                            <p class="text-lg font-bold text-white text-center sm:text-3xl">
                                 {{ $category['name'] }}
                             </p>
                             <br>
-                            <p class="text-base flex items-center justify-center  text-center text sm:text-lg">
+                            <p class="text-base flex items-center justify-center  text-center text-white sm:text-lg">
                                 <span style="text-shadow: 0px 0px 1px 2px #078c91 "
                                     class="font-bold text-lg sm:text-3xl">{{ $category['count'] }}</span>
                                 <span class="mr-2 mb-0.5 sm:mb-1">محصول</span>
@@ -85,7 +94,7 @@
 
     {{-- <i class="fa fa-bullhorn" aria-hidden="true"></i> --}}
     <br>
-    <div class=" flex mt-5 sm:mt-0 flex-col p-3 md:flex-row bg-primary-200 mx-3 sm:mx-8 rounded-lg  ">
+    <div class=" div-offer flex mt-5 sm:mt-0 flex-col p-3 md:flex-row bg-primary-200 mx-3 sm:mx-8 rounded-lg  ">
         <div
             class="texts w-full md:w-48 bg-[#09adb3] z-20 relative rounded-lg shadow-[0px_0px_2px_1px_rgba(255,255,255,1)]">
             <div class="absolute flex justify-center w-full -top-10">
@@ -109,7 +118,7 @@
             </div>
 
         </div>
-        <div class="w-full sm:px-2 sm:pt-0 pt-4 justify-center  overflow-hidden flex items-center">
+        <div class="w-full sm:px-2 md:pt-0 pt-4 justify-center  flex items-center">
             <div class="swiper-offer   swiper -z-50 w-full relative">
                 <!-- Parallax background element -->
                 <div class="parallax-bg" style="background-image:url(path/to/image.jpg)" data-swiper-parallax="-23%">
@@ -120,6 +129,37 @@
                     <i class="fa fa-caret-right text-[30px] sm:text-[40px] text-white" aria-hidden="true"></i>
                 </div>
                 <div class="swiper-button-next 	swiper-button-next-offer ">
+                    <i class="fa fa-caret-left text-white text-[30px] sm:text-[40px]" aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class=" div-sell flex mt-5 sm:mt-0 flex-col p-3 md:flex-row bg-primary-200 mx-3 sm:mx-8 rounded-lg  ">
+        <div
+            class="texts w-full md:w-48 bg-[#09adb3] z-20 relative rounded-lg shadow-[0px_0px_2px_1px_rgba(255,255,255,1)]">
+            <div class="flex flex-row flex-wrap items-center sm:flex-col py-2 sm:py-5 h-full justify-around">
+                <div class="flex justify-center">
+                    <i class="fa fa-shopping-cart text-5xl sm:text-8xl -scale-x-100 text-white" aria-hidden="true"></i>
+                </div>
+                <div class="flex text-white font-bold text-nowrap   justify-center">
+                    کالا های پر فروش
+                </div>
+
+            </div>
+
+        </div>
+        <div class="w-full sm:px-2 md:pt-0 pt-4 justify-center  flex items-center">
+            <div class="swiper-sell   swiper -z-50 w-full relative">
+                <!-- Parallax background element -->
+                <div class="parallax-bg" style="background-image:url(path/to/image.jpg)" data-swiper-parallax="-23%">
+                </div>
+                <div class="swiper-wrapper">
+                </div>
+                <div class="swiper-button-prev swiper-button-prev-sell  	">
+                    <i class="fa fa-caret-right text-[30px] sm:text-[40px] text-white" aria-hidden="true"></i>
+                </div>
+                <div class="swiper-button-next 	swiper-button-next-sell ">
                     <i class="fa fa-caret-left text-white text-[30px] sm:text-[40px]" aria-hidden="true"></i>
                 </div>
             </div>
@@ -220,11 +260,11 @@
         </main>
     </div>
 
-   <p class="text-xl mt-3 sm:text-3xl pr-6 p-1 text sm:pr-12 ">
-     وبلاگ ها
-   </p>
+    <p class="text-xl mt-3 sm:text-3xl pr-6 p-1 text sm:pr-12 ">
+        وبلاگ ها
+    </p>
 
-    <div class="sm:p-5 p-3">
+    <div class="sm:p-5 p-3 div-blog">
         <div class="swiper-blog  swiper -z-50 w-full relative">
             <!-- Parallax background element -->
             <div class="swiper-wrapper  ">
@@ -239,7 +279,6 @@
     </div>
     <br>
     <br>
-
 @endsection
 @section('script')
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-element-bundle.min.js"></script>
@@ -311,97 +350,222 @@
             return result.trim() === '<span>تومان<span/>' ? '0 تومان' : result.trim();
         }
 
-
-        var max_offer = 0;
         window.addEventListener('load', () => {
-            window.axios({
-                method: 'get',
-                url: '/api/product/all',
-            }).then(function(response) {
-                let data = response.data;
-                data.forEach(item => {
-                    if (item.off) {
+            var max_offer = 0;
+            const div_offer = document.querySelector('div.div-offer');
+            const divOffer = () => {
+                let doc = document.documentElement;
+                let top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+                let offset_top_el = div_offer.offsetTop;
+                if (Math.abs(offset_top_el - top) < 1200 && !document.querySelector(
+                        'div.swiper-offer div.swiper-wrapper').innerHTML.trim()) {
+                    document.querySelector('div.swiper-offer div.swiper-wrapper').innerHTML = '.';
+                    window.axios({
+                        method: 'get',
+                        url: '/api/product/all',
+                    }).then(function(response) {
+                        let data = response.data;
+                        document.querySelector('div.swiper-offer div.swiper-wrapper').innerHTML = ''
+                        data.forEach(item => {
+                            if (item.off) {
 
-                        if (parseInt(item.off) > parseInt(document.querySelectorAll('b.max-offer')[
-                                0].innerHTML)) {
-                            document.querySelectorAll('b.max-offer').forEach(offer_div => {
-                                offer_div.innerHTML = item.off;
-                            })
-                        }
-                        document.querySelector('div.swiper-offer div.swiper-wrapper').innerHTML += `    
+                                if (parseInt(item.off) > parseInt(document.querySelectorAll(
+                                        'b.max-offer')[
+                                        0].innerHTML)) {
+                                    document.querySelectorAll('b.max-offer').forEach(
+                                        offer_div => {
+                                            offer_div.innerHTML = item.off;
+                                        })
+                                }
+                                document.querySelector(
+                                        'div.swiper-offer div.swiper-wrapper')
+                                    .innerHTML += `    
 <div class="swiper-slide   ">
     <div class="flex justify-center">
-<div class=" bg-white border relative w-48 overflow-hidden border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+<div class=" bg-white  relative w-40 sm:w-48   rounded-lg   dark:bg-gray-800 ">
    ${item.off ? "<div class='absolute z-10 top-4 '><span class='text-white  flex items-center w-12 justify-center flex-row-reverse bg-red-600 px-1 sm:px-2 rounded-e-3xl '><span class='text-xs sm:text-sm font-bold flex  items-center mr-0.5'>%</span><span class='flex text-sm sm:text-base items-center mt-0 sm:mt-[1.5px] font-bold'>" + item.off + "</span></span></div>" : ''}
     <div class="absolute top-2 left-2">
-    
     <div class=" justify-center items-center ">
     </div>
 </div>
  <a href="${'/product/' + item.id}"  >
-        <img class="  size-40 m-4 object-cover rounded-lg" src="${'/storage/' + JSON.parse(item.img)[0]}" alt="product image" />
+        <img class=" size-36  sm:size-40 m-2 sm:m-4 mb-1 sm:mb-2 object-cover rounded-lg" src="${'/storage/' + JSON.parse(item.img)[0]}" alt="product image" />
         </a>
-    <div class="px-5 pb-4">        
+    <div class="px-3 sm:px-5 pb-3">        
         <a href="${'/product/' + item.id}"  >
             <h5 data-swiper-parallax="-100" class="sm:text-lg text-base font-semibold tracking-tight text-gray-900 dark:text-white">${item.name}</h5>
         </a>
-        <span class="scale-75 mt-2 opacity-[0.4] w-full  justify-center flex items-center text-sm font-bold   text-gray-900 dark:text-white">${pricee(item.price)}</span></span></span>
-        <span class=" mt-1 w-full font-bold w-full  justify-center flex items-center text-sm font-bold   text-gray-900 dark:text-white">${pricee(item.price - (item.price / 100) * item.off )}</span></span></span>        
+         <span
+                                class=" w-full scale-[0.6] sm:scale-75 mt-1 opacity-[0.4] w-full  justify-center flex items-center text-sm font-bold   text-gray-900 dark:text-white">
+                                <b class="inline relative">
+                                    <div style="width:calc(100% + 8px)" class="absolute  z-10 flex justify-center items-center top-0.5 -right-1  h-full">
+                                              <div class="w-full bg-black rounded-sm   dark:bg-white h-0.5">
+                                                         
+                                              </div>
+                                    </div>
+                                    ${pricee(item.price)}</b>
+                            </span>
+        <span class=" mt-1 w-full font-bold w-full  justify-center flex items-center text-xs sm:text-sm font-bold   text-gray-900 dark:text-white">${pricee(item.price - (item.price / 100) * item.off )}</span></span></span>        
         <button data-id="${ item.id }"
-        class="group mt-4 add-to-cart bg-primary-200 sm:text-2xl w-full text-lg h-10 sm:h-12 flex justify-center items-center text-white hover:font-bold  group rounded-lg ">
+        class="group mt-3 add-to-cart bg-primary-200 sm:text-2xl w-full text-lg h-10 sm:h-12 flex justify-center items-center text-white hover:font-bold  group rounded-lg ">
         <i class="fa hover:font-bold fa-cart-plus" aria-hidden="true"></i> 
     </button>
     </div>
 </div>
 </div>
 </div>`
-                    }
-                });
-                setTimeout(() => {
-                    const swiper_offer = new Swiper(".swiper-offer", {
-                        effect: 'free',
-                        grabCursor: true,
-                        loop: true,
-                        pauseOnMouseEnter: true,
-                        speed: 1000,
-                        autoplay: {
-                            delay: 0,
-                        },
-                        breakpoints: {
-                            // when window width is >= 320px
-                            400: {
-                                slidesPerView: 2,
-                                spaceBetween: 5
-                            },
-                            640: {
-                                slidesPerView: 3,
-                                spaceBetween: 10
-                            },
-                            768: {
-                                slidesPerView: 2,
-                                spaceBetween: 10
-                            },
-                            // when window width is >= 640px
-                            1280: {
-                                slidesPerView: 4,
-                                spaceBetween: 40
                             }
-                        },
-                        autoplay: {
-                            delay: 2000,
-                            disableOnInteraction: true,
-                        },
+                        });
+                        setTimeout(() => {
+                            const swiper_offer = new Swiper(".swiper-offer", {
+                                effect: 'free',
+                                grabCursor: true,
+                                loop: true,
+                                pauseOnMouseEnter: true,
+                                speed: 1000,
+                                autoplay: {
+                                    delay: 0,
+                                },
+                                breakpoints: {
+                                    // when window width is >= 320px
+                                    370: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 5
+                                    },
+                                    700: {
+                                        slidesPerView: 3,
+                                        spaceBetween: 10
+                                    },
+                                    768: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 10
+                                    },
+                                    // when window width is >= 640px
+                                    1280: {
+                                        slidesPerView: 4,
+                                        spaceBetween: 40
+                                    }
+                                },
+                                autoplay: {
+                                    delay: 2000,
+                                    disableOnInteraction: true,
+                                },
 
-                        navigation: {
-                            nextEl: '.swiper-button-next-offer',
-                            prevEl: '.swiper-button-prev-offer',
-                        },
-                    });
-                }, 2000);
+                                navigation: {
+                                    nextEl: '.swiper-button-next-offer',
+                                    prevEl: '.swiper-button-prev-offer',
+                                },
+                            });
+                        }, 2000);
 
-            }).catch(() => {}).then(() => {
-                window.reload_button_add_cart_events()
+                    }).catch(() => {}).then(() => {
+                        window.reload_button_add_cart_events()
+                    })
+
+                }
+            }
+            window.addEventListener('scroll', () => {
+                divOffer()
             })
+            divOffer()
+
+            const div_sell = document.querySelector('div.div-sell');
+            const divSell = () => {
+                let doc = document.documentElement;
+                let top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+                let offset_top_el = div_sell.offsetTop;
+                if (Math.abs(offset_top_el - top) < 1200 && !document.querySelector(
+                        'div.swiper-sell div.swiper-wrapper').innerHTML.trim()) {
+                    document.querySelector('div.swiper-sell div.swiper-wrapper').innerHTML = '.';
+                    window.axios({
+                        method: 'get',
+                        url: '/selected-items-api',
+                    }).then(function(response) {
+                        let data = response.data;
+                        document.querySelector('div.swiper-sell div.swiper-wrapper').innerHTML = '';
+                        data.forEach(item => {
+                            document.querySelector('div.swiper-sell div.swiper-wrapper')
+                                .innerHTML += `    
+<div class="swiper-slide   ">
+    <div class="flex justify-center">
+<div class=" bg-white  relative w-40 sm:w-48   rounded-lg   dark:bg-gray-800 ">
+   ${item.off ? "<div class='absolute z-10 top-4 '><span class='text-white  flex items-center w-12 justify-center flex-row-reverse bg-red-600 px-1 sm:px-2 rounded-e-3xl '><span class='text-xs sm:text-sm font-bold flex  items-center mr-0.5'>%</span><span class='flex text-sm sm:text-base items-center mt-0 sm:mt-[1.5px] font-bold'>" + item.off + "</span></span></div>" : ''}
+    <div class="absolute top-2 left-2">
+    <div class=" justify-center items-center ">
+    </div>
+</div>
+ <a href="${'/product/' + item.id}"  >
+        <img class=" size-36  sm:size-40 m-2 sm:m-4 mb-1 sm:mb-2 object-cover rounded-lg" src="${'/storage/' + JSON.parse(item.img)[0]}" alt="product image" />
+        </a>
+    <div class="px-3 sm:px-5 pb-3">        
+        <a href="${'/product/' + item.id}"  >
+            <h5 data-swiper-parallax="-100" class="sm:text-lg text-base font-semibold tracking-tight text-gray-900 dark:text-white">${item.name}</h5>
+        </a>
+        <span class=" mt-1 w-full font-bold w-full   flex items-center text-xs sm:text-sm font-bold   text-gray-900 dark:text-white">${pricee(item.price - (item.price / 100) * item.off )}</span></span></span>        
+        <button data-id="${ item.id }"
+        class="group mt-3 add-to-cart bg-primary-200 sm:text-2xl w-full text-lg h-10 sm:h-12 flex justify-center items-center text-white hover:font-bold  group rounded-lg ">
+        <i class="fa hover:font-bold fa-cart-plus" aria-hidden="true"></i> 
+    </button>
+    </div>
+</div>
+</div>
+</div>`
+                        });
+                        setTimeout(() => {
+                            const swiper_sell = new Swiper(".swiper-sell", {
+                                effect: 'free',
+                                grabCursor: true,
+                                loop: true,
+                                pauseOnMouseEnter: true,
+                                speed: 1000,
+                                autoplay: {
+                                    delay: 0,
+                                },
+                                breakpoints: {
+                                    // when window width is >= 320px
+                                    370: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 5
+                                    },
+                                    700: {
+                                        slidesPerView: 3,
+                                        spaceBetween: 10
+                                    },
+                                    768: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 10
+                                    },
+                                    // when window width is >= 640px
+                                    1280: {
+                                        slidesPerView: 4,
+                                        spaceBetween: 40
+                                    }
+                                },
+                                autoplay: {
+                                    delay: 2000,
+                                    disableOnInteraction: true,
+                                },
+
+                                navigation: {
+                                    nextEl: '.swiper-button-next-sell',
+                                    prevEl: '.swiper-button-prev-sell',
+                                },
+                            });
+                        }, 2000);
+
+                    }).catch(() => {}).then(() => {
+                        window.reload_button_add_cart_events()
+                    })
+
+
+
+                }
+
+            }
+            window.addEventListener('scroll', () => {
+                divSell()
+            })
+            divSell()
 
 
 
@@ -410,17 +574,23 @@
 
 
 
-
-            window.axios({
-                method: 'get',
-                url: '/api/all/blog',
-            }).then(function(response) {
-                let data = response.data;
-                console.log(document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML = 22222);
-
-                data.forEach(item => {
-
-                    document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML += `    
+            const div_blog = document.querySelector('div.div-blog');
+            const divBlog = () => {
+                let doc = document.documentElement;
+                let top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+                let offset_top_el = div_blog.offsetTop;
+                if (Math.abs(offset_top_el - top) < 1200 && !document.querySelector(
+                        'div.swiper-blog div.swiper-wrapper').innerHTML.trim()) {
+                    document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML = '.';
+                    window.axios({
+                        method: 'get',
+                        url: '/api/all/blog',
+                    }).then(function(response) {
+                        let data = response.data;
+                        document.querySelector('div.swiper-blog div.swiper-wrapper').innerHTML = '';
+                        data.forEach(item => {
+                            document.querySelector('div.swiper-blog div.swiper-wrapper')
+                                .innerHTML += `    
 <div class="swiper-slide   ">
 <div class="flex w-full flex-col justify-center items-center">
     <a href="${item.link}" class=" group ">
@@ -446,65 +616,54 @@
 </div>
 </div>`
 
-                });
-                setTimeout(() => {
-                    const swiper_blog = new Swiper(".swiper-blog", {
-                        effect: 'free',
-                        grabCursor: true,
-                        loop: true,
-                        pauseOnMouseEnter: true,
-                        speed: 1000,
-                        autoplay: {
-                            delay: 0,
-                        },
-                        breakpoints: {
-                            // when window width is >= 320px
-                            400: {
-                                slidesPerView: 1,
-                                spaceBetween: 5
-                            },
-                            768: {
-                                slidesPerView: 2,
-                                spaceBetween: 10
-                            },
-                            // when window width is >= 640px
-                            1280: {
-                                slidesPerView: 3,
-                                spaceBetween: 40
-                            }
-                        },
-                        autoplay: {
-                            delay: 2000,
-                            disableOnInteraction: true,
-                        },
+                        });
+                        setTimeout(() => {
+                            const swiper_blog = new Swiper(".swiper-blog", {
+                                effect: 'free',
+                                grabCursor: true,
+                                loop: true,
+                                pauseOnMouseEnter: true,
+                                speed: 1000,
+                                autoplay: {
+                                    delay: 0,
+                                },
+                                breakpoints: {
+                                    // when window width is >= 320px
+                                    400: {
+                                        slidesPerView: 1,
+                                        spaceBetween: 5
+                                    },
+                                    768: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 10
+                                    },
+                                    // when window width is >= 640px
+                                    1280: {
+                                        slidesPerView: 3,
+                                        spaceBetween: 40
+                                    }
+                                },
+                                autoplay: {
+                                    delay: 2000,
+                                    disableOnInteraction: true,
+                                },
 
-                        navigation: {
-                            nextEl: '.swiper-button-next-blog',
-                            prevEl: '.swiper-button-prev-blog',
-                        },
-                    });
-                }, 3000);
+                                navigation: {
+                                    nextEl: '.swiper-button-next-blog',
+                                    prevEl: '.swiper-button-prev-blog',
+                                },
+                            });
+                        }, 3000);
 
-            }).catch(() => {}).then(() => {
+                    }).catch(() => {}).then(() => {})
+
+                }
+
+            }
+            window.addEventListener('scroll', () => {
+                divBlog()
             })
-
-
-
-
-
-
-
-
-
-
-        })
-
-
-
-
-
-        window.addEventListener('load', () => {
-         
+            divBlog()
         })
     </script>
 @endsection

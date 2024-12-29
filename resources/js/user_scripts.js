@@ -15,22 +15,21 @@ function format_item_bar_product(data) {
     let image = typeof (data.img) == 'string' ? data.img : data.img[0];
     let image_2 = typeof (data.img) == 'string' ? null : data.img;
     return `
-    <div  class="animate__animated relative group animate__zoomIn sm:w-96 w-full mb-4 similar_item cursor-pointer p-1 sm:p-2 flex bg-white border border-gray-200 rounded-lg  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+    <div  class="animate__animated relative group animate__zoomIn sm:w-96 w-full mb-4 similar_item cursor-pointer p-1  sm:p-2 flex bg-white border border-gray-200 rounded-lg  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
    ${data.off ? "<div class='absolute z-20 sm:top-2 sm:right-2 top-1 right-1'><span class='text-white  flex items-center flex-row-reverse bg-red-600 px-1 sm:px-2 rounded-3xl'>" + '<span class="text-xs sm:text-sm font-bold flex  items-center mr-0.5">%</span>' + '<span class="flex text-sm sm:text-base items-center mt-0 sm:mt-[1.5px] font-bold">' + data.off + '</span>' + "</span></div>" : ''}
    
-    <div class=" w-[100px] sm:w-[120px] flex-shrink-0 flex justify-center items-center  relative">
+    <div class=" w-[90px] sm:w-[110px] flex-shrink-0 h-24  sm:h-28 flex justify-center items-center  relative">
                                 <a href="${data.url}">
-                                    <img class="group-hover:rotate-180" src="http://nab.ir/image/similar_item.png" alt="">
-                                    <div class="  absolute top-0 right-0 h-full w-full flex justify-center items-center">
+                                    <div class="  justify-center h-full w-full flex   items-center">
                                         <span
-                                            class="size-[70px] sm:size-[80px] rounded-full overflow-hidden border-[1px] border-white">
+                                            class=" size-[80px] sm:size-[100px] rounded-lg overflow-hidden border-[1px] border-white">
                                             <img data-src='${JSON.stringify(image_2)}'  class=" h-full w-full  object-cover "
                                                 src="${'/storage/' + image}" alt="">
                                         </span>
                                     </div>
                                 </a>
                             </div>
-        <div class=" flex flex-col w-full justify-between items-center">
+        <div class=" flex flex-col w-full justify-between pr-1 items-center">
         <div class="flex justify-between items-center w-full"> 
         <span class=" text-base flex items-center sm:text-xl text  w-full font-bold ">
         ${data.name}
@@ -38,7 +37,7 @@ function format_item_bar_product(data) {
         
         <span>
     <button data-id="${data.id}"
-        class="group add-to-cart bg-primary-200 sm:text-2xl text-lg size-10 sm:size-12 flex justify-center items-center text-white hover:font-bold border-2 border-primary-100 group rounded-xl ">
+        class="group add-to-cart translate-x-1 translate-y-1 sm:translate-x-0 sm:translate-y-0 bg-primary-200 sm:text-2xl text-lg size-10 sm:size-12 flex justify-center items-center text-white hover:font-bold border-2 border-transparent group rounded-xl ">
         <i class="fa hover:font-bold fa-cart-plus" aria-hidden="true"></i>
     </button>
     <div class=" justify-center items-center ">
@@ -51,7 +50,7 @@ function format_item_bar_product(data) {
         '<div class="flex flex-col justify-center items-center"> <div class="line-through h-4 sm:h-5 inline-block opacity-50 scale-75"><span class="line-through opacity-50 scale-75">' + price(data.price) + '</span></div>' +
             '<p>' + price(data.price - (data.price / 100) * parseInt(data.off)) + '</p></div>'
         :
-            '<span class="mb-2">' + price(data.price) + '</span>'}
+            '<span class="mt-2">' + price(data.price) + '</span>'}
         </span>
         
         <span>
@@ -264,7 +263,11 @@ function reload_button_add_cart_events() {
                                     let res = items.push({ count: 1, id: button.dataset.id });
                                     localStorage.setItem('carts_data', JSON.stringify(items));
                                 }
-                                button.innerHTML = remove_icon_cart;
+                                let buttons_add_carts = document.querySelectorAll('button.add-to-cart');
+                                buttons_add_carts.forEach(butto_add_cart => {
+                                    if (butto_add_cart.dataset.id === button.dataset.id)
+                                        butto_add_cart.innerHTML = remove_icon_cart;
+                                });
                                 reload_count_cart_shop();
                             }
                             else {
@@ -290,7 +293,10 @@ function reload_button_add_cart_events() {
                                     });
                                     localStorage.setItem('carts_data', JSON.stringify(items_res));
                                 }
-                                button.innerHTML = `<i class="fa font-bold fa-cart-plus" aria-hidden="true"></i>`;
+                                buttons_add_carts.forEach(butto_add_cart => {
+                                    if (butto_add_cart.dataset.id === button.dataset.id)
+                                        butto_add_cart.innerHTML = `<i class="fa font-bold fa-cart-plus" aria-hidden="true"></i>`;
+                                });
                                 reload_count_cart_shop();
                             }
                         }).catch(function (error) {
@@ -553,19 +559,20 @@ const renderCartLocal = () => {
                     let data = response.data;
                     data.forEach(item => {
                         cart_box.innerHTML += `
-                        <div class="flex cart-shoping  mb-4 "  data-price="${item.off ? item.price - (item.price / 100) * item.off : item.price}" data-id="${item.id}" id="${item.id}" data-type="${item.type}">
-                <div class="w-20" >
+                        <div class="flex cart-shoping relative  mb-4 "  data-price="${item.off ? item.price - (item.price / 100) * item.off : item.price}" data-id="${item.id}" id="${item.id}" data-type="${item.type}">
+                 <button class=" remove text-white absolute left-0 -top-2 bg-red-600 cursor-pointer flex justify-center items-center size-7 text-lg rounded-lg">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                     </button>
+                        <div class="w-20" >
                   <img class="size-20 rounded-lg" src="${'/storage/' + JSON.parse(item.img)[0]}" alt="">
                 </div>
                 <div style="width: calc(100% - 88px)" class="flex flex-col justify-around pr-2" >
                   <p class="text flex justify-between">
                      <a href="${'/product/' + item.id}" class="text-sm select-none font-bold">${item.name}</a>
-                     <button class=" remove text-white  bg-red-600 cursor-pointer flex justify-center items-center size-7 text-lg rounded-lg">
-                        <i class="fa fa-times" aria-hidden="true"></i>
-                     </button>
+                   
                   </p>
                   <p class="text text-sm">
-                  <p class="scale-75 select-none mb-1 w-full flex-nowrap text-nowrap text-white">
+                  <p class="scale-75 select-none mb-1 w-full flex-nowrap text-nowrap text">
                                 ${price(item.off ? item.price - (item.price / 100) * item.off : item.price)}   
                   </p>            
                   </p>
@@ -702,6 +709,8 @@ function load_evens_carts() {
                 }).then(function (response) {
                 }).catch(function (error) {
                 }).then(function () { });
+                reload_count_cart_shop();
+                reload_button_add_cart_events();
             });
         });
     });
@@ -1196,7 +1205,7 @@ const reloadImageSwich = () => {
     let similars_item = document.querySelectorAll('div.similar_item');
     similars_item.forEach(similar_item => {
         let imgs = similar_item.querySelectorAll('img');
-        let img = imgs[1];
+        let img = imgs[0];
         if (img) {
             similar_item.addEventListener('mouseover', () => {
                 let data_img = img.dataset.src;

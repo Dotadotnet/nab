@@ -55,6 +55,19 @@
                 @endforeach
             </div>
             <br>
+            <textarea class=" hidden" name="caption"></textarea>
+            <div class="document-editor">
+                <div class="document-editor__toolbar"></div>
+                <div class="document-editor__editable-container">
+                    <div class="document-editor__editable">
+                        @if (isset($data->caption))
+                            {!! $data->caption !!}
+                        @else
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <br>
             @if ($status == 'edite')
                 <h4 class=" font-parastoo text-black dark:text-white text-xl">عکس قبلی که بارگزاری شده :</h4>
                 <br>

@@ -66,27 +66,27 @@
     "src": "public/media/font/Yekan.ttf"
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-BRIQwD2X.css",
+    "file": "assets/admin-D_wJFcta.css",
     "src": "resources/css/admin.css",
     "isEntry": true
   },
   "resources/css/auth.css": {
-    "file": "assets/auth-BT_09Qmk.css",
+    "file": "assets/auth-D_AFm1zV.css",
     "src": "resources/css/auth.css",
     "isEntry": true
   },
   "resources/css/panel.css": {
-    "file": "assets/panel-B5v0pCuZ.css",
+    "file": "assets/panel-Drx5OOIn.css",
     "src": "resources/css/panel.css",
     "isEntry": true
   },
   "resources/css/user.css": {
-    "file": "assets/user-J_ACWoIy.css",
+    "file": "assets/user-B4DyGb2x.css",
     "src": "resources/css/user.css",
     "isEntry": true
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-DhnzjALI.js",
+    "file": "assets/admin-BIM5PH1T.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
@@ -97,7 +97,7 @@
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-I2RhNbtz.js",
+    "file": "assets/auth-BBXJSdbn.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true,
@@ -116,7 +116,7 @@
     ]
   },
   "resources/js/user.js": {
-    "file": "assets/user-C-sRw9kv.js",
+    "file": "assets/user-D51T2uCs.js",
     "name": "user",
     "src": "resources/js/user.js",
     "isEntry": true,

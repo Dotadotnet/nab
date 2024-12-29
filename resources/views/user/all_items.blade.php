@@ -75,29 +75,26 @@
                 @foreach ($products as $product)
                     @if ($product->category == $category->id)
                         <div
-                            class=" sm:w-96 w-full relative shadow-md dark:shadow-gray-400 group mb-4 similar_item  p-2 flex bg-white border border-gray-200 rounded-lg  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                            class="animate__animated relative group animate__zoomIn sm:w-96 w-full mb-4 similar_item cursor-pointer p-1  sm:p-2 flex bg-white border border-gray-200 rounded-lg  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
                             @if ($product->off)
                                 <div class='absolute z-10 sm:top-2 sm:right-2 top-1 right-1'><span
                                         class='text-white  flex items-center flex-row-reverse bg-red-600 px-1 sm:px-2 rounded-3xl'><span
                                             class="text-xs sm:text-sm font-bold flex  items-center mr-0.5">%</span><span
                                             class="flex text-sm sm:text-base items-center mt-0 sm:mt-[1.5px] font-bold">
-                                            {{ $product->off }} </span></span></div>
+                                            {{ $product->off }}
+                                        </span></span></div>
                             @endif
-                            <div class=" w-[100px] sm:w-[120px] flex-shrink-0 flex justify-center items-center  relative">
+                            <div class=" w-[90px] sm:w-[110px] h-20 sm:h-24 flex-shrink-0  flex justify-center items-center  relative">
                                 <a href="{{ '/products/' . $product->id }}">
-                                    <img class="group-hover:rotate-180" src="http://nab.ir/image/similar_item.png"
-                                        alt="">
-                                    <div class="  absolute top-0 right-0 h-full w-full flex justify-center items-center">
+                                    <div class="  absolute top-0 right-0 h-full w-full flex   items-center">
                                         <span
-                                            class="size-[70px] sm:size-[80px] rounded-full overflow-hidden border-[1px] border-white">
-                                            <img data-src="{{ isset(json_decode($product->img)[1]) ? $product->img : '' }}"
-                                                class=" h-full w-full  object-cover "
-                                                src="{{ '/storage/' . json_decode($product->img)[0] }}" alt="">
+                                            class=" size-[80px] sm:size-[100px] rounded-lg overflow-hidden ">
+                                            <img  data-src="{{ isset(json_decode($product->img)[1]) ? $product->img : '' }}" src="{{ '/storage/' . json_decode($product->img)[0] }}" class=" h-full w-full  object-cover " alt="">
                                         </span>
                                     </div>
                                 </a>
                             </div>
-                            <div class="p-1 flex flex-col w-full justify-between items-center">
+                            <div class=" flex flex-col w-full justify-between items-center">
                                 <div class="flex justify-between items-center w-full">
                                     <span class=" text-base flex items-center sm:text-xl text  w-full font-bold ">
                                         {{ $product->name }}
@@ -111,32 +108,39 @@
                                         <div class=" justify-center items-center ">
                                         </div>
                                     </span>
-
-
                                 </div>
                                 <div class="flex justify-between items-center w-full">
-
                                     <span class=" text-xs mb-2 mr-2 flex items-center sm:text-base text  w-full font-bold ">
                                         @if ($product->off)
-                                            <div class="flex flex-col justify-center items-center">
-                                                <div class="line-through h-4 sm:h-5 inline-block opacity-50 scale-75">
-                                                    <span class="line-through price opacity-50 scale-75">
-                                                        {!! App\Helpers\Helper::price($product->price) !!}
-                                                    </span>
-                                                </div>
-                                                <p class="price"> {!! App\Helpers\Helper::price($product->price - ($product->price / 100) * $product->off) !!} </p>
-                                            </div>
-                                        @else
-                                            <span class="mb-2"> {!! App\Helpers\Helper::price($product->price) !!} </span>
-                                        @endif
+                                        <div class="flex flex-col justify-center items-center">
+                                            <div class="line-through h-4 sm:h-5 inline-block opacity-50 scale-75"><span
+                                                    class="line-through opacity-50 scale-75"> 
+                                                    {!! App\Helpers\Helper::price($product->price) !!}
+                                                    </span></div>
+                                            <p> {!! App\Helpers\Helper::price($product->price - ($product->price / 100) * $product->off) !!} </p>
+                                        </div>
+                                    @else
+                                        <span > {!! App\Helpers\Helper::price($product->price) !!} </span>
+                                    @endif
+                                    
+                                    
                                     </span>
 
                                     <span>
 
                                     </span>
+
+
                                 </div>
+
                             </div>
                         </div>
+
+
+
+
+
+                  
                     @endif
                 @endforeach
             </div>
@@ -218,7 +222,7 @@
             clearTimeout(setimeout_cancel_scrollor_event)
             setimeout_cancel_scrollor_event = setTimeout(() => {
                 window.addEventListener('scrollend', scrolledOnCategory)
-            }, 3000)
+            }, 100)
             clearTimeout(setimeout_slideer_category)
             setimeout_slideer_category = setTimeout(() => {
                 let id_slide = document.querySelector(".swiper-two .swiper-slide-next").dataset.id;
@@ -228,7 +232,7 @@
                     let topPos = item_view.offsetTop - first_top_pos;
                     scroll_bar_procuct.scrollTop = topPos;
                 }
-            }, 1000);
+            }, 100);
         }
         swiper_category.on('slideChange', slideChangeScrollToProducts);
         slideChangeScrollToProducts()

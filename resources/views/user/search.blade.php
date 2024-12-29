@@ -18,7 +18,7 @@
     </form>
     @if ($sentence !== $input)
         <div class="p-8">
-            <a href="/search/1/{{$sentence}}"
+            <a href="/search/1/{{ $sentence }}"
                 class=" block text cursor-pointer bg-gradient-to-l  text-white from-primary-200 rounded-lg  relative p-2 hover:font-bold">
                 <span class="mr-2 similer-text-inner">
                     آیا منطوری شما این بود : <b>{{ $sentence }}</b>
@@ -31,13 +31,21 @@
     <br>
 
     @if (count($data))
-        <div class="flex justify-center sm:justify-start flex-wrap px-2">
+        <div class="flex justify-center sm:justify-around flex-wrap px-2">
             @foreach ($data as $item)
-                <div
-                    class="bg-white relative m-3 dark:bg-gray-800 p-3 flex flex-col h-[365px] w-60 shadow-[0px_0px_3px_3px] shadow-gray-400 rounded-lg">
-                    <div class="w-full justify-center flex">
+                <div class="bg-white relative m-3 dark:bg-gray-800 p-3 flex flex-col h-[365px] w-60  rounded-lg">
+                   
+                    <div class="w-full justify-center flex relative">
                         <img class="rounded-lg h-48 w-full object-cover" src="{{ '/storage/' . $item['img'] }}"
                             alt="">
+                            @if ($item['off'])
+                            <div class='absolute z-30 sm:top-2 sm:right-2 top-1 right-1'><span
+                                    class='text-white  flex items-center flex-row-reverse bg-red-600 px-1 sm:px-2 rounded-3xl'><span
+                                        class="text-xs sm:text-sm font-bold flex  items-center mr-0.5">%</span><span
+                                        class="flex text-sm sm:text-base items-center mt-0 sm:mt-[1.5px] font-bold">
+                                        {{ $item['off'] }}
+                                    </span></span></div>
+                        @endif
                     </div>
                     <div class="flex flex-col h-full justify-between">
                         <div>
@@ -50,8 +58,8 @@
                         </div>
                         <div class="flex justify-between items-center">
 
-                            <a href="/products/{{ $item['id'] }}"
-                                class="p-2 rounded-lg bg-primary-200 text-sm  border-2 text-white border-primary-100">
+                            <a href="/product/{{ $item['id'] }}"
+                                class="p-2 rounded-lg bg-primary-200 text-sm text-white">
                                 توضیحات بیشتر
                             </a>
                             @component('user.components.add_card', ['id' => $item['id']])
@@ -63,9 +71,9 @@
         </div>
 
 
-        <div class="justify-center flex flex-wrap ">
+        <div class="justify-center flex flex-wrap mt-3 ">
             <!-- this_page -->
-            @if ($pagintion - $this_page <= 0)
+            @if ($pagintion - $this_page < 0)
                 <a href="/search/{{ $this_page - 1 }}/{{ $input }}"
                     class="bg-primary-200 mx-2 text-lg rounded-lg select-none flex size-10 hover:font-bold border-2 border-primary-200 cursor-pointer hover:border-primary-100 justify-center items-center text-white">
                     <i class="fa fa-caret-right" aria-hidden="true"></i>
@@ -88,16 +96,16 @@
             @endif
         </div>
     @else
-    <style>
-        .dark h1.link-home{
-            text-shadow: 2px 2px 1px blue , -2px -2px 1px green
-        }
-         h1.link-home{
-            text-shadow: 2px 2px 1px blue , -2px -2px 1px red
-        }
-      
-    </style>
-        <h1 class="sm:text-6xl link-home text3xl text py-72 text-center">
+        <style>
+            .dark h1.link-home {
+                text-shadow: 2px 2px 1px blue, -2px -2px 1px green
+            }
+
+            h1.link-home {
+                text-shadow: 2px 2px 1px blue, -2px -2px 1px red
+            }
+        </style>
+        <h1 class="sm:text-6xl link-home text3xl text py-32 text-center">
             نتیجه ای یافت نشد
         </h1>
     @endif

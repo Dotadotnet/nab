@@ -1,4 +1,4 @@
-<aside class="sidebar">
+<aside style="z-index: 102" class="sidebar">
     <div class="sidebar-start">
         <div class="sidebar-head">
             <a href="/" class="logo-wrapper" title="Home">
@@ -122,6 +122,12 @@
                             <a href="{{ route('block.index') }}">تحویل</a>
                         </li> --}}
                     </ul>
+                </li>
+
+                <li>
+                    <a  href="/panel/selected-products">
+                        <span class="icon image" aria-hidden="true"></span> کالا های برگزیده
+                    </a>
                 </li>
             </ul>
             <span class="system-menu__title">اشخاص</span>

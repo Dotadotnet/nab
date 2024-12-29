@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->string('img');
+            $table->longText('caption');
             $table->string('link');
             $table->timestamps();
         });

@@ -44,7 +44,8 @@ class SearchController extends Controller
       for ($i = 0; $i < count($data); $i++) {
          $data[$i]['category'] = Category::find($data[$i]['category'])->name;
          $data[$i]['img'] = json_decode($data[$i]['img'])[0];
-         $data[$i]['price'] = Helper::price($data[$i]['price']);
+         $price = $data[$i]['off'] ? $data[$i]['price'] - ($data[$i]['price'] / 100 * (int)$data[$i]['off']) : $data[$i]['price'];
+         $data[$i]['price'] = Helper::price($price);
          $data[$i]['url'] = route('shortLink', ['id' => $data[$i]['id']]);
          unset($data[$i]['created_at']);
          unset($data[$i]['updated_at']);

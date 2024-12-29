@@ -32,7 +32,7 @@ class ApiController extends Controller
     }
     public function model_new(string $name_model)
     {
-        if (ucfirst($name_model) == 'Admin' || ucfirst($name_model) == 'Order' || ucfirst($name_model) == 'User') {
+        if (ucfirst($name_model) == 'Admin' || ucfirst($name_model) == 'Order' || ucfirst($name_model) == 'User' || ucfirst($name_model) == 'Config') {
             return response('دسترسی محدود است', 403);
         }
         $full_name_model = "App\Models\\" . ucfirst($name_model);
@@ -48,6 +48,9 @@ class ApiController extends Controller
 
     public function all($model)
     {
+        if (ucfirst($model) == 'Admin' || ucfirst($model) == 'Order' || ucfirst($model) == 'User' || ucfirst($model) == 'Config') {
+            return response('دسترسی محدود است', 403);
+        }
         $model_class = $this->model_new($model);
         return response($model_class->get());
     }
@@ -74,4 +77,5 @@ class ApiController extends Controller
         unset($blogs[0]);
         return response(array_reverse($blogs));
     }
+
 }

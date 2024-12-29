@@ -223,6 +223,26 @@ if (button_submit_register && info_div && accept_div) {
                                 if (sec == 0) {
                                     window.location.href = host + 'login';
                                 }
+
+
+
+
+
+                                
+
+                                window.axios({
+                                    method: 'post',
+                                    url: host + 'verify-chack/' + '09' + inputs[0].value, 
+                                }).then(function (response: any) {
+                                    let res: string = response.data;
+                                    
+                                    if(res !== 'no'){
+                                        window.location.href = host + res;
+                                    }
+                                }).catch(function (error: Error) {
+                                }).then(function () { });
+
+
                             }, 1000)
 
 

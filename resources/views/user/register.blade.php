@@ -82,27 +82,9 @@
                 <h3 class=" tornoment-div font-vazir text-green-600  text-center font-bold pt-2 pb-4 text-2xl ">00:00
                 </h3>
                 <h4 class="font-bold mr-1 ">
-                      کد تایید به شماره <b class="phone"></b> ارسال شد
+                      لینک تایید به شماره <b class="phone"></b> ارسال شد لطفا برای تایید شماره خود وارد لینک شوید !!!
                 </h4>
-                <br>
-                <div class="flex justify-around">
-                      <div class="size-12 input-verify rounded-lg flex border-2 border-transparent justify-center items-center bg-white">
-                        <input type="number" class=" code  focus:outline-none w-full focus:border-none appearance-none focus:outline-0 bg-white text-lg text-center " name="1" id="1">
-                      </div>
-                      <div class="size-12 input-verify  rounded-lg flex border-2  border-transparent justify-center items-center bg-white">
-                        <input type="number" class=" code focus:outline-none w-full focus:border-none appearance-none focus:outline-0 bg-white text-lg text-center " name="1" id="1">
-                      </div>
-                      <div class="size-12 input-verify  rounded-lg flex border-2  border-transparent justify-center items-center bg-white">
-                        <input type="number" class=" code focus:outline-none w-full focus:border-none appearance-none focus:outline-0 bg-white text-lg text-center " name="1" id="1">
-                      </div>
-                      <div class="size-12 input-verify  rounded-lg flex border-2  border-transparent justify-center items-center bg-white">
-                        <input type="number" class=" code focus:outline-none w-full focus:border-none appearance-none focus:outline-0 bg-white text-lg text-center " name="1" id="1">
-                      </div>
-                      <div class="size-12 input-verify  rounded-lg flex border-2  border-transparent justify-center items-center bg-white">
-                        <input type="number" class=" code focus:outline-none w-full focus:border-none appearance-none focus:outline-0 bg-white text-lg text-center " name="1" id="1">
-                      </div>
-                     
-                </div>
+             
 
 <br>
                 <a class="font-bold mr-2 mt-1  inline-block redirect-link text-primary-200 hover:text-primary-100"

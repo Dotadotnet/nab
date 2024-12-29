@@ -15,8 +15,8 @@ import FilePondPluginImageCrop from 'filepond-plugin-image-crop';
 import FilePondPluginImageFilter from 'filepond-plugin-image-filter';
 import FilePondPluginImageEdit from 'filepond-plugin-image-edit';
 import 'filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css';
-
-
+import SortableMin from 'sortablejs';
+window.Sortable = SortableMin;
 const animateCSS = (element, animation, prefix = 'animate__') =>
   // We create a Promise and return it
   new Promise((resolve, reject) => {
@@ -104,7 +104,7 @@ if (document.querySelector('.document-editor__editable')) {
         .catch(err => {
           console.error(err);
         });
-    } else if (current_url.includes('/product')) {
+    } else if (current_url.includes('/product') || current_url.includes('/event')) {
       DecoupledEditor
         .create(document.querySelector('.document-editor__editable'), {
           toolbar: {

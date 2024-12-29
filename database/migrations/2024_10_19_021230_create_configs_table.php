@@ -18,14 +18,14 @@ return new class extends Migration
             $table->string('amount')->nullable();
             $table->timestamps();
         });
-        $keys = ['limit_buy','price_send'];
+        $keys = ['limit_buy' => null, 'price_send' => null, 'favorites' => '[]'];
         sleep(5);
-        foreach ($keys as $key) {
-            $modal = new Config();
-            $modal->key = $key;
-            $modal->save();
+        foreach ($keys as $key => $value) {
+                $modal = new Config();
+                $modal->key = $key;
+                $modal->amount = $value;
+                $modal->save();
         }
-             
     }
 
     /**

@@ -39,6 +39,7 @@ class EventController extends Controller
         $url_image = $path;
         $event = new Events();
         $event->link = isset($request->link) ? $request->link : ''  ;
+        $event->caption = isset($request->caption) ? $request->caption : ''  ;
         $event->img = $url_image;
         $event->save();
         session()->flash('status', 'successful');
@@ -79,6 +80,7 @@ class EventController extends Controller
         }
         
         $data_update['link'] = isset($request->link) ? $request->link : '';
+        $data_update['caption'] = isset($request->caption) ? $request->caption : '';
         $this_admin = Events::find($id);
         if($request->hasFile('image')){
             Storage::delete($this_admin->img);
