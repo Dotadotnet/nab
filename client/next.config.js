@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const createNextIntlPlugin = require('next-intl/plugin');
+const withNextIntl = createNextIntlPlugin();
 const nextConfig = {
   images: {
     domains: ['localhost', 'lh3.googleusercontent.com'], // اضافه کردن دامنه مورد نظر
@@ -23,5 +25,4 @@ const nextConfig = {
     ],
   },
 };
-
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);
