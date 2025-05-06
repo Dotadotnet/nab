@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const session = require("express-session");
-
+const cookieParser = require('cookie-parser');
 const error = require("./middleware/error.middleware");
 
 const app = express();
@@ -36,6 +36,8 @@ app.use(
   })
 );
 
+app.use(cookieParser())
+
 app.use("/api/unit", require("./routes/unit.route"));
 app.use("/api/tag", require("./routes/tag.route"));
 app.use("/api/category", require("./routes/category.route"));
@@ -51,6 +53,7 @@ app.use("/api/post", require("./routes/post.route"));
 app.use("/api/blog", require("./routes/blog.route"));
 app.use("/api/session", require("./routes/session.route"));
 app.use("/api/gallery", require("./routes/gallery.route"));
+app.use("/api/cookie", require("./routes/cookie.route"));
 
 app.use(error);
 
