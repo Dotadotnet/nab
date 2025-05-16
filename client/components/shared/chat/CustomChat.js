@@ -18,7 +18,7 @@ export default function CustomChat({ chatState, setChatState }) {
                 }
             }
         }}
-            className="cursor-pointer absolute bottom-8 group text-center flex items-center justify-center rounded-full  text-3xl shadow-[0_0_10px_2px_rgba(0,0,0,1)] dark:shadow-[0_0_10px_2px_rgba(255,255,255,1)]  bg-primary w-16 h-16 p-2 text-white transition ease-in duration-200 ">
+            className="cursor-pointer absolute bottom-8 group text-center flex items-center justify-center rounded-full  text-3xl  bg-primary w-16 h-16 p-2 text-white transition ease-in duration-200 ">
             {chatState == "loading" ?
                 <div className="size-full flex justify-center items-center">
                     <ClipLoader

@@ -17,12 +17,7 @@ export default function Chat({ chatState , setChatState}) {
         Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
             locale: lang
         });
-        if(info.dir == "ltr"){
-            Crisp.setPosition("left");   
-        }else{
-            Crisp.setPosition("right");
-        }
-
+        
         setTimeout(() => {
             let chat_button = document.querySelector("span.cc-157aw");
             let function_edite = () => {
@@ -80,9 +75,8 @@ export default function Chat({ chatState , setChatState}) {
             }, 300);
         }, 500)
     }, []);
-     const class_name_dir = info.dir == "ltr" ? "left-32" : "right-32";
-    return (
-        <div className={"fixed hidden md:inline-block bottom-4 z-50 " + class_name_dir }>
+    return (  
+        <div className={"fixed hidden md:inline-block bottom-2 z-50 rtl:right-12 right-28"}>
             <CustomChat chatState={chatState} setChatState={setChatState} />
         </div>
     );

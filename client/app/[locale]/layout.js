@@ -79,7 +79,7 @@ export default async function RootLayout({ children, params }) {
   const class_language = new language(locale);
   const lang = class_language.getInfo()
   const cookieStore = await cookies()
-  const theme = cookieStore.get('theme') ? cookieStore.get('theme').value : "dark";
+  const theme = cookieStore.get('theme') ? cookieStore.get('theme').value : "light";
   return (
     <NextIntlClientProvider>
         <Providers>

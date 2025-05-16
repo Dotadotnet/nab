@@ -42,7 +42,7 @@ const MobileNav = ({ isOpen, setIsOpen }) => {
               { href: "/services", icon: <User className={"text-primary"} />, text: t("AccountUser") },
               { href: "/terms", icon: <Rules />, text: n("Rules") },
               { href: "/about", icon: <About />, text: n("AboutUs") },
-              { href: "/contact", icon: <Phone />, text: n("CallUs") },].map((item, index) => (
+              { href: "/contact", icon: <Phone color={"#ed1945"} />, text: n("CallUs") },].map((item, index) => (
                 <motion.div
                   key={index}
                   whileTap={{ scale: 0.9 }}

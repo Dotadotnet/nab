@@ -9,7 +9,7 @@ export default function ThemeToggle() {
     if (typeof window !== "undefined") {
       return document.documentElement.classList[0] || "dark";
     }
-    return "dark";
+    return "light";  
   });
 
   const changeCurrentTheme = (newTheme) => {

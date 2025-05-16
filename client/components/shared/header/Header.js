@@ -16,6 +16,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "../languageSwitch/page";
 import { useTranslations } from "use-intl";
+import { PiPhone } from "react-icons/pi";
+
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,9 +36,9 @@ const Navbar = () => {
       href: "/products"
     },
     {
-      title: t("Blog") ,
-      icon: <Store />,
-      href: "/blogs"
+      title: t("CallUs") ,
+      icon: <PiPhone className="text-2xl rtl:-scale-100 rtl:rotate-[80deg]" />,
+      href: "/contact-us"
     },
     {
       title:  t("AboutUs") ,
