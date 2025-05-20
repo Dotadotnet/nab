@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useCreatePaymentMutation } from "@/services/payment/paymentApi";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const Checkout = () => {
   const { session, user } = useSelector((state) => state.auth);

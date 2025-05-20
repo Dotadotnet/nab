@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 
 function Banner() {
-  const [bannerOpen, setBannerOpen] = useState(true);
+  const confrimed_banner = localStorage.getItem("banner_confrimed");
+  console.log(confrimed_banner);
+  
+  const [bannerOpen, setBannerOpen] = useState(confrimed_banner == "false" ? false : true);
   const query = new URLSearchParams(location.search);
   const template = query.get("template");
   const liteLink =
@@ -32,7 +35,10 @@ function Banner() {
             </div>
             <button
               className="text-gray-500 hover:text-gray-400 pl-2 ml-3 border-l border-gray-700/60"
-              onClick={() => setBannerOpen(false)}
+              onClick={() => {
+                localStorage.setItem("banner_confrimed", false)
+                setBannerOpen(false)
+              }}
             >
               <span className="sr-only">Close</span>
               <svg

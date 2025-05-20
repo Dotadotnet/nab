@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import FooterLogo from "./FooterLogo";
 import { useTranslations } from "next-intl";
 

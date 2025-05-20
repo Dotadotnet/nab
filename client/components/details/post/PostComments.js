@@ -53,11 +53,6 @@ const PostComments = ({ comments }) => (
             onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target);
-              console.log({
-                name: formData.get("name"),
-                comment: formData.get("comment")
-              });
-              // ارسال داده‌ها به API یا پردازش بیشتر
             }}
           >
             <h3 className="text-lg font-semibold mb-2">افزودن نظر</h3>

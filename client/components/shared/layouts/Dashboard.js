@@ -6,7 +6,7 @@ import Sidebar from "../Sidebar";
 import { useSelector } from "react-redux";
 import { usePathname } from "next/navigation";
 import Down from "@/components/icons/Down";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Logout from "@/components/icons/Logout";
 
 const Dashboard = ({ children }) => {

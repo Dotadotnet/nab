@@ -9,7 +9,7 @@ import { useDeleteFromCartMutation } from "@/services/cart/cartApi";
 import { toast } from "react-hot-toast";
 import Inform from "@/components/icons/Inform";
 import { useCreatePaymentMutation } from "@/services/payment/paymentApi";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 const MyCart = () => {

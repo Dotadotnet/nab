@@ -5,9 +5,7 @@ export default function functionLogoChanger() {
         const thame_rev = theme == "dark" ? "light" : "dark";
         document.querySelectorAll("img.logo-change-by-theme").forEach(img => {
             let exploded_src = img.src.split("/");
-            exploded_src[exploded_src.length - 1] = exploded_src[exploded_src.length - 1].replace(theme, thame_rev);
-            console.log(theme,thame_rev);
-            
+            exploded_src[exploded_src.length - 1] = exploded_src[exploded_src.length - 1].replace(theme, thame_rev);            
             img.src = exploded_src.join("/");
         })
     }

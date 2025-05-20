@@ -17,7 +17,7 @@ import { toast } from "react-hot-toast";
 import { useSelector } from "react-redux";
 import Spinner from "./Spinner";
 import { ArrowRight } from "@/components/icons/ArrowRight";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const Card = ({ index, product, ...rest }) => {
   const user = useSelector((state) => state?.auth?.user);

@@ -16,7 +16,6 @@ const VideoCard = ({
   author,
   avatar
 }) => {
-  console.log("thumbnail",thumbnail)
   const router = useRouter();
   return (
     <section

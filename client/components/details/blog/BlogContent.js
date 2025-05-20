@@ -7,7 +7,7 @@ import Instagram from "@/components/icons/Instagram";
 import Telegram from "@/components/icons/Telegram";
 import Whatsapp from "@/components/icons/Whatsapp";
 import Tag from "@/components/icons/Tag";
-import Image  from "next/image";
+import Image from "next/image";
 const BlogsContent = ({
   blog
 }) => {
@@ -23,20 +23,20 @@ const BlogsContent = ({
   return (
     <div className="col-span-1  md:col-span-10 shadow  mt-[450px] order-1 md:order-2">
       <div className="absolute inset-0  z-10">
-        { !blog?.thumbnail?.url && (
-          <SkeletonImage width={1150}  height={500} showSize={true} borderRadius="rounded-xl" className="z-50 h-[500px]" 
+        {!blog?.thumbnail?.url && (
+          <SkeletonImage width={1150} height={500} showSize={true} borderRadius="rounded-xl" className="z-50 h-[500px]"
 
-           />
-        )} 
-        {blog?.thumbnail?.url &&(
-          
+          />
+        )}
+        {blog?.thumbnail?.url && (
+
           <Image
-          src={blog?.thumbnail?.url}
-          alt="Feature Image"
-          width={1200} 
-          height={500} 
-          className="w-full object-cover  h-[500px]"
-         />
+            src={blog?.thumbnail?.url}
+            alt="Feature Image"
+            width={1200}
+            height={500}
+            className="w-full object-cover  h-[500px]"
+          />
         )
         }
       </div>
@@ -238,11 +238,6 @@ const BlogsContent = ({
                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.target);
-                    console.log({
-                      name: formData.get("name"),
-                      comment: formData.get("comment")
-                    });
-                    // ارسال داده‌ها به API یا پردازش بیشتر
                   }}
                 >
                   <h3 className="text-lg font-semibold mb-2">افزودن نظر</h3>

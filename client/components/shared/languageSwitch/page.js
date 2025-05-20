@@ -13,13 +13,18 @@ const LanguageSwitcher = () => {
   const langs = class_lang.info;
   const langs_result = [];
   langs.forEach(lang => {
-    pathname[1] = lang.lang;
-    langs_result.push({ lang: lang.lang, img: lang.img, name: lang.name, link: pathname.join('/'), loc: lang.loc, dir: lang.dir })
+    if (lang_now.lang == 'fa') {      
+      // pathname.unshift(lang.lang)
+      langs_result.push({ lang: lang.lang, img: lang.img, name: lang.name, link: "/" +  lang.lang  + pathname.join('/'), loc: lang.loc, dir: lang.dir })
+    } else {
+      pathname[1] = lang.lang;
+      langs_result.push({ lang: lang.lang, img: lang.img, name: lang.name, link: pathname.join('/'), loc: lang.loc, dir: lang.dir })
+    }
   });
   return (
     <div className="relative">
       <button
-        onClick={() => {          
+        onClick={() => {
           if (!isOpen)
             setIsOpen(true)
         }}

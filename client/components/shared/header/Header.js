@@ -12,36 +12,36 @@ import SearchFilter from "./SearchFilter";
 import MyCart from "./MyCart";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
 import Home from "@/components/icons/Home";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "../languageSwitch/page";
-import { useTranslations } from "use-intl";
+import { useLocale, useTranslations } from "use-intl";
 import { PiPhone } from "react-icons/pi";
-
+import { Link } from "@/i18n/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
   const t = useTranslations("Navbar")
   const a = useTranslations("Tools")
   const pathname = usePathname();
   const niches = [
     {
-      title: t("MainPage") ,
+      title: t("MainPage"),
       icon: <Home />,
       href: "/"
     },
     {
-      title: t("Products") ,
+      title: t("Products"),
       icon: <Brand />,
       href: "/products"
     },
     {
-      title: t("CallUs") ,
+      title: t("CallUs"),
       icon: <PiPhone className="text-2xl rtl:-scale-100 rtl:rotate-[80deg]" />,
       href: "/contact-us"
     },
     {
-      title:  t("AboutUs") ,
+      title: t("AboutUs"),
       icon: <Store />,
       href: "./about"
     }
@@ -69,17 +69,18 @@ const Navbar = () => {
               <div className="flex flex-row justify-center gap-x-4 overflow-x-auto">
                 <div className="flex flex-row justify-center gap-x-4 border p-1 rounded-secondary bg-white dark:bg-slate-800 overflow-x-auto scrollbar-hide">
                   {niches.map((niche, index) => {
-                    let uri = null; 
+                    let uri = null;
                     let url_exploded = pathname.split("/");
-                    url_exploded[1] = '';
-                    const isActive = url_exploded.join("/").replace('//','/') === niche.href;
+                    if (useLocale() !== "fa") {
+                      url_exploded[1] = '';
+                    }
+                    const isActive = url_exploded.join("/").replace('//', '/') === niche.href;
                     return (
                       <Link
                         key={index}
                         href={niche.href}
-                        className={`text-sm text-black dark:text-gray-100 w-44 text-center h-10 flex flex-row items-center gap-x-1 px-8 py-2 justify-center rounded-secondary border border-transparent transition ${
-                          isActive ? "bg-primary text-white" : ""
-                        }`}
+                        className={`text-sm text-black dark:text-gray-100 w-44 text-center h-10 flex flex-row items-center gap-x-1 px-8 py-2 justify-center rounded-secondary border border-transparent transition ${isActive ? "bg-primary text-white" : ""
+                          }`}
                       >
                         {niche.icon}
                         {niche.title}

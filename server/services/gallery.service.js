@@ -52,7 +52,6 @@ exports.getGalleries = async (res) => {
       path: 'creator',
       select: 'name avatar'  
     },
-    
   ]);
   res.status(200).json({
     acknowledgement: true,

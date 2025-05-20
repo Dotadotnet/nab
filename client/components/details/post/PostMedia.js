@@ -24,7 +24,6 @@ const PostMedia = ({ isLoading, galleryPreview }) => {
 
     // بررسی کلی نوع گالری
     const hasVideo = galleryPreview?.some(media => getFileType(media.url) === "video");
-    console.log("Gallery Type:", hasVideo ? "Video" : "Image");
   }, [galleryPreview]);
 
   return (

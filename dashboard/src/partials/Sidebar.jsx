@@ -14,6 +14,8 @@ import Unit from "@/components/icons/Unit";
 import Post from "@/components/icons/Post";
 import Blog from "@/components/icons/Blog";
 import Gallery from "@/components/icons/Gallery";
+import { IoSettingsSharp } from "react-icons/io5";
+
 
 function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   const location = useLocation();
@@ -518,6 +520,37 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                     />
                     <span className="text-sm font-medium mr-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                       تاریخ نگار
+                    </span>
+                  </div>
+                </NavLink>
+                
+              </li>
+                <li
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
+                  pathname.includes("settings") &&
+                  "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"
+                }`}
+              >
+                <NavLink
+                  end
+                  to="/settings"
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
+                    pathname.includes("settings")
+                      ? ""
+                      : "hover:text-gray-900 dark:hover:text-white"
+                  }`}
+                >
+                  <div className="flex items-center">
+
+                    <IoSettingsSharp
+                      className={`shrink-0 text-lg fill-current ${
+                        pathname.includes("settings")
+                          ? "text-violet-500"
+                          : "text-gray-400 dark:text-gray-500"
+                      }`}
+                    />
+                    <span className="text-sm font-medium mr-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      تنظیمات
                     </span>
                   </div>
                 </NavLink>

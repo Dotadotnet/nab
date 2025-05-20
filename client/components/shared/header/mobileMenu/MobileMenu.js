@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { HiOutlineMenuAlt2 } from "react-icons/hi";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import ThemeToggle from "../../ThemeToggle/ThemeToggle";
 import LanguageSwitcher from "../../languageSwitch/page";
 import { IoClose } from "react-icons/io5";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import React, { useEffect, useState } from "react";
 import User from "@/components/icons/User";
 import { useSelector } from "react-redux";

@@ -13,7 +13,7 @@ import {
   setPriceRange
 } from "@/features/filter/filterSlice";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BiSolidStar } from "react-icons/bi";
 import { useTranslations } from "next-intl";
 

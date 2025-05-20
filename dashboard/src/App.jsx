@@ -16,13 +16,14 @@ import AddPost from "./pages/posts/add";
 import Blogs from "./pages/blogs";
 import BlogInfo from "./pages/blogs/info/index";
 import AddBlog from "./pages/blogs/add";
-import Galleries  from "./pages/galleries";
+import Galleries from "./pages/galleries";
 import Units from "./pages/units";
 import Categories from "./pages/categories";
 import AddCategory from "./pages/categories/add";
 import Products from "./pages/products";
 import AddProduct from "./pages/products/add";
 import UpdateProduct from "./pages/products/update/index";
+import Settings from "./pages/settings";
 
 
 function App() {
@@ -47,10 +48,11 @@ function App() {
           <Route exact path="/categories" element={<Categories />} />
           <Route exact path="/units" element={<Units />} />
           <Route exact path="/posts" element={<Posts />} />
+          <Route exact path="/settings" element={<Settings />} />
           <Route exact path="/posts/add" element={<AddPost />} />
           <Route exact path="/blogs" element={<Blogs />} />
-          <Route exact path="/blogs/add" element={<AddBlog/>} />
-          <Route exact path="/galleries" element={<Galleries  />} />
+          <Route exact path="/blogs/add" element={<AddBlog />} />
+          <Route exact path="/galleries" element={<Galleries />} />
           <Route exact path="/categories/add" element={<AddCategory />} />
           <Route exact path="/products" element={<Products />} />
           <Route exact path="/products/add" element={<AddProduct />} />
