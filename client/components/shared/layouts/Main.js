@@ -8,7 +8,7 @@ const Main = ({ children }) => {
   return (
     <>
       <Header />
-      {children}
+      <div className="flex flex-col gap-y-7">{children}</div>
       <Footer />
       <Navigation />
     </>

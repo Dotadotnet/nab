@@ -28,6 +28,7 @@ function Categories() {
     () => categoriesData?.data || [],
     [categoriesData]
   );
+  console.log(categories)
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -113,7 +114,7 @@ function Categories() {
               <div className="col-span-1 md:block text-sm">عملیات</div>
             </div>
 
-            {categories.map((category) => (
+            {categories?.map((category) => (
               <div
                 key={category?._id}
                 className="mt-4 p-1 grid grid-cols-12 rounded-xl cursor-pointer border border-gray-200 gap-2 dark:border-white/10 dark:bg-slate-800 bg-white px-2 transition-all dark:hover:border-slate-700 hover:border-slate-100 hover:bg-green-50 dark:hover:bg-gray-800 dark:text-slate-100"
@@ -151,17 +152,17 @@ function Categories() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 hidden gap-2 lg:flex justify-left items-center text-right overflow-hidden">
+                {/* <div className="lg:col-span-4 hidden gap-2 lg:flex justify-left items-center text-right overflow-hidden">
                   <article className="flex-col flex gap-y-2">
                     <span className="text-sm lg:text-base overflow-hidden text-ellipsis block line-clamp-1 max-h-[1.2em]">
-                      {category.description}
+                      {category?.description}
                     </span>
                   </article>
                 </div>
 
                 <div className="lg:col-span-2 hidden gap-2 lg:flex justify-left items-center text-right">
                   <span className="w-52 overflow-x-auto scrollbar-hide text-sm flex flex-row gap-x-2">
-                    {category.tags.map((tag, index) => (
+                    {category?.tags.map((tag, index) => (
                       <span
                         key={index}
                         className="border px-1 py-0.5 rounded-sm whitespace-nowrap"
@@ -183,7 +184,7 @@ function Categories() {
                         </span>
                       ))}
                   </span>
-                </div>
+                </div> */}
                 <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
                   <article className="lg:flex-row flex flex-col justify-center gap-x-2  gap-y-2">
                     <span

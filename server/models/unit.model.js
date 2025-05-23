@@ -10,6 +10,8 @@ const unitSchema = new mongoose.Schema(
       type: String,
       required: [true, "عنوان واحد الزامی است"],
       trim: true,
+            unique: [true, "واحد مشابه از قبل وجود دارد"],
+
       maxLength: [50, "عنوان تگ نباید بیشتر از 50 کاراکتر باشد"],
     },
     value: {
@@ -17,11 +19,20 @@ const unitSchema = new mongoose.Schema(
       required: [true, "مقدار عددی واحد الزامی است"],
       min: [0, "مقدار نمی‌تواند منفی باشد"],
     },
-    description: {
-      type: String,
-      trim: true,
-      maxLength: [300, "توضیحات تگ نباید بیشتر از 300 کاراکتر باشد"],
-    },
+ translations: [
+      {
+        translation: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Translation",
+          required: true
+        },
+        language: {
+          type: String,
+          enum: ["fa","en", "tr", "ar"],
+          required: true
+        }
+      }
+    ],
     category: {
       type: ObjectId,
       ref: "Category",

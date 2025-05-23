@@ -6,7 +6,7 @@ const { promisify } = require("util");
 
 async function verify(req, res, next) {
   try {
-    // catch the token from user header
+    // catch the token from admin header
     const token = req.headers?.authorization?.split(" ")[1];
 
     // no token explicitly give error
@@ -14,16 +14,16 @@ async function verify(req, res, next) {
       return res.status(401).json({
         acknowledgement: false,
         message: "Unauthorized",
-        description: "توکنی برای نگه‌داری کاربر موجود برای مدت طولانی یافت نشد",
+        description: "توکن یافت نشد",
       });
     }
 
-    // fetching token set the user on request
+    // fetching token set the admin on request
     const decoded = await promisify(jwt.verify)(
       token,
       process.env.TOKEN_SECRET
     );
-    req.user = decoded;
+    req.admin = decoded;
 
     next();
   } catch (error) {

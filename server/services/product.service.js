@@ -5,85 +5,260 @@ const remove = require("../utils/remove.util");
 const Review = require("../models/review.model");
 const User = require("../models/user.model");
 const Variation = require("../models/variation.model");
+const Translation = require("../models/translation.model");
+const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
+const translateFields = require("../utils/translateFields");
+const Campaign = require("../models/campaign.model");
+const generateQRCodesForVariation = require("../utils/generateQRCodes");
+
+const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
 /* add new product */
 exports.addProduct = async (req, res) => {
-  const { features, campaign, variations, tags, ...otherInformation } =
-    req.body;
-  let thumbnail = null;
-  let gallery = [];
-  const parsedFeatures = JSON.parse(features);
-  const parsedCampaign = JSON.parse(campaign);
-  const parsedVariations = JSON.parse(variations);
-  const parsedTags = JSON.parse(tags);
+  try {
+    const {
+      title,
+      description,
+      summary,
+      features,
+      campaign,
+      variations,
+      category,
+      tags,
+      ...otherInformation
+    } = req.body;
+    let thumbnail = null;
+    let gallery = [];
+    const parsedFeatures = JSON.parse(features);
+    const parsedCampaign = JSON.parse(campaign);
+    const parsedVariations = JSON.parse(variations);
+    const parsedTags = JSON.parse(tags);
 
-  if (req.uploadedFiles["thumbnail"].length) {
-    thumbnail = {
-      url: req.uploadedFiles["thumbnail"][0].url,
-      public_id: req.uploadedFiles["thumbnail"][0].key
-    };
+    const resultCampaign = await Campaign.create({
+      title: parsedCampaign.title,
+      state: parsedCampaign.state
+    });
+
+    try {
+      const translations = await translateFields(
+        {
+          title: parsedCampaign.title
+        },
+        {
+          stringFields: ["title"]
+        }
+      );
+      const translationDocs = Object.entries(translations).map(
+        ([lang, { fields }]) => ({
+          language: lang,
+          refModel: "Campaign",
+          refId: resultCampaign._id,
+          fields
+        })
+      );
+      const insertedTranslations = await Translation.insertMany(
+        translationDocs
+      );
+
+      const translationInfos = insertedTranslations.map((t) => ({
+        translation: t._id,
+        language: t.language
+      }));
+      await Campaign.findByIdAndUpdate(resultCampaign._id, {
+        $set: { translations: translationInfos }
+      });
+    } catch (translationError) {
+      console.log(translationError.message);
+      await Campaign.findByIdAndDelete(resultCampaign._id);
+      return res.status(500).json({
+        acknowledgement: false,
+        message: "Translation Save Error",
+        description: "خطا در ذخیره ترجمه‌ها. کمپین حذف شد.",
+        error: translationError.message
+      });
+    }
+
+    if (req.uploadedFiles["thumbnail"].length) {
+      thumbnail = {
+        url: req.uploadedFiles["thumbnail"][0].url,
+        public_id: req.uploadedFiles["thumbnail"][0].key
+      };
+    }
+
+    if (
+      req.uploadedFiles["gallery"] &&
+      req.uploadedFiles["gallery"].length > 0
+    ) {
+      gallery = req.uploadedFiles["gallery"].map((file) => ({
+        url: file.url,
+        public_id: file.key
+      }));
+    }
+
+    const product = await Product.create({
+      ...otherInformation,
+      title: title,
+      tags: parsedTags,
+      creator: req.admin._id,
+      thumbnail,
+      category,
+      gallery,
+      campaign: resultCampaign._id
+    });
+
+    const variationDocs = await Promise.all(
+      parsedVariations.map(async (variation) => {
+        const createdVariation = await Variation.create({
+          ...variation,
+          product: product._id
+        });
+
+        await generateQRCodesForVariation(createdVariation);
+
+        return createdVariation;
+      })
+    );
+    product.variations = variationDocs.map((v) => v._id);
+    const result = await product.save();
+    const slug = await generateSlug(title);
+    const canonicalUrl = `${defaultDomain}/product/${result.productId}/${slug}`;
+    const { metaTitle, metaDescription } = generateSeoFields({
+      title,
+      summary,
+      categoryTitle: await Category.findById(category).title
+    });
+    await Campaign.findByIdAndUpdate(resultCampaign._id, {
+      $push: { products: result._id }
+    });
+
+    await Category.findByIdAndUpdate(product.category, {
+      $push: { products: product._id }
+    });
+    try {
+      const translations = await translateFields(
+        {
+          title,
+          summary,
+          description,
+          slug,
+          metaTitle,
+          metaDescription,
+          canonicalUrl,
+          features: parsedFeatures
+        },
+        {
+          stringFields: [
+            "title",
+            "summary",
+            "description",
+            "canonicalUrl",
+            "metaTitle",
+            "metaDescription"
+          ],
+          lowercaseFields: ["slug"],
+          arrayObjectFields: ["features"]
+        }
+      );
+      const translationDocs = Object.entries(translations).map(
+        ([lang, { fields }]) => ({
+          language: lang,
+          refModel: "Product",
+          refId: result._id,
+          fields
+        })
+      );
+      const insertedTranslations = await Translation.insertMany(
+        translationDocs
+      );
+
+      const translationInfos = insertedTranslations.map((t) => ({
+        translation: t._id,
+        language: t.language
+      }));
+      await Product.findByIdAndUpdate(result._id, {
+        $set: { translations: translationInfos }
+      });
+
+      return res.status(201).json({
+        acknowledgement: true,
+        message: "Created",
+        description: "محصول با موفقیت ایجاد و ترجمه شد.",
+        data: result
+      });
+    } catch (translationError) {
+      console.log(translationError.message);
+      await Product.findByIdAndDelete(result._id);
+      await Campaign.findByIdAndDelete(resultCampaign._id);
+
+      return res.status(500).json({
+        acknowledgement: false,
+        message: "Translation Save Error",
+        description: "خطا در ذخیره ترجمه‌ها. محصول حذف شد.",
+        error: translationError.message
+      });
+    }
+  } catch (error) {
+    console.error("Error in addCategory:", error.message);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "Error",
+      description: error.message,
+      error: error.message
+    });
   }
-
-  if (req.uploadedFiles["gallery"] && req.uploadedFiles["gallery"].length > 0) {
-    gallery = req.uploadedFiles["gallery"].map((file) => ({
-      url: file.url,
-      public_id: file.key
-    }));
-  }
-
-  const product = await Product.create({
-    ...otherInformation,
-    features: parsedFeatures,
-    campaign: parsedCampaign,
-    tags: parsedTags,
-    creator: req.user._id,
-    thumbnail,
-    gallery
-  });
-
-  const variationDocs = await Promise.all(
-    parsedVariations.map(async (variation) => {
-      return await Variation.create({ ...variation, product: product._id });
-    })
-  );
-  product.variations = variationDocs.map(v => v._id);
-  await product.save();
-
-  await Category.findByIdAndUpdate(product.category, {
-    $push: { products: product._id }
-  });
-
-  res.status(201).json({
-    acknowledgement: true,
-    message: "Created",
-    description: "محصول با موفقیت ایجاد شد"
-  });
 };
 
 /* get all products */
-exports.getProducts = async (res) => {
-  const products = await Product.find({ isDeleted: false })
-  .select("title thumbnail status summary productId _id createdAt creator")
-  .populate("category", "title")
-  .populate({
-    path: "reviews",
-    options: { sort: { updatedAt: -1 } },
-    select: "reviewer"
-  })
-  .populate({
-    path: "variations",
-    select: "price stock unit lowStockThreshold",
-    populate: {
-      path: "unit",
-      select: "title value" 
-    }
-  });
-  res.status(200).json({
-    acknowledgement: true,
-    message: "Ok",
-    description: "دریافت محصولات با موفقیت انجام شد",
-    data: products
-  });
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ isDeleted: false })
+      .select(
+        "title thumbnail discountAmount campaign gallery status summary productId _id createdAt creator translations"
+      )
+      .populate([
+        {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "fields.title fields.summary fields.slug language"
+        },
+        {
+          path: "campaign",
+          populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title  language"
+          },
+          select: "state translations"
+        },
+        {
+          path: "category",
+          select: "title"
+        },
+        {
+          path: "variations",
+          select: "price stock unit lowStockThreshold",
+          populate: {
+            path: "unit",
+            select: "title value"
+          }
+        }
+      ]);
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "دریافت محصولات با موفقیت انجام شد",
+      data: products
+    });
+  } catch (error) {
+    console.error("Error in getProducts:", error.message);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "Server Error",
+      description: "خطا در دریافت محصولات",
+      error: error.message
+    });
+  }
 };
 
 exports.getDetailsProducts = async (res) => {
@@ -93,28 +268,36 @@ exports.getDetailsProducts = async (res) => {
     status: "active"
   })
     .select(
-      "title thumbnail status discountAmount summary productId _id createdAt creator campaign gallery variations"
+      "title thumbnail slug status discountAmount summary productId _id createdAt creator campaign gallery variations"
     )
-    .populate("category", "title")
-    .populate({
-      path: "reviews",
-      options: { sort: { updatedAt: -1 } },
-      populate: [
-        "reviewer",
-        {
-          path: "product",
-          populate: ["category"]
+    .populate([
+      {
+        path: "translations.translation",
+        match: { language: req.locale },
+        select: "fields.title fields.summary fields.slug language"
+      },
+      {
+        path: "campaign",
+        populate: {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "fields.title  language"
+        },
+        select: "state translations"
+      },
+      {
+        path: "category",
+        select: "title"
+      },
+      {
+        path: "variations",
+        select: "price stock unit lowStockThreshold",
+        populate: {
+          path: "unit",
+          select: "title value"
         }
-      ]
-    })
-    .populate({
-      path: "variations",
-      select: "price unit ",
-      populate: {
-        path: "unit",
-        select: "title value" // فیلدهای مورد نظر از واحد
       }
-    });
+    ]);
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
@@ -126,35 +309,57 @@ exports.getDetailsProducts = async (res) => {
 /* get a single product */
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
+    const productId = parseInt(req.params.id, 10);
+
+    const product = await Product.findOne({ productId })
       .populate("category")
-      .populate({
-        path: "reviews",
-        options: { sort: { updatedAt: -1 } },
-        populate: [
-          "reviewer",
-          {
-            path: "product",
-            populate: ["category"]
+      .populate([
+        {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "fields.title fields.summary fields.features fields.description fields.slug language"
+        },
+        {
+          path: "campaign",
+          populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title  language"
+          },
+          select: "state translations"
+        },
+        {
+          path: "category",
+          populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title fields.keynotes  language"
+          },
+          select: "translations"
+        },
+        {
+          path: "tags",
+          populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title fields.keynotes language"
+          },
+          select: "translations"
+        },
+        {
+          path: "variations",
+          select: "price stock unit lowStockThreshold",
+          populate: {
+            path: "unit",
+             populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title fields.description language"
+          },
+            select: "title value"
           }
-        ]
-      })
-      .populate({
-        path: "creator",
-        select: "name avatar role" // دریافت نام و آواتار سازنده
-      })
-      .populate({
-        path: "variations",
-        select: "price stock unit lowStockThreshold",
-        populate: {
-          path: "unit",
-          select: "title value description" // فیلدهای مورد نظر از واحد
         }
-      })
-      .populate({
-        path: "tags",
-        select: "title keynotes"
-      });
+      ]);
     res.status(200).json({
       acknowledgement: true,
       message: "Ok",
@@ -173,25 +378,29 @@ exports.getProduct = async (req, res) => {
 // get cart proct
 exports.getProductCart = async (req, res) => {
   try {
-
     const query = req.query.query;
     const parsedProducts = JSON.parse(query);
     const products = await Promise.all(
       parsedProducts.map(async (item) => {
         return await Product.findOne(
           { _id: item.product },
-          { title: 1, thumbnail: 1, variations: { $elemMatch: { unit: item.unit } } }
-        ).populate("variations.unit", "title")
-        .lean(); 
+          {
+            title: 1,
+            thumbnail: 1,
+            variations: { $elemMatch: { unit: item.unit } }
+          }
+        )
+          .populate("variations.unit", "title")
+          .lean();
       })
     );
-    const filteredProducts = products.filter(product => product);
+    const filteredProducts = products.filter((product) => product);
 
-    const finalProducts = filteredProducts.map(product => ({
+    const finalProducts = filteredProducts.map((product) => ({
       _id: product._id,
       title: product.title,
       thumbnail: product.thumbnail,
-      variations: product.variations.map(variation => ({
+      variations: product.variations.map((variation) => ({
         unit: variation.unit?.title,
         price: variation.price
       }))
@@ -213,6 +422,7 @@ exports.getProductCart = async (req, res) => {
 
 /* filtered products */
 exports.getFilteredProducts = async (req, res) => {
+  console.log("hs");
   try {
     let filter = {
       isDeleted: false,
@@ -224,7 +434,7 @@ exports.getFilteredProducts = async (req, res) => {
       filter.category = req.query.category;
     }
 
-    const products = await Product.find(filter).populate(["category"]);
+    const products = await Product.find(filter).populate(["variations"]);
 
     res.status(200).json({
       acknowledgement: true,
@@ -313,7 +523,7 @@ exports.updateRejectProduct = async (req, res) => {
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
-    description: "محصول با موفقت تاید و در صفحه اصلی سایت درج شد"
+    description: "محصول با موفقت تایید و در صفحه اصلی سایت درج شد"
   });
 };
 
@@ -325,7 +535,7 @@ exports.updateApproveProduct = async (req, res) => {
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
-    description: "محصول با موفقت تاید و در صفحه اصلی سایت درج شد"
+    description: "محصول با موفقت تایید و در صفحه اصلی سایت درج شد"
   });
 };
 

@@ -8,7 +8,6 @@ import Container from "../shared/Container";
 import { motion } from "framer-motion"; // Import motion from framer-motion
 
 const Banner1 = () => {
-  const router = useRouter();
 
   return (
     <Container>

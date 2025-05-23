@@ -1,20 +1,23 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import LoadImage from "../shared/LoadImage";
 import Discount from "../icons/Discount";
 import SoldOut from "../icons/SoldOut";
 import Arrival from "../icons/Arrival";
 import DetailCard from "./DetailCard";
+import { useTranslations, useLocale } from "next-intl";
 
 const Left = ({ product }) => {
-  // State to manage the main image
   const [mainImage, setMainImage] = useState(product.thumbnail?.url);
-
   const hashTags = [...(product?.category?.tags || [])].filter(
     (tag) => tag !== undefined
   );
+  const locale = useLocale();
+
+  const h = useTranslations("product");
+  console.log(product);
   return (
-    <section className="lg:col-span-6 md:col-span-6 col-span-12 flex flex-col gap-y-4">
+    <section className="lg:col-span-6  md:col-span-6 col-span-12 flex flex-col gap-y-4">
       <div className="flex flex-col gap-y-4 relative">
         <LoadImage
           src={mainImage}
@@ -23,7 +26,7 @@ const Left = ({ product }) => {
           height={200}
           className="rounded w-full h-full object-cover border border-orange-300"
         />
-        <div className="grid grid-cols-7 gap-4 justify-center items-center">
+        <div className="grid grid-cols-3 gap-4 justify-center items-center">
           {product?.gallery?.map((thumbnail, index) => (
             <LoadImage
               src={thumbnail?.url}
@@ -37,65 +40,101 @@ const Left = ({ product }) => {
               onClick={() => setMainImage(thumbnail?.url)}
             />
           ))}
-
         </div>
-          <Badge className="absolute top-2 left-2 text-purple-800 bg-purple-100">
-            {"در " +
-              product?.variations?.length.toLocaleString("fa-IR") +
-              " " +
-              "وزن"}
-          </Badge>
-          <div className="absolute top-2 right-2  flex flex-row gap-x-2.5">
-
+        <Badge className="absolute top-2 left-2 text-purple-800 bg-purple-100">
+          {product?.variations?.length
+            ? `${h("in")} ${product.variations.length.toLocaleString(
+                locale
+              )} ${h("weight")}`
+            : h("noVariations")}
+        </Badge>
+        <div className="absolute top-2 right-2  flex flex-row gap-x-2.5">
           {product?.campaign?.state === "discount" && (
             <Badge className="text-cyan-800 bg-cyan-100 flex flex-row items-center gap-x-1">
-              <Discount /> {product?.campaign?.title}
+              <Discount />{" "}
+              {
+                product?.campaign?.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.title
+              }
             </Badge>
           )}
           {product?.campaign?.state === "sold-out" && (
             <Badge className="text-cyan-800 bg-cyan-100 flex flex-row items-center gap-x-1">
-              <SoldOut /> {product?.campaign?.title}
+              <SoldOut />{" "}
+              {
+                product?.campaign?.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.title
+              }
             </Badge>
           )}
           {product?.campaign?.state === "arrival" && (
             <Badge className="text-cyan-800 bg-cyan-100 flex flex-row items-center gap-x-1">
-              <Arrival /> {product?.campaign?.title}
+              <Arrival />{" "}
+              {
+                product?.campaign?.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.title
+              }
             </Badge>
           )}
           {product?.campaign?.state === "on-sale" && (
             <Badge className="text-blue-800 bg-blue-100 flex flex-row items-center gap-x-1">
-              <Arrival /> {product?.campaign?.title}
+              <Arrival />{" "}
+              {
+                product?.campaign?.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.title
+              }
             </Badge>
           )}
         </div>
       </div>
       <article className="flex flex-col gap-y-4">
-      <div className="flex flex-col gap-y-2.5">
+        <div className="flex flex-col gap-y-2.5">
           <div className="flex flex-col gap-y-2.5">
             {product?.tags?.map((tag, index) => (
               <DetailCard
                 key={index}
-                title={tag.title}
-                content={tag?.keynotes} // آرایه رشته‌ها
+                icon={"🏷️"}
+                title={
+                  tag.translations?.find(
+                    (tr) => tr.translation?.language === locale
+                  )?.translation?.fields.title
+                }
+                content={
+                  tag?.translations?.find(
+                    (tr) => tr.translation?.language === locale
+                  )?.translation?.fields.keynotes
+                }
               />
             ))}
           </div>
         </div>
         <div className="flex flex-col gap-y-2.5">
           <DetailCard
-            title={`از دسته بندی ${product?.category?.title}`}
-            content={product?.category?.keynotes}
+            icon={"🛍️"}
+            title={` ${h("category")}  ${
+              product?.category?.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.title
+            }`}
+            content={
+              product?.category?.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.keynotes
+            }
           />
           <div className="flex flex-row flex-wrap gap-1 mt-4">
             {hashTags.map((hashTag, index) => (
               <span
                 key={index}
-                className="!text-xs border px-2 py-0.5 rounded-sm"
+                className="!text-xs border border-gray-200 px-2 py-0.5 rounded-sm"
               >{`#${hashTag}`}</span>
             ))}
           </div>
         </div>
-       
       </article>
     </section>
   );

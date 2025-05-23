@@ -5,96 +5,80 @@ import Providers from "../providers";
 import { Toaster } from "react-hot-toast";
 import LoadingIndicator from "@/components/shared/loading/LoadingIndicator";
 import language from "../language";
-import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-import { cookies } from 'next/headers'
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 
-
-export const metadata = {
-  metadataBase: new URL("https://kuarmonia.com"), // لینک سایت
-  title: "مهاجرت و گردشگری با کارمونیا – راهی به سوی آینده بهتر",
-  description:
-    "با اطلاعات کامل در مورد مهاجرت، ازدواج، و زندگی در ترکیه و کانادا. نکات کلیدی، شرایط قانونی، و خدمات مشاوره برای زوج‌ها و خانواده‌ها.",
-  openGraph: {
-    title: "مهاجرت و ازدواج در ترکیه و کانادا",
-    description:
-      "راهنمای جامع برای مهاجرت و ازدواج در ترکیه و کانادا با نکات کلیدی و خدمات مشاوره.",
-    url: "https://kuarmonia.com",
-    siteName: "مهاجرت و ازدواج در ترکیه و کانادا",
-    images:
-      "https://s3-console.kuarmonia.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp", // لینک تصویر
-    locale: "fa_IR",
-    type: "website"
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@kuarmonia",
-    title: "مهاجرت و ازدواج در ترکیه و کانادا",
-    description:
-      "راهنمای جامع برای مهاجرت و ازدواج در ترکیه و کانادا با نکات کلیدی و خدمات مشاوره.",
-    image:
-      "https://s3-console.kuarmonia.com/main/84a10727-61b7-4199-91bf-12989c4e575a.webp" // لینک تصویر
-  },
-  pinterest: {
-    richPin: true,
-    title: "مهاجرت و ازدواج در ترکیه و کانادا",
-    description:
-      "راهنمای جامع برای مهاجرت و ازدواج در ترکیه و کانادا با نکات کلیدی و خدمات مشاوره.",
-    image:
-      "https://s3-console.kuarmonia.com/main/84a10727-61b7-4199-91bf-12989c4e575a.webp" // لینک تصویر
-  },
-  links: [
-    {
-      rel: "alternate",
-      href: "https://kuarmonia.com",
-      hreflang: "fa"
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  return {
+    metadataBase: new URL("https://noghlenab.com"),
+    title: t("title"),
+    description: t("description"),
+    keywords: t("keywords"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      url: "https://noghlenab.com",
+      siteName: t("siteName"),
+      images: [
+        {
+          url: "https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp",
+          width: 800,
+          height: 600,
+          alt: t("imageAlt"),
+        },
+      ],
+      locale: locale === "fa" ? "fa_IR" : "en_US",
+      type: "website",
     },
-    {
-      rel: "preload",
-      href: "/fonts/vazir/Vazir.woff2",
-      as: "font",
-      type: "font/woff2",
-      crossOrigin: "anonymous"
+    twitter: {
+      card: "summary_large_image",
+      site: "@noglenab",
+      title: t("title"),
+      description: t("description"),
+      images: [
+        "https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp",
+      ],
     },
-    {
-      rel: "preload",
-      href: "/fonts/DigiNozha/DigiNozha2Bold.woff2",
-      as: "font",
-      type: "font/woff2",
-      crossOrigin: "anonymous"
+    pinterest: {
+      richPin: true,
+      title: t("title"),
+      description: t("description"),
+      image: ["https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp"],
     },
-    {
-      rel: "canonical",
-      href: "https://kuarmonia.com"
-    }
-  ]
-};
+  };
+}
 
 export default async function RootLayout({ children, params }) {
+  // Await params to resolve the dynamic route parameters
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
   const class_language = new language(locale);
-  const lang = class_language.getInfo()
-  const cookieStore = await cookies()
-  const theme = cookieStore.get('theme') ? cookieStore.get('theme').value : "light";
+  const lang = class_language.getInfo();
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("theme")?.value ?? "light";
+
   return (
-    <NextIntlClientProvider>
-        <Providers>
-          <Session>
-            <Auth>
-              <html style={{ colorScheme: theme }} lang={lang.lang} dir={lang.dir} className={theme}>
-                <body >
-                  {children}
-                </body>
-              </html>
-              <Toaster />
-              <LoadingIndicator />
-            </Auth>
-          </Session>
-        </Providers>
-    </NextIntlClientProvider >
+    <NextIntlClientProvider locale={locale}>
+      <Providers>
+        <Session>
+          <Auth>
+            <html style={{ colorScheme: theme }} lang={lang.lang} dir={lang.dir} className={theme}>
+              <body>
+                {children}
+                <Toaster />
+                <LoadingIndicator />
+              </body>
+            </html>
+          </Auth>
+        </Session>
+      </Providers>
+    </NextIntlClientProvider>
   );
 }

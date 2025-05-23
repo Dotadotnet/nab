@@ -5,6 +5,7 @@ const express = require("express");
 const upload = require("../middleware/upload.middleware");
 const verify = require("../middleware/verify.middleware");
 const authorize = require("../middleware/authorize.middleware");
+const localeMiddleware = require("../middleware/locale.middleware");
 
 /* internal import */
 const productController = require("../controllers/product.controller");
@@ -29,6 +30,7 @@ router.post(
 // get all products
 router.get(
   "/get-products",
+  localeMiddleware,
   productController.getProducts
 );
 router.get("/get-detail-products", productController.getDetailsProducts);
@@ -75,10 +77,10 @@ router.patch(
 );
 
 // get a single product
-router.get("/get-product/:id", productController.getProduct);
+router.get("/get-product/:id",localeMiddleware, productController.getProduct);
 
 // filtered products
-router.get("/filtered-products", productController.getFilteredProducts);
+router.get("/filtered-products",localeMiddleware, productController.getFilteredProducts);
 
 // delete product
 router.delete(

@@ -44,8 +44,8 @@ const TitleStep = ({ register, errors, prevStep, nextStep }) => {
               message: "توضیحات باید حداقل ۵۰ کاراکتر باشد",
             },
             maxLength: {
-              value: 500,
-              message: "توضیحات نباید بیشتر از ۵۰۰ کاراکتر باشد",
+              value: 800,
+              message: "توضیحات نباید بیشتر از 800 کاراکتر باشد",
             },
           })}
           required

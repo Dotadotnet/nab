@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import SearchFilter from "./SearchFilter";
 import MyCart from "./MyCart";
 import Auth from "./Auth";
-import { TfiHeadphoneAlt } from "react-icons/tfi";
 import CustomChat from "../chat/CustomChat";
 import Chat from "../chat/Chat";
 import { Crisp } from "crisp-sdk-web";
@@ -18,15 +17,16 @@ function Navigation() {
     Crisp.chat.open()
   }
 
-  if (typeof document !== 'undefined') {
-    if (document.querySelector("span.cc-157aw.cc-1kgzy") && chatState == "loading") {
-      if (document.querySelector("div.cc-1no03").dataset.visible == "true") {
-        setChatState("open")
-      } else {
-        setChatState("close")
-      }
+if (typeof document !== 'undefined') {
+  if (document.querySelector("span.cc-157aw.cc-1kgzy") && chatState == "loading") {
+    const chatBox = document.querySelector("div.cc-1no03");
+    if (chatBox && chatBox.dataset.visible === "true") {
+      setChatState("open");
+    } else {
+      setChatState("close");
     }
   }
+}
 
   return (
     <>

@@ -17,7 +17,7 @@ exports.addProduct = async (req, res, next) => {
 /* get all products */
 exports.getProducts = async (req, res, next) => {
   try {
-    await productService.getProducts(res);
+    await productService.getProducts(req,res);
   } catch (error) {
     next(error);
   } finally {

@@ -151,7 +151,7 @@ function Products() {
                   <span className="w-full  h-full overflow-x-auto scrollbar-hide text-sm flex flex-row items-center justify-center gap-x-2">
                     {[...(product?.variations || [])]
                       .sort(
-                        (a, b) => Number(a.unit.value) - Number(b.unit.value)
+                        (a, b) => Number(a?.unit?.value) - Number(b?.unit?.value)
                       )
                       .map((variation) => (
                         <div key={variation?._id} className="relative">
@@ -164,8 +164,8 @@ function Products() {
                                 : "bg-yellow-400"
                             }`}
                             style={{
-                              width: `${25 + variation.unit.value * 10}px`,
-                              height: `${25 + variation.unit.value * 10}px`
+                              width: `${25 + variation?.unit?.value * 10}px`,
+                              height: `${25 + variation?.unit?.value * 10}px`
                             }}
                           >
                             <span className="text-xs text-white">

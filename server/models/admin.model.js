@@ -68,6 +68,8 @@ const adminSchema = new mongoose.Schema(
         default: "N/A",
       },
     },
+    reviews: [{ type: ObjectId, ref: "Review" }],
+    products: [{ type: ObjectId, ref: "Product" }],
 
     // شماره تماس
     phone: {

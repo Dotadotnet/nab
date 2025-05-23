@@ -6,7 +6,7 @@ import Relatives from "@/components/details/Relatives";
 
 const ProductLayout = (props) => {
     return <Main    >
-        <Container>
+        <Container className={"dark:!bg-dark"}>
             <div className="flex flex-col w-full h-full gap-y-20 mt-28">
                 <div className="grid grid-cols-12 gap-8">
                     {props.children}

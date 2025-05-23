@@ -14,7 +14,6 @@ import Unit from "@/components/icons/Unit";
 import Post from "@/components/icons/Post";
 import Blog from "@/components/icons/Blog";
 import Gallery from "@/components/icons/Gallery";
-import { IoSettingsSharp } from "react-icons/io5";
 
 
 function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
@@ -540,19 +539,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                       : "hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <div className="flex items-center">
-
-                    <IoSettingsSharp
-                      className={`shrink-0 text-lg fill-current ${
-                        pathname.includes("settings")
-                          ? "text-violet-500"
-                          : "text-gray-400 dark:text-gray-500"
-                      }`}
-                    />
-                    <span className="text-sm font-medium mr-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                      تنظیمات
-                    </span>
-                  </div>
+                 
                 </NavLink>
               </li>
             </ul>

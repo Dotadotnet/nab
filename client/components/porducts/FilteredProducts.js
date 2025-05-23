@@ -3,7 +3,6 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import Card from "../shared/Card";
 import {
   useGetFilteredProductsMutation,
 } from "@/services/product/productApi";
@@ -13,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import {  setCategory,setPriceRange  } from "@/features/filter/filterSlice";
 import { useTranslations } from "next-intl";
+import Card from "../shared/card/card/Card";
 
 const FilteredProducts = () => {
   const filter = useSelector((state) => state.filter);
