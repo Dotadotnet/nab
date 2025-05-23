@@ -1,16 +1,6 @@
 /** @type {import('next').NextConfig} */
 import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig = {
-  css: {
-    loaderOptions: {
-      postcss: {
-        plugins: [
-          require('postcss-import'),
-          require('tailwindcss'),
-          require('autoprefixer'),
-        ],
-      },
-    },
   images: {
     domains: ['localhost', 'lh3.googleusercontent.com'], // اضافه کردن دامنه مورد نظر
     remotePatterns: [
