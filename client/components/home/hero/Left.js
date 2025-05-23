@@ -1,6 +1,11 @@
 "use client";
 import React, { useRef } from "react";
-
+import { Swiper, SwiperSlide, useSwiper } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/free-mode";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import "swiper/css/navigation";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -99,7 +104,7 @@ function Left() {
         overflow-hidden bg-gradient-to-br from-yellow-400 via-yellow-400 to-yellow-400 "
         
         >
-          {/* <Swiper
+          <Swiper
             spaceBetween={30}
             centeredSlides={true}
             autoplay={{
@@ -132,7 +137,7 @@ function Left() {
                 </p>
               </div>
               <div className="absolute select-none -bottom-8 -left-8 rtl:-right-2 md:flex">
-                {/* <motion.div
+                <motion.div
                   animate={{ y: ["0px", "20px", "0px"] }}
                   transition={{
                     repeat: Infinity,
@@ -147,7 +152,7 @@ function Left() {
                     alt={"banner1"}
                     className="w-72 ml-4  select-noneblock md:mr-auto"
                   />
-                </motion.div> 
+                </motion.div>
               </div>
             </SwiperSlide>
 
@@ -171,7 +176,7 @@ function Left() {
                       : "absolute flex -bottom-8  md:flex -right-40"
                   }
                 >
-                  {/* <motion.div
+                  <motion.div
                     animate={{ y: ["0px", "20px", "0px"] }}
                     transition={{
                       repeat: Infinity,
@@ -186,7 +191,7 @@ function Left() {
                       alt={"banner2"}
                       className="w-88 select-none ml-4 block md:mr-auto"
                     />
-                  </motion.div> 
+                  </motion.div>
                 </div>
               </div>
               <div
@@ -196,7 +201,7 @@ function Left() {
                     : "absolute flex -bottom-16  -left-36"
                 }
               >
-                {/* <motion.div
+                <motion.div
                   animate={{ y: ["0px", "20px", "0px"] }}
                   transition={{
                     repeat: Infinity,
@@ -211,7 +216,7 @@ function Left() {
                     alt={"banner3"}
                     className="w-56 select-none ml-4 block md:mr-auto"
                   />
-                </motion.div> 
+                </motion.div>
               </div>
             </SwiperSlide>
 
@@ -236,7 +241,7 @@ function Left() {
                     : "absolute flex -bottom-8  -left-32 "
                 }
               >
-                {/* <motion.div
+                <motion.div
                   animate={{ y: ["0px", "20px", "0px"] }}
                   transition={{
                     repeat: Infinity,
@@ -251,7 +256,7 @@ function Left() {
                     alt={"banner4"}
                     className="w-84 select-none ml-4 block md:mr-auto"
                   />
-                </motion.div> 
+                </motion.div>
               </div>
             </SwiperSlide>
             <div className="autoplay-progress" slot="container-end">
@@ -260,7 +265,7 @@ function Left() {
               </svg>
               <span ref={progressContent}></span>
             </div>
-          </Swiper> */}
+          </Swiper>
         </div>
       </section>
     </div>
