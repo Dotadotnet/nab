@@ -5,13 +5,13 @@ services:
     build: .
     container_name: nabshop-app
     ports:
-      - "3000:3000"  # پورت مربوط به سرور Vite
+      - "3000:3000"  # پورت مربوط به سرور
     volumes:
       - .:/app  # اشتراک‌گذاری پوشه پروژه از ماشین میزبان با کانتینر
     environment:
       - NODE_ENV=development
     working_dir: /app  # دایرکتوری کاری داخل کانتینر
-    command: yarn dev  # دستور اجرای سرور Vite
+    command: npm run dev  # دستور اجرای سرور با npm
     networks:
       - app-network
 

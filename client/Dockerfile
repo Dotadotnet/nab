@@ -1,23 +1,23 @@
-# Base image
+# استفاده از تصویر پایه
 FROM node:18
 
-# Set working directory
+# تنظیم دایرکتوری کاری
 WORKDIR /app
 
-# Copy package files
-COPY package.json yarn.lock ./
+# کپی فایل‌های بسته
+COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN yarn install 
+# نصب وابستگی‌ها
+RUN npm install
 
-# Copy the rest of the code
+# کپی بقیه فایل‌ها
 COPY . .
 
-# Build your app (if frontend)
-RUN yarn build
+# بیلد پروژه
+RUN npm run build
 
-# Expose port
+# باز کردن پورت
 EXPOSE 3000
 
-# Start app
-CMD ["yarn", "start"]
+# اجرای برنامه
+CMD ["npm", "start"]
