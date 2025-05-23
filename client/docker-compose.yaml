@@ -5,7 +5,7 @@ services:
     build: .
     container_name: nabshop-app
     ports:
-      - "300:300"  # پورت مربوط به سرور Vite
+      - "3000:3000"  # پورت مربوط به سرور Vite
     volumes:
       - .:/app  # اشتراک‌گذاری پوشه پروژه از ماشین میزبان با کانتینر
     environment:
