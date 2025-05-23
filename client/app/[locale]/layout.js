@@ -26,13 +26,13 @@ export async function generateMetadata({ params }) {
       siteName: t("siteName"),
       images: [
         {
-          url: "https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp",
-          width: 800,
-          height: 600,
+          url: "https://s3-console.noghlenab.com/main/main.jpg",
+          width: 1200,
+          height: 628,
           alt: t("imageAlt"),
         },
       ],
-      locale: locale === "fa" ? "fa_IR" : "en_US",
+      locale: locale,
       type: "website",
     },
     twitter: {
@@ -41,14 +41,14 @@ export async function generateMetadata({ params }) {
       title: t("title"),
       description: t("description"),
       images: [
-        "https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp",
+        "https://s3-console.noghlenab.com/main/main.jpg",
       ],
     },
     pinterest: {
       richPin: true,
       title: t("title"),
       description: t("description"),
-      image: ["https://s3-console.noghlenab.com/main/e58b2333-8860-4f68-a9a2-522004e2cfe8.webp"],
+      image: ["https://s3-console.noghlenab.com/main/main.jpg"],
     },
   };
 }
