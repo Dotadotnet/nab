@@ -5,11 +5,7 @@ import Shipping from "@/components/icons/Shipping";
 import Return from "@/components/icons/Return";
 import Policy from "@/components/icons/Policy";
 import Delivery from "@/components/icons/Delivery";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/free-mode";
-import { Pagination, FreeMode } from "swiper/modules";
+
 import { useTranslations } from "next-intl";
 
 
@@ -77,7 +73,7 @@ const Policies = () => {
 
       {/* نمایش در موبایل */}
       <section className="md:hidden">
-        <Swiper
+        {/* <Swiper
           slidesPerView={1.6}
           spaceBetween={10}
           pagination={{ clickable: true }}
@@ -105,7 +101,7 @@ const Policies = () => {
               </motion.div>
             </SwiperSlide>
           ))}
-        </Swiper>
+        </Swiper> */}
       </section>
     </>
   );
