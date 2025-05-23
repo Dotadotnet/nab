@@ -1,5 +1,5 @@
 # Base image
-FROM node:18
+FROM node:20
 
 # Set working directory
 WORKDIR /app
@@ -10,6 +10,7 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm ci
 
+RUN npm install --omit=dev
 # Copy the rest of the code
 COPY . .
 
