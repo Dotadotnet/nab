@@ -52,6 +52,11 @@ html {
   scroll-behavior:smooth;  
 }
 
+body{
+  @apply bg-white dark:bg-gray-900
+}
+
+
 html[dir=rtl] {
   font-family:"Vazir", "Poppins", sans-serif !important;
   direction:rtl;

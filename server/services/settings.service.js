@@ -5,7 +5,6 @@ const Setting = require("../models/settings.model");
 const remove = require("../utils/remove.util");
 const configs = require("../config/setting");
 
-/* get a gallery */
 exports.getAll = async (req, res) => {
     const settings = await Setting.find();
     const accepted_keys = []
