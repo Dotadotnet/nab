@@ -139,7 +139,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="footer-1   p-4 sm:py-12 bg-lightbg dark:bg-slate-900">
+    <footer className="footer-1 mb-8  p-4 sm:py-12 bg-lightbg dark:bg-slate-900">
       <div className="container mx-auto px-4 flex flex-col gap-y-10 bg-yellow-50 dark:bg-slate-800  p-6 rounded-xl text-gray-900 dark:text-gray-100">
         <div className="flex md:flex-row md:flex-wrap md:justify-between flex-col gap-x-4 gap-y-8">
           {sitemaps?.map((sitemap, index) => (
@@ -159,7 +159,7 @@ const Footer = () => {
           <FooterLogo />{" "}
         </div>
         <hr />
-        <p className="text-center">
+        <p className="text-center mb-28">
           &copy; {year} {f("CopyRight")}
           <br />
           {f("Developers")}
