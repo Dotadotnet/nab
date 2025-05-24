@@ -148,23 +148,8 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-/* login persistance */
 exports.persistLogin = async (req, res) => {
-  const admin = await Admin.findById(req.admin._id)
-  .select('-password -phone')
-  .populate([
-    {
-      path: "cart",
-      populate: [{ path: "product", populate: ["category"] }, "admin"]
-    },
-    {
-      path: "reviews",
-      populate: ["product", "reviewer"]
-    },
-   
-
-    "products"
-  ]);
+  const admin = await Admin.findById(req.admin._id).select("-password -phone");
 
   if (!admin) {
     res.status(404).json({
@@ -180,6 +165,17 @@ exports.persistLogin = async (req, res) => {
       data: admin
     });
   }
+};
+
+exports.getAdmins = async (res) => {
+  const admins = await Admin.find();
+
+  res.status(200).json({
+    acknowledgement: true,
+    message: "OK",
+    description: "دریافت موفق کاربران",
+    data: admins
+  });
 };
 
 /* get all admins */
