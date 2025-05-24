@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom";
 function Products() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
   const {
     data: productsData,
     error: productsError,
@@ -197,7 +196,7 @@ function Products() {
                         if (isDeleteModalOpen) {
                           e.preventDefault();
                         } else {
-                          navigate(`/products/update/${product?._id}`);
+                          navigate(`/products/update/${product?.productId}`);
                         }
                       }}
                     >

@@ -24,7 +24,7 @@ const Update = () => {
   const { product_id } = useParams();
   const admin = useSelector((state) => state?.auth?.admin);
   const [showQRCode, setShowQRCode] = useState(false);
-console.log("admin",admin)
+  console.log("admin", admin);
   const id = product_id;
   const {
     data: productData,
@@ -61,7 +61,8 @@ console.log("admin",admin)
       toast.success(productData?.description, { id: "productData" });
 
       if (
-        (admin?.role === "superAdmin" && product?.publishStatus === "pending") ||
+        (admin?.role === "superAdmin" &&
+          product?.publishStatus === "pending") ||
         (admin?.role === "admin" && product?.publishStatus === "rejected")
       ) {
         setTimeout(() => {
@@ -225,7 +226,9 @@ console.log("admin",admin)
               opacity: 1
             }}
           >
-            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-[0_4px_6px_rgba(0,0,0,0.1),0_-4px_6px_rgba(0,0,0,0.1)]">
+            <div className="bg-white dark:bg-gray-900 text-center p-4 rounded-lg shadow-[0_4px_6px_rgba(0,0,0,0.1),0_-4px_6px_rgba(0,0,0,0.1)]">
+              <p className="text-2xl">ایا این محصول مورد تایید شما می باشد</p>
+
               <div className="flex justify-around items-center">
                 {admin?.role === "superAdmin" ? (
                   <>
