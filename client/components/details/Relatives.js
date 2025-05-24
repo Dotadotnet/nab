@@ -17,7 +17,10 @@ const Relatives = async ( ) => {
 
   return (
     <section className="flex flex-col gap-y-10">
+      <div className="w-fit"> 
+
       <HighlightText title={h("similarProduct")} center />
+      </div>
       <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 md:gap-x-6 gap-y-8">
         {products?.length === 0 ? (
           <>

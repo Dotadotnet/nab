@@ -19,7 +19,7 @@ const Products = ({params }) => {
           <FilteredProducts />
         </section>
         <ExpertChoice params={params} className="!px-0"  />
-        <Banner3 className="!px-0" />
+        <Banner3 className="!px-0" params={params} />
       </Container>
     </Main>
   );

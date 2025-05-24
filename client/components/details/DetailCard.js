@@ -3,7 +3,7 @@
 import React from "react";
 import { BiChevronDown, BiChevronLeft, BiChevronUp } from "react-icons/bi";
 
-const DetailCard = ({ title, content,icon }) => {
+const DetailCard = ({ title, content, icon }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -23,13 +23,17 @@ const DetailCard = ({ title, content,icon }) => {
           </h2>
         </div>
         {isOpen ? (
-          <span className="border bg-white h-8 w-8 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-secondary">
-            <BiChevronUp className="w-full h-full" />
-          </span>
+          <div style={{marginLeft:"2px"}} className="flex justify-end gap-x-2 items-center">
+            <span className="w-8 h-8 rounded-full overflow-hidden bg-white flex p-1 dark:bg-gray-900  justify-center items-center">
+              <BiChevronUp className="w-full h-full" />
+            </span>
+          </div>
         ) : (
-          <span className="border bg-white h-8 w-8 dark:bg-gray-900  border-gray-200 dark:border-gray-700 rounded-secondary">
-            <BiChevronDown className="w-full h-full" />
-          </span>
+          <div style={{marginLeft:"2px"}}  className="flex justify-end gap-x-2 items-center">
+            <span className="w-8 h-8 rounded-full overflow-hidden bg-white flex p-1 dark:bg-gray-900  justify-center items-center">
+              <BiChevronDown className="w-full h-full" />
+            </span>
+          </div>
         )}
       </div>
       {isOpen && (

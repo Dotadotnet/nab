@@ -13,22 +13,22 @@ const Left = ({ product }) => {
     (tag) => tag !== undefined
   );
   const locale = useLocale();
- function getColumnSpanClass(index, totalThumbnails) {
+  function getColumnSpanClass(index, totalThumbnails) {
+    console.log(totalThumbnails)
     if (totalThumbnails === 1) {
       return "col-span-12";
     } else if (totalThumbnails === 2) {
-      return index <= 1 ? "col-span-6" : "col-span-6";
+      return  "col-span-6";
     } else if (totalThumbnails === 3) {
-      return index === 0 ? "col-span-12" : "col-span-6";
+      return  "col-span-4";
     } else if (totalThumbnails === 4) {
-      return "col-span-6";
+      return "col-span-3";
     } else if (totalThumbnails === 5) {
       return index <= 1 ? "col-span-6" : "col-span-4";
     } else {
       return "";
     }
   }
-
   const h = useTranslations("product");
   return (
     <section className="lg:col-span-6  md:col-span-6 col-span-12 flex flex-col gap-y-4">
@@ -40,13 +40,13 @@ const Left = ({ product }) => {
           height={200}
           className="rounded w-full h-full object-cover border border-orange-300"
         />
-        <div className="grid grid-cols-3 gap-4 justify-center items-center">
+        <div className="grid grid-cols-12 gap-4 justify-center items-center">
           {product?.gallery?.map((thumbnail, index) => (
             <LoadImage
               src={thumbnail?.url}
               key={index}
               alt={thumbnail?.public_id}
-               className={
+             className={
                 "rounded object-cover max-w-full w-full h-full" +
                 " " +
                 getColumnSpanClass(index, product.gallery.length)

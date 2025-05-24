@@ -12,7 +12,6 @@ const ProductLayout = (props) => {
                     {props.children}
                 </div>
                 <Relatives />
-                <Banner2 className={"!px-0"} />
             </div>
         </Container>
     </Main>
