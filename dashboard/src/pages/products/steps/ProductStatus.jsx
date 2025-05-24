@@ -11,15 +11,20 @@ const ProductStatus = ({
   errors,
   selectedOptions,
   setSelectedOptions,
-  setIsAddModalOpen, // کنترل مودال افزودن تگ
+  setIsAddModalOpen // کنترل مودال افزودن تگ
 }) => {
   // دریافت لیست تگ‌ها از API
   const {
     isLoading: fetchingTags,
     data: fetchTagsData,
     error: fetchTagsError,
-    refetch: refetchTags,
-  } = useGetTagsQuery();
+    refetch: refetchTags
+  } = useGetTagsQuery({
+    page: 1,
+    limit: Infinity,
+    status: "all",
+    search: ""
+  });
 
   // تبدیل داده‌های دریافتی به فرمت مناسب برای MultiSelect
   const tags = useMemo(
@@ -28,7 +33,7 @@ const ProductStatus = ({
         id: tag._id,
         value: tag.title,
         label: tag.title,
-        description: tag.description,
+        description: tag.description
       })) || [],
     [fetchTagsData]
   );
@@ -79,7 +84,11 @@ const ProductStatus = ({
           </button>
         </div>
       </div>
-      <StatusSwitch label="آیا این محصول ویژه است" id="isFeatured" register={register} />
+      <StatusSwitch
+        label="آیا این محصول ویژه است"
+        id="isFeatured"
+        register={register}
+      />
     </div>
   );
 };
