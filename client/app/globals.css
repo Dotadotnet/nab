@@ -53,9 +53,10 @@ html {
 html body{
   @apply bg-white dark:bg-dark
 }
-html[dir="rtl"] {
-  font-family: "Vazir", "Poppins", sans-serif !important;
-  direction: rtl;
+
+html[dir=rtl] {
+  font-family:"Vazir", "Poppins", sans-serif !important;
+  direction:rtl;
   overflow-x: hidden;
 }
 

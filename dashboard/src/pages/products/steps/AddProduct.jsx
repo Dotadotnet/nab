@@ -52,7 +52,7 @@ const StepAddProduct = () => {
     formData.append("description", data.description);
     formData.append("category", data.category);
     formData.append("features", JSON.stringify(features));
-    formData.append("discountAmount", data.discountAmount);
+    formData.append("discountAmount", data.discountAmount ||0);
     formData.append("isFeatured", data.isFeatured);
     formData.append(
       "campaign",
