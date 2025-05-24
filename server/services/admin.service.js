@@ -1,6 +1,8 @@
 const Cart = require("../models/cart.model");
 const Category = require("../models/category.model");
+const Favorite = require("../models/favorite.model");
 const Product = require("../models/product.model");
+const Purchase = require("../models/purchase.model");
 const Review = require("../models/review.model");
 const Admin = require("../models/admin.model");
 const remove = require("../utils/remove.util");
@@ -148,23 +150,9 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-/* login persistance */
 exports.persistLogin = async (req, res) => {
-  const admin = await Admin.findById(req.admin._id)
-  .select('-password -phone')
-  .populate([
-    {
-      path: "cart",
-      populate: [{ path: "product", populate: ["category"] }, "admin"]
-    },
-    {
-      path: "reviews",
-      populate: ["product", "reviewer"]
-    },
-   
-
-    "products"
-  ]);
+  console.log(req.admin)
+  const admin = await Admin.findById(req.admin._id).select("-password -phone");
 
   if (!admin) {
     res.status(404).json({
@@ -182,7 +170,6 @@ exports.persistLogin = async (req, res) => {
   }
 };
 
-/* get all admins */
 exports.getAdmins = async (res) => {
   const admins = await Admin.find();
 
@@ -194,7 +181,6 @@ exports.getAdmins = async (res) => {
   });
 };
 
-/* get single admin */
 exports.getAdmin = async (req, res) => {
   const admin = await Admin.findById(req.params.id);
 
@@ -216,7 +202,7 @@ exports.updateAdmin = async (req, res) => {
     return res.status(403).json({
       acknowledgement: false,
       message: "Forbidden",
-      description: "کاربر مدیر کل قابل ویرایش نیست",
+      description: "کاربر مدیر کل قابل ویرایش نیست"
     });
   }
 
@@ -232,7 +218,7 @@ exports.updateAdmin = async (req, res) => {
     // تنظیم تصویر جدید
     avatar = {
       url: req.uploadedFiles["avatar"][0].url,
-      public_id: req.uploadedFiles["avatar"][0].key,
+      public_id: req.uploadedFiles["avatar"][0].key
     };
   } else if (!req.body.avatarUrl) {
     // اگر تصویر جدید نیست، حذف تصویر قبلی
@@ -243,7 +229,7 @@ exports.updateAdmin = async (req, res) => {
     // در صورت عدم ارسال آدرس جدید برای تصویر، مقدار پیش‌فرض
     avatar = {
       url: null,
-      public_id: null,
+      public_id: null
     };
   }
 
@@ -253,22 +239,21 @@ exports.updateAdmin = async (req, res) => {
     {
       $set: {
         ...admin,
-        avatar, // اطمینان از ارسال تصویر جدید
-      },
+        avatar // اطمینان از ارسال تصویر جدید
+      }
     },
     {
       runValidators: true,
-      new: true, // اطمینان از اینکه داده‌های به‌روزرسانی‌شده برگردند
+      new: true // اطمینان از اینکه داده‌های به‌روزرسانی‌شده برگردند
     }
   );
 
   res.status(200).json({
     acknowledgement: true,
     message: "OK",
-    description: `اطلاعات ${updatedAdmin.name} با موفقیت تغییر کرد`,
+    description: `اطلاعات ${updatedAdmin.name} با موفقیت تغییر کرد`
   });
 };
-
 
 /* update admin information */
 exports.updateAdminInfo = async (req, res) => {
@@ -280,7 +265,7 @@ exports.updateAdminInfo = async (req, res) => {
     return res.status(403).json({
       acknowledgement: false,
       message: "دسترسی ممنوع",
-      description: "کاربر مدیر کل قابل ویرایش نیست",
+      description: "کاربر مدیر کل قابل ویرایش نیست"
     });
   }
 
@@ -299,7 +284,7 @@ exports.updateAdminInfo = async (req, res) => {
     // تنظیم تصویر جدید
     avatar = {
       url: req.uploadedFiles["avatar"][0].url,
-      public_id: req.uploadedFiles["avatar"][0].key,
+      public_id: req.uploadedFiles["avatar"][0].key
     };
   } else if (req.body.avatarUrl) {
     // اگر تصویر جدید نیست، حذف تصویر قبلی
@@ -310,17 +295,17 @@ exports.updateAdminInfo = async (req, res) => {
     // در صورت عدم ارسال آدرس جدید برای تصویر، مقدار پیش‌فرض
     avatar = {
       url: null,
-      public_id: null,
+      public_id: null
     };
   }
 
   // به‌روزرسانی اطلاعات کاربر همراه با آواتار جدید
   const updatedAdmin = await Admin.findByIdAndUpdate(
     existingAdmin._id,
-    { $set: { ...admin, avatar } },  
+    { $set: { ...admin, avatar } },
     {
-      runValidators: true, 
-      new: true  
+      runValidators: true,
+      new: true
     }
   );
 
@@ -331,14 +316,13 @@ exports.updateAdminInfo = async (req, res) => {
   });
 };
 
-
 /* delete admin information */
 exports.deleteAdmin = async (req, res) => {
   const admin = await Admin.findByIdAndUpdate(
     req.params.id,
     {
       isDeleted: true,
-      deletedAt: Date.now(),
+      deletedAt: Date.now()
     },
     { new: true }
   );
@@ -346,17 +330,17 @@ exports.deleteAdmin = async (req, res) => {
   if (!admin) {
     return res.status(404).json({
       acknowledgement: false,
-      message: "کاربر یافت نشد",
+      message: "کاربر یافت نشد"
     });
   }
   if (admin.role === "superAdmin") {
     return res.status(403).json({
       acknowledgement: false,
-      "message": "ممنوع",
-      description: "کاربر مدیر کل قابل حذف نیست",
+      message: "ممنوع",
+      description: "کاربر مدیر کل قابل حذف نیست"
     });
   }
-  
+
   // Soft delete admin cart
   if (admin.cart.length > 0) {
     await Cart.updateMany(
@@ -365,7 +349,13 @@ exports.deleteAdmin = async (req, res) => {
     );
   }
 
-
+  // Soft delete admin favorites
+  if (admin.favorites.length > 0) {
+    await Favorite.updateMany(
+      { _id: { $in: admin.favorites } },
+      { isDeleted: true, deletedAt: Date.now() }
+    );
+  }
 
   // Soft delete admin reviews
   if (admin.reviews.length > 0) {
@@ -375,11 +365,19 @@ exports.deleteAdmin = async (req, res) => {
     );
   }
 
+  // Soft delete admin purchases
+  if (admin.purchases.length > 0) {
+    await Purchase.updateMany(
+      { _id: { $in: admin.purchases } },
+      { isDeleted: true, deletedAt: Date.now() }
+    );
+  }
+
   // Soft delete category if exists
   if (admin.category) {
     await Category.findByIdAndUpdate(admin.category, {
       isDeleted: true,
-      deletedAt: Date.now(),
+      deletedAt: Date.now()
     });
 
     // Soft delete products of the category

@@ -8,7 +8,7 @@ const upload = require("../middleware/upload.middleware");
 
 /* internal import */
 const blogController = require("../controllers/blog.controller");
-const verify = require("../middleware/verify.middleware");
+const verify = require("../middleware/verifyAdmin.middleware");
 const authorize = require("../middleware/authorize.middleware");
 
 /* router level connection */

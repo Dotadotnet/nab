@@ -7,15 +7,20 @@ import {
   useCreateSessionMutation
 } from "@/services/session/sessionApi";
 import { setSession } from "@/features/auth/authSlice";
+import { useLocale } from "next-intl";
 
 const Session = ({ children }) => {
+  const locale = useLocale();
+
   const dispatch = useDispatch();
   const [createSession] = useCreateSessionMutation();
-  const { data: sessionData, error: sessionError, isFetching } = usePersistSessionQuery();
+  const {
+    data: sessionData,
+    error: sessionError,
+    isFetching
+  } = usePersistSessionQuery({ locale });
 
-  // مقدار session را فقط بعد از دریافت دیتا مقداردهی می‌کنیم
   const session = useMemo(() => sessionData?.data || null, [sessionData]);
-
   useEffect(() => {
     if (!isFetching && session) {
       dispatch(setSession(session));

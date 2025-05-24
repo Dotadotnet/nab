@@ -1,57 +1,54 @@
-
-
 const { nabApi } = require("../nab");
 
 const productApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
-   
     getProducts: builder.query({
-      query: () => ({
-        url: "/product/get-detail-products",
+      query: ({ locale }) => ({
+        url: "/product/get-products",
         method: "GET",
+        credentials: "include",
+
+        headers: {
+          "Accept-Language": locale
+        }
       }),
 
-      providesTags: ["Product"],
+      providesTags: ["Product"]
     }),
-
-    
 
     // get a single product
     getProduct: builder.query({
       query: (id) => ({
         url: `/product/get-product/${id}`,
-        method: "GET",
+        method: "GET"
       }),
-      providesTags: ["Product"],
+      providesTags: ["Product"]
     }),
 
     getCartProduct: builder.query({
       query: (query) => ({
         url: `/product/get-product-cart`,
         method: "GET",
-        params: { query },
-
+        params: { query }
       }),
-      providesTags: ["Product"],
+      providesTags: ["Product"]
     }),
 
     // filtered products
     getFilteredProducts: builder.mutation({
       query: (query) => ({
         url: `/product/filtered-products?${query}`,
-        method: "GET",
+        method: "GET"
       }),
 
-      providesTags: ["Product"],
-    }),
-
-   
-  }),
+      providesTags: ["Product"]
+    })
+  })
 });
 
 export const {
   useGetCartProductQuery,
   useGetProductsQuery,
   useGetProductQuery,
-  useGetFilteredProductsMutation,
+  useGetFilteredProductsMutation
 } = productApi;

@@ -1,7 +1,5 @@
 
 
-"use client";
-
 import Banner3 from "@/components/home/Banner3";
 import ExpertChoice from "@/components/home/ExpertChoice";
 import FilterSidebar from "@/components/porducts/FilterSidebar";
@@ -9,8 +7,10 @@ import FilteredProducts from "@/components/porducts/FilteredProducts";
 import Container from "@/components/shared/Container";
 import Main from "@/components/shared/layouts/Main";
 import React from "react";
+import { getTranslations } from "next-intl/server";
 
-const Products = () => {
+const Products = ({params }) => {
+
   return (
     <Main>
       <Container className="flex flex-col gap-y-12 py-8">
@@ -18,8 +18,8 @@ const Products = () => {
           <FilterSidebar />
           <FilteredProducts />
         </section>
-        <ExpertChoice className="!px-0" />
-        <Banner3 className="!px-0" />
+        <ExpertChoice params={params} className="!px-0"  />
+        <Banner3 className="!px-0" params={params} />
       </Container>
     </Main>
   );

@@ -3,7 +3,7 @@ const express = require("express");
 
 /* middleware imports */
 const upload = require("../middleware/upload.middleware");
-const verify = require("../middleware/verify.middleware");
+const verify = require("../middleware/verifyAdmin.middleware");
 const authorize = require("../middleware/authorize.middleware");
 const localeMiddleware = require("../middleware/locale.middleware");
 
@@ -33,7 +33,6 @@ router.get(
   localeMiddleware,
   productController.getProducts
 );
-router.get("/get-detail-products", productController.getDetailsProducts);
 router.get("/get-product-cart", productController.getProductCart);
 
 // update product

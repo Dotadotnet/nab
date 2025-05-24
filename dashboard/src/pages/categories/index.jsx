@@ -9,8 +9,9 @@ import StatusIndicator from "@/components/shared/tools/StatusIndicator";
 import SkeletonItem from "@/components/shared/skeleton/SkeletonItem";
 import Pagination from "@/components/shared/pagination/Pagination";
 import Search from "@/components/shared/search";
-import Add from "./add";
 import ControlPanel from "../ControlPanel";
+import AddButton from "@/components/shared/button/AddButton";
+
 const ListCategory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -64,7 +65,7 @@ const ListCategory = () => {
     <>
       <ControlPanel>
         <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        <Add />
+        <AddButton link="./add" />
         <div className="mt-8 w-full grid grid-cols-12 text-slate-400 px-4 ">
           <div className="col-span-11 lg:col-span-3  text-sm">
             <span className="hidden lg:flex">نویسنده</span>
@@ -151,7 +152,6 @@ const ListCategory = () => {
 
                 <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
                   <article className="lg:flex-row flex flex-col justify-center gap-x-2  gap-y-2">
-                    <Edit id={category?._id} />
                     <DeleteModal
                       message="آیا از حذف این دسته بندی اطمینان دارید؟"
                       isLoading={isRemoving}

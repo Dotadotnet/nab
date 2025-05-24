@@ -16,9 +16,10 @@ export default async function Home({ params }) {
       <Main>
         <Hero />
         <NewArrivals params={params} />
-        <Banner2 />
-        <Trending />
-        <ExpertChoice />
+        <Banner2 params={params} />
+        {/* <Trending params={params} /> */}
+        <ExpertChoice params={params} />
+        <Post params={params} />
         <Gallery />
       </Main>
     </>

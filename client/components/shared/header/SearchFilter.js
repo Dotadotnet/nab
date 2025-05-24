@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation";
 import SearchCard from "../skeletonLoading/SearchCard";
 import { toast } from "react-hot-toast";
 import Inform from "@/components/icons/Inform";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const SearchFilter = () => {
-  const t = useTranslations("Tools")
-  const n = useTranslations("Navbar")
+  const locale = useLocale();
+  const t = useTranslations("Tools");
+  const n = useTranslations("Navbar");
 
   const [open, setOpen] = useState();
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,9 +21,8 @@ const SearchFilter = () => {
     data: productsData,
     error: productsError,
     isLoading: productsLoading
-  } = useGetProductsQuery();
+  } = useGetProductsQuery({ locale });
   const products = useMemo(() => productsData?.data || [], [productsData]);
-  const router = useRouter();
 
   useEffect(() => {
     if (productsError) {
@@ -99,7 +99,7 @@ const SearchFilter = () => {
           <div className="overflow-y-auto scrollbar-hide flex flex-col gap-y-8 h-full">
             {filteredProducts?.length === 0 ? (
               <p className="text-sm flex flex-row gap-x-1 items-center justify-center">
-                <Inform /> {t('NotFountProducts')}
+                <Inform /> {t("NotFountProducts")}
               </p>
             ) : (
               <>
@@ -112,12 +112,16 @@ const SearchFilter = () => {
                 ) : (
                   <>
                     {filteredProducts?.map((product) => {
+                      const { title, summary, slug } =
+                        product?.translations?.find(
+                          (tr) => tr.translation?.language === locale
+                        )?.translation?.fields || {};
                       const highlightedTitle = highlightMatch(
-                        product?.title,
+                        title,
                         searchTerm
                       );
                       const highlightedSummary = highlightMatch(
-                        product?.summary,
+                        summary,
                         searchTerm
                       );
 
@@ -125,15 +129,6 @@ const SearchFilter = () => {
                         <div
                           key={product?._id}
                           className="flex flex-row gap-x-2 cursor-pointer"
-                          onClick={() =>
-                            router.push(
-                              `/product?product_id=${
-                                product?._id
-                              }&product_title=${product?.title
-                                .replace(/ /g, "-")
-                                .toLowerCase()}}`
-                            )
-                          }
                         >
                           <Image
                             src={product?.thumbnail?.url}
@@ -158,19 +153,18 @@ const SearchFilter = () => {
                               />
                             </div>
                             <div className="flex flex-row justify-between gap-x-4 items-center">
-                              <span className="text-xs flex flex-row items-baseline">
-                                
+                              <span className="text-xs gap-x-2 flex flex-row items-baseline">
                                 {product?.variations?.[0]?.price &&
                                 product?.discountAmount > 0 ? (
                                   <>
                                     <p className="text-xs text-red-500 line-through">
-                                      {new Intl.NumberFormat("fa-IR").format(
+                                      {new Intl.NumberFormat(locale).format(
                                         product?.variations?.[0]?.price
                                       )}{" "}
                                       {t("Rial")}
                                     </p>
                                     <p className="text-xs mr-4 text-green-500 font-semibold">
-                                      {new Intl.NumberFormat("fa-IR").format(
+                                      {new Intl.NumberFormat(locale).format(
                                         product?.variations?.[0]?.price *
                                           (1 - product?.discountAmount / 100)
                                       )}{" "}
@@ -178,9 +172,9 @@ const SearchFilter = () => {
                                     </p>
                                   </>
                                 ) : (
-                                  <p className="text-xs text-blue-500 ">
+                                  <p className="text-xs text-orange-500 ">
                                     {product?.variations?.[0]?.price
-                                      ? new Intl.NumberFormat("fa-IR").format(
+                                      ? new Intl.NumberFormat(locale).format(
                                           product?.variations?.[0]?.price
                                         ) + t("Rial")
                                       : t("HaveNotPrice")}
@@ -188,8 +182,13 @@ const SearchFilter = () => {
                                 )}
                               </span>
                               <div className="flex flex-row gap-x-1">
-                                <span className="whitespace-nowrap text-[10px] bg-blue-300/50 dark:text-blue-500 text-blue-500 border border-blue-500 px-1.5 rounded">
-                                  {product?.category?.title}
+                                <span className="whitespace-nowrap text-sm bg-orange-100 dark:text-orange-500 text-orange-500 border border-orange-500 px-1.5 rounded">
+                                  {
+                                    product?.category?.translations?.find(
+                                      (tr) =>
+                                        tr.translation?.language === locale
+                                    )?.translation?.fields.title
+                                  }
                                 </span>
                               </div>
                             </div>

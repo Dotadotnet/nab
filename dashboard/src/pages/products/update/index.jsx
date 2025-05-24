@@ -22,9 +22,9 @@ import Qrc from "@/components/icons/Qrc";
 import Modal from "@/components/shared/modal/Modal";
 const Update = () => {
   const { product_id } = useParams();
-  const user = useSelector((state) => state?.auth?.user);
+  const admin = useSelector((state) => state?.auth?.admin);
   const [showQRCode, setShowQRCode] = useState(false);
-
+  console.log("admin", admin);
   const id = product_id;
   const {
     data: productData,
@@ -61,8 +61,9 @@ const Update = () => {
       toast.success(productData?.description, { id: "productData" });
 
       if (
-        (user?.role === "superAdmin" && product?.publishStatus === "pending") ||
-        (user?.role === "admin" && product?.publishStatus === "rejected")
+        (admin?.role === "superAdmin" &&
+          product?.publishStatus === "pending") ||
+        (admin?.role === "admin" && product?.publishStatus === "rejected")
       ) {
         setTimeout(() => {
           setIsModalOpen(true);
@@ -132,7 +133,7 @@ const Update = () => {
   }, [
     productData,
     productError,
-    user,
+    admin,
     productLoading,
     approveLoading,
     approveData,
@@ -225,9 +226,11 @@ const Update = () => {
               opacity: 1
             }}
           >
-            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-[0_4px_6px_rgba(0,0,0,0.1),0_-4px_6px_rgba(0,0,0,0.1)]">
+            <div className="bg-white dark:bg-gray-900 text-center p-4 rounded-lg shadow-[0_4px_6px_rgba(0,0,0,0.1),0_-4px_6px_rgba(0,0,0,0.1)]">
+              <p className="text-2xl">ایا این محصول مورد تایید شما می باشد</p>
+
               <div className="flex justify-around items-center">
-                {user?.role === "superAdmin" ? (
+                {admin?.role === "superAdmin" ? (
                   <>
                     <div>
                       <button
