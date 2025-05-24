@@ -13,6 +13,21 @@ const Left = ({ product }) => {
     (tag) => tag !== undefined
   );
   const locale = useLocale();
+ function getColumnSpanClass(index, totalThumbnails) {
+    if (totalThumbnails === 1) {
+      return "col-span-12";
+    } else if (totalThumbnails === 2) {
+      return index <= 1 ? "col-span-6" : "col-span-6";
+    } else if (totalThumbnails === 3) {
+      return index === 0 ? "col-span-12" : "col-span-6";
+    } else if (totalThumbnails === 4) {
+      return "col-span-6";
+    } else if (totalThumbnails === 5) {
+      return index <= 1 ? "col-span-6" : "col-span-4";
+    } else {
+      return "";
+    }
+  }
 
   const h = useTranslations("product");
   return (
@@ -31,8 +46,10 @@ const Left = ({ product }) => {
               src={thumbnail?.url}
               key={index}
               alt={thumbnail?.public_id}
-              className={
-                "rounded object-cover max-w-full border border-orange-300 w-full h-full cursor-pointer"
+               className={
+                "rounded object-cover max-w-full w-full h-full" +
+                " " +
+                getColumnSpanClass(index, product.gallery.length)
               }
               width={480}
               height={200}
