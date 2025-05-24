@@ -18,13 +18,21 @@ const categorySchema = new mongoose.Schema(
       unique: [true, "دسته‌بندی مشابه از قبل وجود دارد"],
       maxLength: [100, "عنوان شما باید حداکثر ۱۰۰ کاراکتر باشد"],
     },
-
-    description: {
-      type: String,
-      required: [true, "لطفاً توضیحات دسته‌بندی را وارد کنید"],
-      trim: true,
-      maxLength: [500, "توضیحات شما باید حداکثر ۵۰۰ کاراکتر باشد"],
-    },
+   translations: [
+      {
+        translation: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Translation",
+          required: true
+        },
+        language: {
+          type: String,
+          enum: ["fa","en", "tr", "ar"],
+          required: true
+        }
+      }
+    ],
+ 
     thumbnail: {
       url: {
         type: String,
@@ -35,20 +43,6 @@ const categorySchema = new mongoose.Schema(
           default: "N/A",
         },
       },
-
-    keynotes: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-
-    tags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
 
     products: [
       {
@@ -75,11 +69,6 @@ categorySchema.pre("save", function (next) {
   }
   this.title = splitStr.join(" ");
 
-  const newTags = [];
-  this.tags.forEach((tag) =>
-    newTags.push(tag.replace(" ", "-")?.toLowerCase())
-  );
-  this.tags = newTags;
 
   next();
 });

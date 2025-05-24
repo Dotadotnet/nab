@@ -5,34 +5,41 @@ import Shipping from "../icons/Shipping";
 import Return from "../icons/Return";
 import Delivery from "../icons/Delivery";
 import Policy from "../icons/Policy";
+import { useTranslations } from "next-intl";
 
 const Policies = () => {
+    const t = useTranslations("Tools")
+    const h = useTranslations("HomePage")
+  
   const policies = [
     {
-      title: "ارسال رایگان",
-      detail: "برای خریدهای بالای ۵۰۰ هزار تومان",
+      title: t("SendFree"),
+      detail: t("MinBuyForSendFree", { 0 : 500}),
       icon: <Shipping />,
-      className: "bg-red-50 dark:bg-rose-600",
+      className: "bg-red-100",
+      darkClassName: "dark:bg-rose-600 ",
     },
     {
-      title: "بازگشت آسان",
-      detail: "امکان بازگشت محصول تا ۷ روز.",
+      title: h("Policies2Title") ,
+      detail: h("Policies2SubTitle") ,
       icon: <Return />,
-      className: "bg-sky-50 dark:bg-sky-600",
+      className: "bg-sky-100",
+      darkClassName: "dark:bg-sky-600 ",
     },
     {
-      title: "تحویل سریع",
-      detail: "ارسال به سراسر کشور در کوتاه‌ترین زمان.",
+      title: h("Policies3Title") ,
+      detail: h("Policies3SubTitle") ,
       icon: <Delivery />,
-      className: "bg-green-50 dark:bg-green-600",
+      className: "bg-green-100",
+      darkClassName: "dark:bg-green-600 ",
     },
     {
-      title: "تضمین کیفیت",
-      detail: "تازه‌ترین نقل و حلوا.",
+      title: h("Policies4Title") ,
+      detail: h("Policies4SubTitle") ,
       icon: <Policy />,
-      className: "bg-amber-50 dark:bg-amber-600",
+      className: "bg-amber-100",
+      darkClassName: "dark:bg-amber-600 ",
     },
-    
   ];
 
   return (

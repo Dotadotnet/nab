@@ -1,8 +1,6 @@
 const Cart = require("../models/cart.model");
 const Category = require("../models/category.model");
-const Favorite = require("../models/favorite.model");
 const Product = require("../models/product.model");
-const Purchase = require("../models/purchase.model");
 const Review = require("../models/review.model");
 const Admin = require("../models/admin.model");
 const remove = require("../utils/remove.util");
@@ -163,20 +161,8 @@ exports.persistLogin = async (req, res) => {
       path: "reviews",
       populate: ["product", "reviewer"]
     },
-    {
-      path: "favorites",
-      populate: [
-        {
-          path: "product",
-          populate: ["category"]
-        },
-        "admin"
-      ]
-    },
-    {
-      path: "purchases",
-      populate: ["customer", "products.product"]
-    },
+   
+
     "products"
   ]);
 
@@ -379,26 +365,12 @@ exports.deleteAdmin = async (req, res) => {
     );
   }
 
-  // Soft delete admin favorites
-  if (admin.favorites.length > 0) {
-    await Favorite.updateMany(
-      { _id: { $in: admin.favorites } },
-      { isDeleted: true, deletedAt: Date.now() }
-    );
-  }
+
 
   // Soft delete admin reviews
   if (admin.reviews.length > 0) {
     await Review.updateMany(
       { _id: { $in: admin.reviews } },
-      { isDeleted: true, deletedAt: Date.now() }
-    );
-  }
-
-  // Soft delete admin purchases
-  if (admin.purchases.length > 0) {
-    await Purchase.updateMany(
-      { _id: { $in: admin.purchases } },
       { isDeleted: true, deletedAt: Date.now() }
     );
   }

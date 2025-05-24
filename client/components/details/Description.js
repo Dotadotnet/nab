@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import DetailCard from "./DetailCard";
 import Modal from "../shared/Modal";
@@ -8,15 +6,19 @@ import { useAddReviewMutation } from "@/services/review/reviewApi";
 import { toast } from "react-hot-toast";
 import Inform from "../icons/Inform";
 import { useSelector } from "react-redux";
+import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 const Description = ({ product }) => {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const [addReview, { isLoading, data, error }] = useAddReviewMutation();
+  const locale = useLocale();
+  const h = useTranslations("product");
 
   useEffect(() => {
     if (isLoading) {
-      toast.loading("Adding Review...", { id: "addReview" });
+      toast.loading(h("addReviewLoading"), { id: "addReview" });
     }
 
     if (data) {
@@ -25,7 +27,7 @@ const Description = ({ product }) => {
     if (error?.data) {
       toast.error(error?.data?.description, { id: "addReview" });
     }
-  }, [isLoading, data, error]);
+  }, [isLoading, data, error, h]);
 
   const handleAddReview = (e) => {
     e.preventDefault();
@@ -36,38 +38,49 @@ const Description = ({ product }) => {
       comment: e.target.comment.value,
     });
 
-    event.target.reset();
+    e.target.reset();
   };
+
+  const translation = product?.translations?.find(
+    (tr) => tr.translation?.language === locale
+  )?.translation?.fields || {};
+  const { summary, features = [] } = translation;
 
   return (
     <section className="flex flex-col gap-y-2.5">
       <div className="flex flex-row gap-x-2 items-center">
         <span className="whitespace-nowrap text-sm text-black dark:text-gray-100">
-          جزئیات این محصول
+          {h("details")}
         </span>
         <hr className="w-full" />
       </div>
       <article className="flex flex-col gap-y-4">
-        <p className="text-sm">{product?.summary}</p>
+        <p className="text-sm">{summary}</p>
         <button
           className="px-8 py-2 border border-black rounded-secondary bg-black hover:bg-black/90 text-white transition-colors drop-shadow w-fit flex flex-row gap-x-2 items-center dark:text-gray-100"
           onClick={() => setIsOpen(!isOpen)}
         >
-          نظرات
+          {h("reviews")}
         </button>
         <div className="flex flex-row gap-x-2 items-center">
           <span className="whitespace-nowrap text-sm text-black dark:text-gray-100">
-ویزگی های این محصول          </span>
+            {h("features")}
+          </span>
           <hr className="w-full" />
         </div>
         <div className="flex flex-col gap-y-4">
-          {product?.features?.map((explanation, index) => (
-            <DetailCard
-              key={index}
-              title={explanation?.title}
-              content={explanation?.content}
-            />
-          ))}
+          {features.length > 0 ? (
+            features.map((explanation, index) => (
+              <DetailCard
+                key={index}
+                icon={explanation.icon}
+                title={explanation.title}
+                content={explanation.content}
+              />
+            ))
+          ) : (
+            <p className="text-sm">{h("noFeatures")}</p>
+          )}
         </div>
       </article>
 
@@ -87,7 +100,7 @@ const Description = ({ product }) => {
                 type="text"
                 name="comment"
                 id="comment"
-                placeholder="اگر ایده یا نظری دارید خوشحال می شویم با ما در میان بگذارید"
+                placeholder={h("commentPlaceholder")}
                 className="w-full text-sm dark:bg-slate-700"
               />
               <input
@@ -96,19 +109,19 @@ const Description = ({ product }) => {
                 id="rating"
                 min="1"
                 max="5"
-                placeholder="مقدار"
+                placeholder={h("ratingPlaceholder")}
                 className="w-fit text-sm dark:bg-slate-700"
               />
               <input
                 type="submit"
-                value="ثبت"
-                className="text-sm p-2 border dark:border-gray-600 bg-black text-white rounded cursor-pointer"
+                value={h("submit")}
+                className="text-sm p-2 border border-gray-200 dark:border-gray-600 bg-black text-white rounded cursor-pointer"
               />
             </form>
 
             {product?.reviews?.length === 0 ? (
               <p className="text-sm flex flex-row gap-x-1 items-center justify-center">
-                <Inform /> هیچ نظری برای این محصول ثبت نشده!
+                <Inform /> {h("noReviews")}
               </p>
             ) : (
               <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-y-4">
@@ -130,7 +143,7 @@ const Description = ({ product }) => {
                         <p className="text-xs">{review?.reviewer?.email}</p>
                         <p className="text-xs">
                           {new Date(review?.createdAt).toLocaleDateString(
-                            "en-GB"
+                            locale === "fa" ? "fa-IR" : "en-GB"
                           )}{" "}
                           • ⭐ {review?.rating}
                         </p>

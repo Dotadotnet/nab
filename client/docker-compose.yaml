@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: noghlenab-app
+    ports:
+      - "3000:3000"  # پورت پیش‌فرض Next.js
+    volumes:
+      - .:/app
+      - /app/node_modules  # جلوگیری از تداخل node_modules لوکال
+    environment:
+      - NODE_ENV=development
+    working_dir: /app
+    command: npm run dev  # یا yarn dev، اگر فقط از Yarn استفاده می‌کنید
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

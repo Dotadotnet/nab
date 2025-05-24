@@ -52,7 +52,7 @@ const Navbar = () => {
       <MobileNav isOpen={isOpen} setIsOpen={setIsOpen} />
       <header >
         <Container>
-          <nav className="fixed top-0 m-4  left-0 flex flex-row justify-between right-0 shadow-lg lg:grid lg:grid-cols-12 items-center z-50 p-4 bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
+          <nav className="fixed top-0 m-4  left-0 flex flex-row justify-between right-0 shadow-lg lg:grid lg:grid-cols-12 items-center z-50 px-4 py-1  bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
             <div className=" col-span-2 flex-row-reverse gap-x-2 relative h-fit">
               <div className="md:hidden block col-span-0">
                 <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -66,8 +66,8 @@ const Navbar = () => {
               </div>
             </div>
             <div className="col-span-8 rounded-primary hidden md:flex justify-center">
-              <div className="flex flex-row justify-center gap-x-4 overflow-x-auto">
-                <div className="flex flex-row justify-center gap-x-4 border p-1 rounded-secondary bg-white dark:bg-slate-800 overflow-x-auto scrollbar-hide">
+              <div className="flex flex-row justify-center gap-x-2 overflow-x-auto">
+                <div className="flex flex-row justify-center gap-x-2 border border-gray-300 p-1 rounded-secondary bg-white dark:bg-slate-800 overflow-x-auto scrollbar-hide">
                   {niches.map((niche, index) => {
                     let uri = null;
                     let url_exploded = pathname.split("/");
@@ -99,7 +99,7 @@ const Navbar = () => {
                   alt="logo"
                   width={400}
                   height={400}
-                  className="h-12 w-12 object-contain md:block cursor-pointer"
+                  className="h-16 w-16 object-contain md:block cursor-pointer"
                   onClick={() => window.open("/", "_self")}
                 />
               </div>

@@ -1,29 +1,34 @@
-
-
 "use client";
 
 import React from "react";
 import { BiChevronDown, BiChevronLeft, BiChevronUp } from "react-icons/bi";
 
-const DetailCard = ({ title, content }) => {
+const DetailCard = ({ title, content,icon }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <section className="relative flex flex-col gap-y-2.5">
       <div
-        className="flex flex-row justify-between items-start bg-slate-100/80 hover:bg-slate-200/60 dark:bg-black rounded-primary px-4 py-2 cursor-pointer"
+        className="flex flex-row justify-between items-start bg-slate-200/80 hover:bg-slate-200/60 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-primary pr-0.5   py-0.5 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h2 className={"line-clamp-1" + (isOpen ? " line-clamp-none" : "")}>
-          {title}
-        </h2>
+        <div className="flex justify-start gap-x-2 items-center">
+          <span className="w-8 h-8 rounded-full overflow-hidden bg-white flex p-1 dark:bg-gray-900  justify-center items-center">
+            {icon}
+          </span>
+          <h2
+            className={"flex line-clamp-1" + (isOpen ? " line-clamp-none" : "")}
+          >
+            {title}
+          </h2>
+        </div>
         {isOpen ? (
-          <span className="border rounded-secondary">
-            <BiChevronUp className="h-5 w-5" />
+          <span className="border bg-white h-8 w-8 dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-secondary">
+            <BiChevronUp className="w-full h-full" />
           </span>
         ) : (
-          <span className="border rounded-secondary">
-            <BiChevronDown className="h-5 w-5" />
+          <span className="border bg-white h-8 w-8 dark:bg-gray-900  border-gray-200 dark:border-gray-700 rounded-secondary">
+            <BiChevronDown className="w-full h-full" />
           </span>
         )}
       </div>

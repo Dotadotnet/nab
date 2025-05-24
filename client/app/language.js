@@ -2,7 +2,7 @@
 
 export default class language {
     info = [
-        { name: 'Persian', lang: 'fa', loc: 'IR', dir: "rtl" , img :  "/countries/" + "IR.png"  } ,
+        { name: 'فارسی', lang: 'fa', loc: 'IR', dir: "rtl" , img :  "/countries/" + "IR.png"  } ,
         { name: 'Arabic', lang: 'ar', loc: 'PS', dir: "rtl" , img :  "/countries/" + "PS.png"  },
         { name: 'English', lang: 'en', loc: 'US', dir: "ltr" , img :  "/countries/" + "GB.png" },
         { name: 'Turkish', lang: 'tr', loc: 'TR', dir: "ltr" , img :  "/countries/" + "TR.png"  },
