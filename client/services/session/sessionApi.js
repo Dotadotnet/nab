@@ -8,7 +8,7 @@ const sessionApi = nabApi.injectEndpoints({
         return {
           url: "/session/create",
           method: "POST",
-          credentials: "include",
+          credentials: "include"
         };
       },
       invalidatesTags: ["Session"]
@@ -16,11 +16,14 @@ const sessionApi = nabApi.injectEndpoints({
 
     // persist sesssion
     persistSession: builder.query({
-      query: () => ({
+      query: ({locale}) => ({
         url: "/session/me",
         method: "GET",
-      
-        credentials: "include"
+
+        credentials: "include",
+        headers: {
+          "Accept-Language": locale
+        }
       }),
 
       providesTags: ["Session"]
@@ -28,7 +31,4 @@ const sessionApi = nabApi.injectEndpoints({
   })
 });
 
-export const {
-  useCreateSessionMutation,
-  usePersistSessionQuery,
-} = sessionApi;
+export const { useCreateSessionMutation, usePersistSessionQuery } = sessionApi;

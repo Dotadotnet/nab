@@ -47,7 +47,7 @@ const Policies = () => {
       {policies.map((policy, index) => (
         <div
           key={index}
-          className={`flex flex-col gap-y-3 ${policy.className} p-5 rounded-primary`}
+          className={`flex flex-col gap-y-3 ${policy.className} ${policy.darkClassName} p-5 rounded-primary`}
         >
           {policy.icon}
           <article className="flex flex-col gap-y-0.5">

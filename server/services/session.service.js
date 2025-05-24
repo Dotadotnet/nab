@@ -3,7 +3,6 @@ const Session = require("../models/session.model");
 
 async function initSession(req, res, next) {
   try {
-
     let sessionData = await Session.findOne({ sessionId: req.sessionID });
     if (!sessionData) {
       req.session.userId = `guest_${Date.now()}`;
@@ -12,7 +11,6 @@ async function initSession(req, res, next) {
         userId: req.session.userId,
         role: "buyer"
       });
-
     } else {
       await sessionData.incrementVisitCount();
     }
@@ -31,29 +29,65 @@ async function initSession(req, res, next) {
 // get session
 async function getSession(req, res, next) {
   try {
-   const sessionData = await Session.findOne({ sessionId: req.sessionID })
-   .populate([
-    {
-      path: "cart",
-      select: "_id quantity",
-      populate: [
-        {
-          path: "product",
-          select: "title thumbnail discountAmount summary ",
-          populate: [{ path: "category", select: "title" }],
-        },
-        {
-          path: "variation",
-          select: "unit price",
-          populate: {
-            path: "unit",
-            select: "value title",
+    console.log("req locale", req.locale);
+    const sessionData = await Session.findOne({
+      sessionId: req.sessionID
+    }).populate([
+      {
+        path: "cart",
+        select: "_id quantity",
+        populate: [
+          {
+            path: "product",
+            select: "thumbnail discountAmount translations",
+            populate: [
+              {
+                path: "translations.translation",
+                match: { language: req.locale },
+                select: "fields.title fields.summary fields.slug language"
+              },
+              {
+                path: "category",
+                select: "title"
+              }
+            ]
           },
+          {
+            path: "variation",
+            select: "unit price",
+            populate: {
+              path: "unit",
+              select: "value",
+              populate: {
+                path: "translations.translation",
+                match: { language: req.locale },
+                select: "fields.title language"
+              }
+            }
+          }
+        ]
+      }
+    ]);
+
+    if (sessionData && sessionData.cart && sessionData.cart.length > 0) {
+      sessionData.cart.forEach((item) => {
+        if (
+          item.product &&
+          item.product.translations &&
+          item.product.translations.length > 0
+        ) {
+          item.product.translations.forEach((translationObj) => {
+            console.log(
+              "Translation translation field:",
+              translationObj.translation
+            );
+          });
         }
-      ],
-    },
-  ]);
-  if (!sessionData) {
+      });
+    }
+
+    console.log("sessionData", sessionData);
+    if (!sessionData) {
       return res.status(404).json({
         acknowledgement: false,
         message: "یافت نشد",

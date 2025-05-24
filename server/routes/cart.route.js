@@ -8,6 +8,7 @@ const verify = require("../middleware/verify.middleware");
 const authorize = require("../middleware/authorize.middleware");
 const authSession = require("../middleware/authSession.middleware");
 const { initSession } = require("../middleware/session.middleware");
+const localeMiddleware = require("../middleware/locale.middleware");
 
 /* internal import */
 const cartController = require("../controllers/cart.controller");

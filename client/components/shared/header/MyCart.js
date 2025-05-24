@@ -1,4 +1,5 @@
 "use client";
+
 import Cart from "@/components/icons/Cart";
 import React, { useEffect, useState } from "react";
 import OutsideClick from "../outsideClick/OutsideClick";
@@ -10,15 +11,18 @@ import { toast } from "react-hot-toast";
 import Inform from "@/components/icons/Inform";
 import { useCreatePaymentMutation } from "@/services/payment/paymentApi";
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 const MyCart = () => {
-  const n = useTranslations("Navbar")
+  const locale = useLocale();
+  const n = useTranslations("Navbar");
   const t = useTranslations("Tools");
+
   const [isOpen, setIsOpen] = useState(false);
   const { user, session } = useSelector((state) => state.auth);
   const [removeFromCart, { isLoading, data, error }] =
     useDeleteFromCartMutation();
+
   useEffect(() => {
     if (isLoading)
       toast.loading(n("DeletingCartBuy"), { id: "removeFromCart" });
@@ -28,7 +32,7 @@ const MyCart = () => {
   }, [isLoading, data, error]);
 
   const cartItems = session?.cart || user?.cart || [];
-
+  console.log(cartItems);
   return (
     <>
       <button
@@ -50,7 +54,7 @@ const MyCart = () => {
       {isOpen && (
         <OutsideClick
           onOutsideClick={() => setIsOpen(false)}
-          className="absolute md:top-full bottom-full mb-8  right-0 w-80 h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-primary rounded p-4 flex flex-col gap-y-2.5"
+          className="absolute p-4 md:top-full bottom-full mb-8 ltr:left-0 rtl:right-0 w-80 h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-primary rounded p-1 flex flex-col gap-y-2.5"
         >
           <div className="w-full h-full flex flex-col gap-y-8">
             {cartItems.length === 0 ? (
@@ -59,35 +63,50 @@ const MyCart = () => {
               </p>
             ) : (
               <div className="h-full w-full flex flex-col gap-y-4">
-                <div className="h-full overflow-y-auto scrollbar-hide">
-                  {cartItems.map(({ product, variation, _id, quantity }) => (
-                    <div
-                      key={_id}
-                      className="flex flex-row gap-x-2 transition-all border border-transparent p-2 rounded hover:border-black group relative"
-                    >
-                      <Image
-                        src={product?.thumbnail?.url}
-                        alt={product?.thumbnail?.public_id}
-                        width={50}
-                        height={50}
-                        className="rounded h-[50px] w-[50px] object-cover"
-                      />
-                      <article className="flex flex-col gap-y-2">
-                        <h2 className="text-base line-clamp-1">
-                          {product?.title}
-                        </h2>
-                        <p className="text-xs">
-                          {product?.summary || t("AnyCaption")}
-                        </p>
+                <div className="h-full overflow-y-auto flex  flex-col gap-y-2 scrollbar-hide">
+                  {cartItems.map(({ product, variation, _id, quantity }) => {
+                    const translation =
+                      product?.translations?.find(
+                        (tr) => tr.translation?.language === locale
+                      )?.translation?.fields || {};
+                    const { title, summary, slug } = translation;
 
+                    return (
+                      <div
+                        key={_id}
+                        className="flex flex-col gap-y-2 transition-all border border-gray-200  p-2 rounded hover:border-gray-300  group relative"
+                      >
+                        <div className="flex flex-row gap-x-2" >
+                          <Image
+                            src={product?.thumbnail?.url}
+                            alt={product?.thumbnail?.public_id || "product"}
+                            width={50}
+                            height={50}
+                            className="rounded h-[50px] w-[50px] object-cover"
+                          />
+                          <article className="flex flex-col gap-y-2">
+                            <h2 className="text-base line-clamp-1">{title}</h2>
+                            <p className="text-xs">
+                              {summary || t("AnyCaption")}
+                            </p>
+                          </article>
+
+                          <button
+                            type="button"
+                            className="opacity-0 transition-opacity group-hover:opacity-100 absolute top-2 left-2 border p-1 rounded-secondary bg-red-100 text-red-900 border-red-900"
+                            onClick={() => removeFromCart(_id)}
+                          >
+                            <Trash />
+                          </button>
+                        </div>
                         <p className="text-xs flex flex-row justify-between">
                           <span className="flex flex-row gap-x-0.5 items-baseline">
-                            {a("Price")} :
+                            {t("Price")} :
                             <span className="text-xs text-red-500 line-through">
                               {variation?.price
                                 ? `${variation.price.toLocaleString(
-                                  "fa-IR"
-                                )} ${t("Rial")}`
+                                    locale
+                                  )} ${t("Rial")}`
                                 : "?"}
                             </span>
                             {product.discountAmount && variation.price ? (
@@ -95,38 +114,34 @@ const MyCart = () => {
                                 {(
                                   variation.price -
                                   variation.price *
-                                  (product.discountAmount / 100)
-                                ).toLocaleString("fa-IR")}{" "}
-                                {a("Rial")}
+                                    (product.discountAmount / 100)
+                                ).toLocaleString(locale)}{" "}
+                                {t("Rial")}
                               </span>
                             ) : null}
                           </span>
                           <span className="flex flex-row gap-x-0.5 items-baseline">
                             {t("Count")} :
-                            <span className="text-sm text-black">
+                            <span className="text-sm ">
                               {quantity}
                             </span>
                           </span>
                         </p>
 
-                        {variation?.unit?.title && (
+                        {variation?.unit?.translations && (
                           <div className="flex flex-row gap-x-1">
-                            <span className="whitespace-nowrap text-[10px] bg-blue-300/50 text-blue-500 border border-blue-500 px-1.5 rounded">
-                              {variation?.unit?.title}
+                            <span className="whitespace-nowrap text-[10px] bg-orange-100 text-orange-500 border border-orange-500  px-1.5 rounded">
+                              {
+                                variation?.unit?.translations?.find(
+                                  (tr) => tr.translation?.language === locale
+                                )?.translation?.fields.title
+                              }
                             </span>
                           </div>
                         )}
-                      </article>
-
-                      <button
-                        type="button"
-                        className="opacity-0 transition-opacity group-hover:opacity-100 absolute top-2 left-2 border p-1 rounded-secondary bg-red-100 text-red-900 border-red-900"
-                        onClick={() => removeFromCart(_id)}
-                      >
-                        <Trash />
-                      </button>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
                 <Purchase cart={cartItems} />
               </div>
@@ -141,6 +156,7 @@ const MyCart = () => {
 function Purchase({ cart }) {
   const [createPayment, { isLoading, data, error }] =
     useCreatePaymentMutation();
+  const t = useTranslations("Tools");
 
   useEffect(() => {
     if (isLoading)
@@ -154,16 +170,6 @@ function Purchase({ cart }) {
     if (error?.data)
       toast.error(error?.data?.description, { id: "createPayment" });
   }, [isLoading, data, error]);
-
-  const result = cart.map(({ product, variation, _id }) => ({
-    name: product?.title,
-    quantity: variation?.unit?.value || 1,
-    price: product?.price || 0,
-    thumbnail: product?.thumbnail?.url,
-    description: product?.summary,
-    pid: product?._id,
-    cid: _id
-  }));
 
   return (
     <Link

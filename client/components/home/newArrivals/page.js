@@ -32,7 +32,6 @@ const NewArrivals = async ({ params }) => {
   }
 
   const t = await getTranslations("HomePage");
-  console.log(products);
 
   return (
     <Container>
