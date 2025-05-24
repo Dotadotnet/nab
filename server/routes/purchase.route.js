@@ -4,7 +4,7 @@
 const express = require("express");
 
 /* middleware imports */
-const verify = require("../middleware/verify.middleware");
+const verify = require("../middleware/verifyAdmin.middleware");
 const authorize = require("../middleware/authorize.middleware");
 
 /* internal import */

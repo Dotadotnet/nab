@@ -4,7 +4,7 @@ import SkeletonImage from "@/components/shared/skeletonLoading/SkeletonImage";
 
 const BlogCardSkeleton = () => {
   return (
-    <div className="relative flex w-full max-w-[26rem] flex-col rounded-xl bg-white dark:bg-darkCard border dark:border-gray-800 shadow-lg h-[550px] p-4">
+    <div className="relative flex w-full max-w-[26rem] flex-col rounded-xl bg-white dark:bg-darkCard border border-gray-200 dark:border-gray-800 shadow-lg h-[550px] p-4">
       {/* تصویر اسکلتون */}
       <div className="w-full h-60 rounded-xl bg-gray-300 dark:bg-gray-700 animate-pulse">
         <SkeletonImage width={1150} height={500} borderRadius="rounded-xl" />

@@ -3,7 +3,7 @@ const express = require("express");
 
 /* middleware imports */
 const upload = require("../middleware/upload.middleware");
-const verify = require("../middleware/verify.middleware");
+const verify = require("../middleware/verifyAdmin.middleware");
 
 /* internal import */
 const adminController = require("../controllers/admin.controller");

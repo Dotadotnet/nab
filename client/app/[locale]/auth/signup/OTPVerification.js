@@ -8,7 +8,6 @@ export default function OTPVerification({ phone, onSuccess, resendCode }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const inputRefs = useRef([]);
   const l = useTranslations("Login")
-  const t = useTranslations("Tools")
 
   const handleChange = (index, value) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -80,13 +79,13 @@ export default function OTPVerification({ phone, onSuccess, resendCode }) {
             </p>
           </header>
 
-          <div className="flex flex-row-reverse items-center justify-center gap-3">
+          <div className="flex rtl:flex-row-reverse items-center justify-center gap-3">
             {otp.map((digit, index) => (
               <input
                 key={index}
                 ref={(el) => (inputRefs.current[index] = el)}
                 type="text"
-                className="w-14 h-14 text-center text-2xl font-extrabold text-gray-700 bg-primary dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-orange-600 focus:outline-none"
+                className="w-14 h-14 text-center text-2xl font-extrabold text-gray-700  dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-orange-600 focus:outline-none"
                 maxLength="1"
                 value={digit}
                 autoFocus={index === 0}

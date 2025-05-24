@@ -154,7 +154,7 @@ const FilterSidebar = () => {
           </label>
         </div>
         {/* باید از بک اند بیاد */}
-        {/* <div className="flex flex-col gap-y-4 border py-2 px-4 rounded-xl">
+      <div className="flex flex-col gap-y-4 border py-2 px-4 rounded-xl">
           <h2 className="text-lg flex items-baseline gap-x-1">
             {f("SelectBySize")} <span className="!text-xs">( {t("ComingSoon") + " ... "} )</span>
           </h2>
@@ -232,8 +232,7 @@ const FilterSidebar = () => {
               یک و نیم لیتری
             </label>
           </div>
-        </div> */}
-        {/* باید از بک اند بیاد */}
+        </div> 
 
 
       </section>

@@ -1,17 +1,17 @@
 {
   "meta": {
-    "title": "Noghlnab Sweets - Buy Original Urmia Noghl with Top Quality",
+    "title": "Noghlnab  - Buy Original Urmia Noghl with Top Quality",
     "description": "Noghlnab offers original and fresh Urmia Noghl in various traditional flavors. Shop online for premium quality sweets with fast nationwide delivery.",
     "keywords": "Urmia noghl, sweets, traditional candy, buy noghl, Iranian sweets",
     "imageAlt": "Original Urmia Noghl",
-    "siteName": "Noghl & Halva Shop"
+    "siteName": "Noghl & Halva Nab"
   },
   "CrispChat": {
     "FirstChatMessage": "How can I assist you?",
     "TextAboveChatBox": "We're here to answer your questions"
   },
   "HomePage": {
-    "NoghlAndHalvaOf": "Noghl and Halva of",
+    "NoghlAndHalvaOf": "Noghl and Halva ",
     "HeroRightSubTitle": "A taste of authenticity and pure delight",
     "HeroRightCaption": "Experience a lasting flavor this season",
     "HeroRightStart": "Start your sweet experience",
@@ -33,7 +33,10 @@
     "Banner3Title": "Unmatched Taste of Noghl and Halva",
     "Banner3SubTitle": "Enjoy the best traditional noghl and halva with unmatched quality!",
     "GallaryImages": "Nab Gallery",
-    "similarProduct": "Similar Products"
+    "similarProduct": "Similar Products",
+    "PopularProducts": "Top Sellers",
+      "ReadFromUs": "Read from us"
+
   },
   "category": {
     "noghl": "Noghl",
@@ -109,7 +112,7 @@
     "Search": "Search",
     "YourResultSearch": "Your search results",
     "NotFountProducts": "No products found!",
-    "NameWebsite": "Pure Noghl and Halva",
+    "NameWebsite": "Nab Noghl",
     "Rial": "Rial",
     "Price": "Price",
     "Count": "Quantity",

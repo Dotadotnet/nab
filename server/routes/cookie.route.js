@@ -8,7 +8,7 @@ const upload = require("../middleware/upload.middleware");
 
 /* internal import */
 const cookieController = require("../controllers/cookie.controller");
-const verify = require("../middleware/verify.middleware");
+const verify = require("../middleware/verifyAdmin.middleware");
 const authorize = require("../middleware/authorize.middleware");
 const router = express.Router();
 router.get("/get/:key", cookieController.getCookie);

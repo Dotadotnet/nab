@@ -211,6 +211,7 @@ exports.addProduct = async (req, res) => {
 /* get all products */
 exports.getProducts = async (req, res) => {
   try {
+    console.log(req.locale);
     const products = await Product.find({ isDeleted: false })
       .select(
         "title thumbnail discountAmount campaign gallery status summary productId _id createdAt creator translations"
@@ -232,7 +233,12 @@ exports.getProducts = async (req, res) => {
         },
         {
           path: "category",
-          select: "title"
+          populate: {
+            path: "translations.translation",
+            match: { language: req.locale },
+            select: "fields.title  language"
+          },
+          select: "translations"
         },
         {
           path: "variations",
@@ -317,7 +323,8 @@ exports.getProduct = async (req, res) => {
         {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title fields.summary fields.features fields.description fields.slug language"
+          select:
+            "fields.title fields.summary fields.features fields.description fields.slug language"
         },
         {
           path: "campaign",
@@ -351,11 +358,11 @@ exports.getProduct = async (req, res) => {
           select: "price stock unit lowStockThreshold",
           populate: {
             path: "unit",
-             populate: {
-            path: "translations.translation",
-            match: { language: req.locale },
-            select: "fields.title fields.description language"
-          },
+            populate: {
+              path: "translations.translation",
+              match: { language: req.locale },
+              select: "fields.title fields.description language"
+            },
             select: "title value"
           }
         }

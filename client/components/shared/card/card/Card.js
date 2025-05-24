@@ -43,7 +43,7 @@ const Card = ({ index, product, ...rest }) => {
                 alt={product?.thumbnail?.public_id}
                 width={300}
                 height={300}
-                className="w-50 h-50 object-contain"
+                className="w-fit h-fit object-contain"
               />
             </div>
           </div>

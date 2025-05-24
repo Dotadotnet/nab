@@ -32,7 +32,6 @@ const MyCart = () => {
   }, [isLoading, data, error]);
 
   const cartItems = session?.cart || user?.cart || [];
-  console.log(cartItems);
   return (
     <>
       <button

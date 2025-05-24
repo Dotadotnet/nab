@@ -55,7 +55,7 @@ const translateFields = async (
     longTextFields = [],
     lowercaseFields = [], // دسته جدید برای فیلدهای lowercase
   },
-  languages = ["en", "tr"]
+  languages = ["en", "tr","ar"]
 ) => {
   const translations = {};
   translations["fa"] = { fields: {} };

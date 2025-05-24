@@ -3,7 +3,7 @@ const express = require("express");
 
 /* middleware imports */
 const upload = require("../middleware/upload.middleware");
-const verify = require("../middleware/verify.middleware");
+const verifyUser = require("../middleware/verifyUser.middleware");
 
 /* internal import */
 const userController = require("../controllers/user.controller");
@@ -31,12 +31,12 @@ router.post(
 );
 
 // login persistance
-router.get("/me", verify,  userController.persistLogin);
+router.get("/me", verifyUser,  userController.persistLogin);
 
 // get all users
 router.get(
   "/all-users",
-  verify,
+  verifyUser,
   authorize("superAdmin"),
   userController.getUsers
 );
@@ -44,7 +44,7 @@ router.get(
 // get single user
 router.get(
   "/get-user/:id",
-  verify,
+  verifyUser,
   authorize("superAdmin"),
   userController.getUser
 );
@@ -52,7 +52,7 @@ router.get(
 // update user information
 router.patch(
   "/update-information",
-  verify,
+  verifyUser,
   authorize("superAdmin", "admin"),
   upload("avatar").single("avatar"),
   userController.updateUser
@@ -60,7 +60,7 @@ router.patch(
 
 router.patch(
   "/update-user/:id",
-  verify,
+  verifyUser,
   authorize("superAdmin", "admin"),
   upload("avatar").single("avatar"),
   userController.updateUserInfo
@@ -69,7 +69,7 @@ router.patch(
 // delete user information
 router.delete(
   "/delete-user/:id",
-  verify,
+  verifyUser,
   authorize("superAdmin", "admin"),
   userController.deleteUser
 );

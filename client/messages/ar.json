@@ -31,15 +31,14 @@
     "Banner2SubTitle": "طعم يدوم من التقليد",
     "Banner2Caption": "اختبر الطعم الأصيل والمصنوع في المنزل مع نقل وحلاوة نقية. منتجات عالية الجودة مصنوعة من أفضل المكونات لتجعل لحظاتك أكثر حلاوة. توصيل على مستوى البلاد مع ضمان الط freshness!",
     "Banner2Button": "جربه",
-    "TrendingProductsToDay": "أكثر المنتجات مبيعاً اليوم",
+    "TrendingProductsToDay": "الأكثر مبيعاً اليوم",
+    "PopularProducts": "الأكثر شعبية",
     "Banner3Title": "طعم لا مثيل له من النقل والحلاوة",
     "Banner3SubTitle": "استمتع بأفضل النقل والحلاوة التقليدية مع جودة لا مثيل لها!",
     "GallaryImages": "ناب الصور",
     "seeMore": "شاهد المزيد",
     "similarProduct": "منتجات مماثلة",
-    "in": "في",
-    "weight": "وزن",
-    "noVariations": "لا توجد أوزان أو تنوعات متاحة"
+    "ReadFromUs": "اقرأ منا"
   },
   "category": {
     "noghl": "نقل",
@@ -48,7 +47,7 @@
     "cake": "كعكة"
   },
   "Navbar": {
-    "MainPage": "الصفحة الرئيسية",
+    "MainPage": "الرئيسية",
     "Products": "المنتجات",
     "Blog": "مدونة",
     "AboutUs": "من نحن",
@@ -80,7 +79,10 @@
     "noFeatures": "لا توجد ميزات متاحة للعرض",
     "addReviewLoading": "جارٍ إضافة التقييم...",
     "addReviewSuccess": "تمت إضافة التقييم بنجاح",
-    "addReviewError": "خطأ أثناء إضافة التقييم"
+    "addReviewError": "خطأ أثناء إضافة التقييم",
+    "in": "في",
+    "weight": "وزن",
+    "noVariations": "لا توجد أوزان أو تنوعات متاحة"
   },
   "banner2": {
     "title": "ناب للنقل والحلويات",
@@ -111,7 +113,7 @@
     "Search": "بحث",
     "YourResultSearch": "نتائج بحثك",
     "NotFountProducts": "لا توجد منتجات!",
-    "NameWebsite": "نقل وحلاوة نقية",
+    "NameWebsite": "نقل وحلاوة ناب",
     "Rial": "ريال",
     "Price": "السعر",
     "Count": "العدد",
