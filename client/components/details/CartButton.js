@@ -120,7 +120,7 @@ const CartButton = ({ product }) => {
             </span>
           </div>
         </div>
-        <div className=" flex md:hidden  gap-4 justify-center w-full items-center">
+        <div className=" flex md:hidden mb-6  gap-4 justify-center w-full items-center">
           {" "}
           {[...(product?.variations || [])]
             .sort((a, b) => Number(a.unit.value) - Number(b.unit.value))
@@ -217,7 +217,7 @@ const CartButton = ({ product }) => {
               <>
                 <Bag />
                 <span className="md:hidden text-white"> {h("adding")}</span>
-                <span className="md:flex hidden text-white">
+                <span className="md:flex hidden cursor-pointer text-white">
                   {h("addToCart")}
                 </span>
               </>

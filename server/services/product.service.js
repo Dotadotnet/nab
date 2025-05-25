@@ -241,6 +241,7 @@ exports.getProducts = async (req, res) => {
           },
           select: "translations"
         },
+
         {
           path: "variations",
           select: "price stock unit lowStockThreshold",
@@ -344,6 +345,9 @@ exports.getProduct = async (req, res) => {
             select: "fields.title fields.keynotes  language"
           },
           select: "translations"
+        },
+        {
+          path: "reviews"
         },
         {
           path: "tags",

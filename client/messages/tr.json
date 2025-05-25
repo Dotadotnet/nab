@@ -188,5 +188,18 @@
     "OpenShopTitle": "Çevrimiçi Mağaza Açılışı",
     "OpenShopSubtitle": "İlk alışverişinizde %10 indirim",
     "OpenShopCta": "Şimdi Alışveriş Yap"
+  },
+  "reviews": {
+    "title": "muhatap",
+    "highlight": "Yorumları",
+    "subtitle": "Ürün ve hizmetlerimizin etkisini kullanıcı yorumlarıyla keşfedin",
+    "addReview": "Yorum Ekle",
+    "noReviews": "Yorum bulunamadı!",
+    "modalTitle": "Yorumunuzu Yazın",
+    "commentLimit": "Yorum en fazla 500 karakter olabilir",
+    "starLimit": "1 ile 5 arasında yıldız seçin",
+    "placeholder": "Düşüncelerinizi yazın...",
+    "submit": "Yorumu Gönder",
+    "addingReview": "İnceleme ekleniyor"
   }
 }

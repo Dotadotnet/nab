@@ -189,5 +189,18 @@
     "OpenShopTitle": "افتتاح فروشگاه آنلاین",
     "OpenShopSubtitle": "۱۰٪ تخفیف ویژه اولین خرید",
     "OpenShopCta": "همین حالا خرید کن"
+  },
+   "reviews": {
+    "title": "نظر",
+    "highlight": "مخطابان",
+    "subtitle": "تأثیر خدمات و محصولات ما را از زبان مخاطابن بشنوید",
+    "addReview": "ثبت نظر",
+    "noReviews": "نظری یافت نشد!",
+    "modalTitle": "نوشتن نظر شما",
+    "commentLimit": "نظر حداکثر ۵۰۰ کاراکتر باشد",
+    "starLimit": "بین ۱ تا ۵ ستاره انتخاب کنید",
+    "placeholder": "نظرت را بنویس...",
+    "submit": "ارسال نظر",
+    "addingReview":"در حال افزودن نظر"
   }
 }

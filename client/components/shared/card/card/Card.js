@@ -1,12 +1,12 @@
 import React from "react";
 import Image from "next/image";
-import { ArrowRight } from "@/components/icons/ArrowRight";
 import Link from "next/link";
 import Discount from "@/components/icons/Discount";
 import SoldOut from "@/components/icons/SoldOut";
 import Arrival from "@/components/icons/Arrival";
 import Favorite from "./Favorite";
 import { useLocale, useTranslations } from "next-intl";
+import CardButton from "./CardButton";
 
 const Card = ({ index, product, ...rest }) => {
   const locale = useLocale();
@@ -41,9 +41,9 @@ const Card = ({ index, product, ...rest }) => {
               <Image
                 src={product?.thumbnail?.url}
                 alt={product?.thumbnail?.public_id}
-                width={300}
-                height={300}
-                className="w-fit h-fit object-contain"
+                width={150}
+                height={150}
+                className="w-full h-full scale-105 object-contain"
               />
             </div>
           </div>
@@ -54,12 +54,7 @@ const Card = ({ index, product, ...rest }) => {
           </div>
 
           <div className="bottom-4 right-4 flex w-full items-center justify-between">
-            <button
-              className="w-12 h-12 bg-white dark:bg-black rounded-full shadow-lg flex items-center dark:text-gray-100 justify-center"
-              aria-label={t("viewDetails")}
-            >
-              <ArrowRight className="transition-transform duration-300 transform group-hover:translate-x-1 group-focus:translate-x-1" />
-            </button>
+            <CardButton />
 
             <div className="text-left">
               {product?.variations?.[0]?.price && product?.discountAmount > 0 ? (

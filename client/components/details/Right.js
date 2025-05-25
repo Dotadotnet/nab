@@ -1,10 +1,11 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { AiFillStar } from "react-icons/ai";
 import CartButton from "./CartButton";
 import Description from "./Description";
 import Policies from "./Policies";
 import { useLocale } from "next-intl";
+import DetailCard from "./DetailCard";
 
 const Right = ({ product }) => {
   const [showCart, setShowCart] = useState(true);
@@ -24,7 +25,7 @@ const Right = ({ product }) => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-  const {title, description } =
+  const { title, description } =
     product?.translations?.find((tr) => tr.translation?.language === locale)
       ?.translation?.fields || {};
 
@@ -36,7 +37,7 @@ const Right = ({ product }) => {
             <AiFillStar className="w-4 h-4 text-yellow-500" />
           </span>
           <h1 className="lg:text-5xl font-nozha md:text-3xl text-4xl">
-            {title || "عنوان محصول"}
+            {title }
           </h1>
           <p className="text-justify">{description}</p>
         </div>
@@ -47,7 +48,24 @@ const Right = ({ product }) => {
 
       <Description product={product} />
       <Policies />
-
+      <div className="  flex md:hidden flex-col gap-y-2.5">
+        {product?.tags?.map((tag, index) => (
+          <DetailCard
+            key={index}
+            icon={"🏷️"}
+            title={
+              tag.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.title
+            }
+            content={
+              tag?.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.keynotes
+            }
+          />
+        ))}
+      </div>
       <div
         className={`fixed z-[99999] bottom-0 left-0 w-full  shadow-lg  transition-transform duration-300 md:hidden ${
           showCart ? "translate-y-0" : "translate-y-full"
