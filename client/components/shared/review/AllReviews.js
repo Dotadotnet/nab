@@ -118,7 +118,7 @@ const AllReviews = ({
               {[...Array(3)].map((_, index) => (
                 <div
                   key={index}
-                  className="animate-pulse flex flex-col gap-y-4 border border-gray-200 p-4 rounded w-64 h-40"
+                  className="animate-pulse flex flex-col gap-y-4 border border-gray-200 p-4 rounded w-96 h-40"
                 >
                   <div className="flex gap-x-2 items-center">
                     <div className="bg-gray-300 rounded-full h-10 w-10" />
