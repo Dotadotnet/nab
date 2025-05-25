@@ -114,7 +114,25 @@ const AllReviews = ({
             </div>
           </div>
           {reviewList?.length === 0 ? (
-            <p className="text-sm text-red-500">{t("noReviews")}</p>
+            <div className="flex gap-x-2">
+              {[...Array(3)].map((_, index) => (
+                <div
+                  key={index}
+                  className="animate-pulse flex flex-col gap-y-4 border border-gray-200 p-4 rounded w-64 h-40"
+                >
+                  <div className="flex gap-x-2 items-center">
+                    <div className="bg-gray-300 rounded-full h-10 w-10" />
+                    <div className="flex flex-col gap-y-2 flex-1">
+                      <div className="h-4 bg-gray-300 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    </div>
+                  </div>
+                  <div className="h-3 bg-gray-200 rounded w-full" />
+                  <div className="h-3 bg-gray-200 rounded w-5/6" />
+                  <div className="h-3 bg-gray-200 rounded w-3/4" />
+                </div>
+              ))}
+            </div>
           ) : (
             <div ref={sliderRef} className="keen-slider flex gap-x-2">
               {reviewList.map((review, index) => (

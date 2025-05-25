@@ -201,5 +201,17 @@
     "placeholder": "Düşüncelerinizi yazın...",
     "submit": "Yorumu Gönder",
     "addingReview": "İnceleme ekleniyor"
-  }
+  },"newsletter":{
+    
+  "title": "Nuga ve Tatlı Dünyasını Keşfet!",
+  "description": "Yeni tatlardan, özel fırsatlardan ve el yapımı tatlılardan ilk sen haberdar ol!",
+  "placeholder": "E-posta adresinizi girin",
+  "button": "Abone Ol",
+  "successMessage": "Başarıyla abone oldunuz!",
+  "productTitle": "Özel Bademli Nuga",
+  "productType": "Geleneksel Tatlı",
+  "pricePrefix": "Başlangıç fiyatı:",
+  "productDuration": "Sadece 3 gün boyunca geçerli"
+}
+  
 }

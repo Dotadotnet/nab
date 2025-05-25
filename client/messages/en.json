@@ -204,5 +204,15 @@
     "placeholder": "Write your thoughts...",
     "submit": "Add Review",
     "addingReview":"Adding Review"
+  },"newsletter":{
+    "title": "Indulge in the World of Nougat & Delights!",
+  "description": "Subscribe to receive the latest flavours, exclusive offers, and handcrafted sweets—before anyone else.",
+  "placeholder": "Enter your email address",
+  "button": "Subscribe",
+  "successMessage": "You've successfully subscribed!",
+  "productTitle": "Premium Almond Nougat",
+  "productType": "Traditional Sweet",
+  "pricePrefix": "Starts from",
+  "productDuration": "Available for 3 days only"
   }
 }
