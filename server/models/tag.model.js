@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const baseSchema = require("./baseSchema.model");
 const Counter = require("./counter");
+const fetch = require("node-fetch");
 
 const tagSchema = new mongoose.Schema(
   {
@@ -22,7 +23,7 @@ const tagSchema = new mongoose.Schema(
         },
         language: {
           type: String,
-          enum: ["fa","en", "tr", "ar"],
+          enum: ["fa", "en", "tr", "ar"],
           required: true
         }
       }
@@ -46,6 +47,10 @@ const tagSchema = new mongoose.Schema(
         { id: 2, value: "follow" }
       ]
     },
+    lang: {
+      type: String
+    }
+    ,
     tagId: {
       type: Number
     },
@@ -68,6 +73,18 @@ tagSchema.pre("save", async function (next) {
     next(error);
   }
 });
+
+tagSchema.pre("find", async function (next, req) {
+  const response = await fetch("http://localhost:8080/api/cookie/get/token", {
+    method: "GET"
+  });
+  const data = await response.text();
+  console.log(data)
+  next()
+});
+
+
+
 
 const Tag = mongoose.model("Tag", tagSchema);
 

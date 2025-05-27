@@ -13,16 +13,7 @@ exports.get = async (req, res) => {
   const Model = require(`../models/${req.params.model}.model`);
   let json = `{"${req.params.key}": "${req.params.value}"}`;
   let query = JSON.parse(json);
-  const data = await Model.findOne(query).populate([
-    {
-      path: "creator",
-      select: "name avatar", // دریافت فقط name و avatar از creator
-    },
-    {
-      path: "tags",
-      select: "title _id", // دریافت فقط title و _id از tags
-    },
-  ]);
+  const data = await Model.find(query);
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",

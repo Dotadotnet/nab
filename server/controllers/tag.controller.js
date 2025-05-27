@@ -25,6 +25,18 @@ exports.getTags = async (req, res, next) => {
 };
 
 /* get a tag */
+
+exports.getItem = async (req, res, next) => {
+  try {
+    await tagService.getItem(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+
 exports.getTag = async (req, res, next) => {
   try {
     await tagService.getTag(req, res);

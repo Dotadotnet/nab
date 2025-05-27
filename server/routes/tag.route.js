@@ -31,6 +31,9 @@ router.get("/get-tags",localeMiddleware, tagController.getTags);
 // get a tag
 router.get("/get-tag/:id",localeMiddleware, tagController.getTag);
 
+
+router.get("/get-items/:page/:name", tagController.getItem);
+
 // update tag
 router.patch(
   "/update-tag/:id",

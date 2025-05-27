@@ -1,5 +1,7 @@
 import ControlPanel from "../ControlPanel";
 import React, { useState, useEffect } from "react";
+import axios from "@/utils/axios";
+import ConfigInput from "./ConfigInput";
 
 const Settings = () => {
 

@@ -10,8 +10,9 @@ import { getTranslations } from "next-intl/server";
 const ExpertChoice = async ({ params }) => {
   const { locale } = await params;
   const h = await getTranslations("product");
-    const t = await getTranslations("HomePage");
-  
+  const tools = await getTranslations("Tools");
+  const t = await getTranslations("HomePage");
+
   const api = `${process.env.NEXT_PUBLIC_BASE_URL}` + `/product/get-products`;
   const response = await fetch(api, {
     cache: "no-store",
@@ -59,21 +60,20 @@ const ExpertChoice = async ({ params }) => {
                           alt={thumbnail?.public_id}
                           width={296}
                           height={200}
-                          className={`${
-                            product.gallery.length === 1
+                          className={`${product.gallery.length === 1
                               ? "col-span-12 row-span-6"
                               : product.gallery.length === 2
-                              ? "col-span-12 row-span-3"
-                              : product.gallery.length === 3
-                              ? idx === 0
                                 ? "col-span-12 row-span-3"
-                                : "col-span-6 row-span-3"
-                              : product.gallery.length === 4
-                              ? "col-span-6 row-span-3"
-                              : idx <= 1
-                              ? "col-span-6 row-span-3"
-                              : "col-span-4 row-span-3"
-                          } h-full w-full object-cover rounded`}
+                                : product.gallery.length === 3
+                                  ? idx === 0
+                                    ? "col-span-12 row-span-3"
+                                    : "col-span-6 row-span-3"
+                                  : product.gallery.length === 4
+                                    ? "col-span-6 row-span-3"
+                                    : idx <= 1
+                                      ? "col-span-6 row-span-3"
+                                      : "col-span-4 row-span-3"
+                            } h-full w-full object-cover rounded`}
                         />
                       ))}
                     </div>
@@ -84,10 +84,10 @@ const ExpertChoice = async ({ params }) => {
                         <Badge className="text-purple-800 bg-purple-100">
                           {product?.variations?.length
                             ? `${h(
-                                "in"
-                              )} ${product.variations.length.toLocaleString(
-                                locale
-                              )} ${h("weight")}`
+                              "in"
+                            )} ${product.variations.length.toLocaleString(
+                              locale
+                            )} ${h("weight")}`
                             : h("noVariations")}{" "}
                         </Badge>
                       </div>
@@ -100,28 +100,28 @@ const ExpertChoice = async ({ params }) => {
                             <span className="text-green-500 !leading-none">
                               <div className="text-left">
                                 {product?.variations?.[0]?.price &&
-                                product?.discountAmount > 0 ? (
+                                  product?.discountAmount > 0 ? (
                                   <>
                                     <p className="text-sm text-red-500 line-through">
                                       {new Intl.NumberFormat(locale).format(
                                         product?.variations?.[0]?.price
                                       )}{" "}
-                                      {h("rials")}
+                                      {tools("Rial")}
                                     </p>
                                     <p className="text-lg text-green-500">
                                       {new Intl.NumberFormat(locale).format(
                                         product?.variations?.[0]?.price *
-                                          (1 - product?.discountAmount / 100)
+                                        (1 - product?.discountAmount / 100)
                                       )}{" "}
-                                      {h("rials")}
+                                      {tools("Rial")}
                                     </p>
                                   </>
                                 ) : (
                                   <p className="text-lg text-blue-500">
                                     {product?.variations?.[0]?.price
                                       ? new Intl.NumberFormat(locale).format(
-                                          product?.variations?.[0]?.price
-                                        ) + t("rials")
+                                        product?.variations?.[0]?.price
+                                      ) + tools("Rial")
                                       : h("notAvailable")}
                                   </p>
                                 )}

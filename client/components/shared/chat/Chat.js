@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import CustomChat from "./CustomChat";
 import language from "@/app/language";
 var loaded = false;
-export default function Chat({ chatState , setChatState}) {
+export default function Chat({ chatState, setChatState }) {
     const lang = useLocale();
     const t = useTranslations("CrispChat")
     const class_language = new language(lang);
@@ -17,10 +17,18 @@ export default function Chat({ chatState , setChatState}) {
         Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
             locale: lang
         });
-        
+        Crisp.setColorTheme("red");
+
         setTimeout(() => {
             let chat_button = document.querySelector("span.cc-157aw");
             let function_edite = () => {
+                let button_close = document.querySelector("span.cc-9nfaa.cc-17cww");
+                if (button_close) {
+                    button_close.addEventListener("click", () => {
+                        setChatState("close")
+                    })
+                }
+
                 let default_massage = document.querySelector('span.cc-10y2t span.cc-dvx9d');
                 if (default_massage) {
                     default_massage.innerHTML = t("FirstChatMessage");
@@ -53,19 +61,33 @@ export default function Chat({ chatState , setChatState}) {
                 let width_doc = document.body.clientWidth;
                 let chat = document.querySelector('a.cc-1m2mf');
                 let ping_div_chat = document.querySelector('div.ping-div-chat');
-                if (document.querySelector("span.cc-157aw.cc-1kgzy")){
-                    document.querySelector("span.cc-157aw.cc-1kgzy").style.cssText = "display : none !important;"     
-                    if(chatState == "loading" && !loaded){
-                        loaded = true;               
+                if (document.querySelector("div.cc-1no03")) {                    
+                    if (screen.width > 480) {
+                        document.querySelector("div.cc-1no03").style.cssText = "width: 320px !important; bottom: 117px !important;"
+                    } else {
+                        document.querySelector("div.cc-1no03").style.cssText = "width: 100% !important; bottom: 0px !important;"
+                    }
+                }
+                if (document.querySelector("div.cc-rfbfu") && screen.width > 480)
+                    document.querySelector("div.cc-rfbfu").style.cssText += "height: 400px !important;"
 
-                        if(document.querySelector("div.cc-1no03") && document.querySelector("div.cc-1no03").dataset.visible == "true"){
+
+                if (document.querySelector("span.cc-157aw.cc-1kgzy")) {
+                    document.querySelector("span.cc-157aw.cc-1kgzy").style.cssText = "display : none !important;"
+                    if (chatState == "loading" && !loaded) {
+                        loaded = true;
+
+                        if (document.querySelector("div.cc-1no03") && document.querySelector("div.cc-1no03").dataset.visible == "true") {
                             setChatState("open")
-                        }else{
+                        } else {
                             setChatState("close")
                         }
                     }
                 }
+
             }
+
+
             if (document.querySelector('section.loader-div')) {
                 document.querySelector('section.loader-div').remove()
             }
@@ -74,8 +96,13 @@ export default function Chat({ chatState , setChatState}) {
                 function_edite();
             }, 300);
         }, 500)
+
+
+
+
+
     }, []);
-    return (  
+    return (
         <div className={"fixed hidden md:inline-block bottom-2 z-50 rtl:right-12 right-28"}>
             <CustomChat chatState={chatState} setChatState={setChatState} />
         </div>
