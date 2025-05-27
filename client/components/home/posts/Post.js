@@ -11,12 +11,7 @@ const Post =async () => {
   return (
     <section
       className="bg-no-repeat bg-contain bg-center h-full py-12 "
-      style={{
-        backgroundImage:
-          "url(/assets/home/main/tree1.svg), url(/assets/home/main/tree2.svg)",
-        backgroundPosition: "0% 0%, 100% 100%",
-        backgroundSize: "251px 300px, 251px 300px"
-      }}
+      
     >
       <Container>
         <div className="w-full h-full flex flex-col gap-y-12">

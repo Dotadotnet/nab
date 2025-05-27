@@ -9,6 +9,7 @@ import Post from "@/components/home/posts/Post";
 import Blog from "@/components/home/blogs/page";
 import Gallery from "@/components/home/gallery/Gallery";
 import NewArrivals from "@/components/home/newArrivals/page";
+import NewsLetter from "@/components/home/news-letter/NewsLetter";
 
 export default async function Home({ params }) {
   return (
@@ -21,6 +22,7 @@ export default async function Home({ params }) {
         <ExpertChoice params={params} />
         <Post params={params} />
         <Gallery />
+        <NewsLetter />
       </Main>
     </>
   );

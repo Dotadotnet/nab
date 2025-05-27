@@ -1,47 +1,65 @@
-
-
 /* internal imports */
 const Product = require("../models/product.model");
 const Review = require("../models/review.model");
 const User = require("../models/user.model");
+const Session = require("../models/session.model");
 
-/* add to review */
 exports.addReview = async (req, res) => {
-  const user = await User.findById(req.user._id);
-  const { product, rating, comment } = req.body;
+  const user = await User.findById(req?.user?._id);
+  const guest = await Session.findOne({
+    sessionId: req.sessionID
+  });
+
+  const { targetId, rating, comment } = req.body;
+
+  if (!user && !guest) {
+    return res.status(401).json({
+      acknowledgement: false,
+      message: "Unauthorized",
+      description: "برای ثبت نظر وارد شوید یا از طریق سشن معتبر اقدام کنید"
+    });
+  }
 
   const productExists = await Product.exists({
-    _id: product,
-    buyers: user._id,
+    _id: targetId,
+    ...(user ? { buyers: user._id } : {})
   });
 
   if (!productExists) {
     return res.status(400).json({
       acknowledgement: false,
       message: "Bad Request",
-      description: "Purchase this to place a review",
+      description: "محصول یافت نشد یا هنوز خریداری نشده است"
     });
   }
 
   const review = await Review.create({
-    reviewer: user._id,
-    product: product,
+    reviewer: user?._id || null,
+    guest: guest?.userId || req.sessionID,
+    product: targetId,
     rating: rating,
-    comment: comment,
+    comment: comment
   });
 
-  await Product.findByIdAndUpdate(product, {
-    $push: { reviews: review._id },
+  await Product.findByIdAndUpdate(targetId, {
+    $push: { reviews: review._id }
   });
 
-  await User.findByIdAndUpdate(user._id, {
-    $push: { reviews: review._id },
-  });
+  if (user) {
+    await User.findByIdAndUpdate(user._id, {
+      $push: { reviews: review._id }
+    });
+  } else {
+    await Session.findOneAndUpdate(
+      { sessionId: guest.sessionId },
+      { $push: { reviews: review._id } }
+    );
+  }
 
   res.status(201).json({
     acknowledgement: true,
     message: "Ok",
-    description: "Review added successfully",
+    description: "نظر با موفقیت ثبت شد"
   });
 };
 
@@ -53,7 +71,7 @@ exports.getReviews = async (res) => {
     acknowledgement: true,
     message: "Ok",
     description: "Review fetched successfully",
-    data: reviews,
+    data: reviews
   });
 };
 
@@ -64,7 +82,7 @@ exports.updateReview = async (req, res) => {
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
-    description: "Review updated successfully",
+    description: "Review updated successfully"
   });
 };
 
@@ -73,16 +91,16 @@ exports.deleteReview = async (req, res) => {
   const review = await Review.findByIdAndDelete(req.params.id);
 
   await Product.findByIdAndUpdate(review.product, {
-    $pull: { reviews: review._id },
+    $pull: { reviews: review._id }
   });
 
   await User.findByIdAndUpdate(review.reviewer, {
-    $pull: { reviews: review._id },
+    $pull: { reviews: review._id }
   });
 
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
-    description: "Review deleted successfully",
+    description: "Review deleted successfully"
   });
 };

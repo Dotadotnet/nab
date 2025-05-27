@@ -12,6 +12,13 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    
+    reviews: [
+      {
+        type: ObjectId,
+        ref: "Review"
+      }
+    ],
     visitCount: {
       type: Number,
       default: 1

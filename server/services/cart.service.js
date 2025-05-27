@@ -6,14 +6,10 @@ const Session = require("../models/session.model");
 /* add to cart */
 exports.addToCart = async (req, res) => {
   const { product, quantity, variation } = req.body;
-  console.log("product",product)
-  console.log("quantity",quantity)
-  console.log("variation",variation)
+
   const user = await User.findById(req?.user?._id);
   const guest = await Session.findOne({ sessionId: req.sessionID });
-  console.log("guest",guest)
-  console.log(req.sessionID)
-  console.log(variation)
+
   if (user) {
 
     const cart = await Cart.create({

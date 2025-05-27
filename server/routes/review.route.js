@@ -4,7 +4,7 @@
 const express = require("express");
 
 /* middleware imports */
-const verify = require("../middleware/verifyAdmin.middleware");
+const verify = require("../middleware/verifyUser.middleware");
 const authorize = require("../middleware/authorize.middleware");
 
 /* internal import */
@@ -18,8 +18,6 @@ const router = express.Router();
 // add to review
 router.post(
   "/add-review",
-  verify,
-  authorize("buyer"),
   reviewController.addReview
 );
 

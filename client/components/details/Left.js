@@ -8,23 +8,25 @@ import DetailCard from "./DetailCard";
 import { useTranslations, useLocale } from "next-intl";
 
 const Left = ({ product }) => {
-  const [mainImage, setMainImage] = useState(product.thumbnail?.url);
+  const [mainImage, setMainImage] = useState(product.gallery[0]?.url);
   const hashTags = [...(product?.category?.tags || [])].filter(
     (tag) => tag !== undefined
   );
   const locale = useLocale();
   function getColumnSpanClass(index, totalThumbnails) {
-    console.log(totalThumbnails)
+    console.log(totalThumbnails);
     if (totalThumbnails === 1) {
       return "col-span-12";
     } else if (totalThumbnails === 2) {
-      return  "col-span-6";
+      return "col-span-6";
     } else if (totalThumbnails === 3) {
-      return  "col-span-4";
+      return "col-span-4";
     } else if (totalThumbnails === 4) {
       return "col-span-3";
     } else if (totalThumbnails === 5) {
-      return index <= 1 ? "col-span-6" : "col-span-4";
+      return "col-span-2";
+    } else if (totalThumbnails === 6) {
+      return "col-span-2";
     } else {
       return "";
     }
@@ -46,8 +48,8 @@ const Left = ({ product }) => {
               src={thumbnail?.url}
               key={index}
               alt={thumbnail?.public_id}
-             className={
-                "rounded object-cover max-w-full w-full h-full" +
+              className={
+                "rounded object-cover max-w-full cursor-pointer w-full h-full" +
                 " " +
                 getColumnSpanClass(index, product.gallery.length)
               }
@@ -107,28 +109,8 @@ const Left = ({ product }) => {
           )}
         </div>
       </div>
-      <article className="flex flex-col gap-y-4">
-        <div className="flex flex-col gap-y-2.5">
-          <div className="flex flex-col gap-y-2.5">
-            {product?.tags?.map((tag, index) => (
-              <DetailCard
-                key={index}
-                icon={"🏷️"}
-                title={
-                  tag.translations?.find(
-                    (tr) => tr.translation?.language === locale
-                  )?.translation?.fields.title
-                }
-                content={
-                  tag?.translations?.find(
-                    (tr) => tr.translation?.language === locale
-                  )?.translation?.fields.keynotes
-                }
-              />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-y-2.5">
+      <article className="flex flex-col ">
+        <div className="flex flex-col gap-y-2.5 mt-4">
           <DetailCard
             icon={"🛍️"}
             title={` ${h("category")}  ${
@@ -142,7 +124,7 @@ const Left = ({ product }) => {
               )?.translation?.fields.keynotes
             }
           />
-          <div className="flex flex-row flex-wrap gap-1 mt-4">
+          <div className="flex flex-row flex-wrap gap-1 ">
             {hashTags.map((hashTag, index) => (
               <span
                 key={index}
@@ -150,6 +132,24 @@ const Left = ({ product }) => {
               >{`#${hashTag}`}</span>
             ))}
           </div>
+        </div>
+        <div className="  hidden md:flex flex-col gap-y-2.5">
+          {product?.tags?.map((tag, index) => (
+            <DetailCard
+              key={index}
+              icon={"🏷️"}
+              title={
+                tag.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.title
+              }
+              content={
+                tag?.translations?.find(
+                  (tr) => tr.translation?.language === locale
+                )?.translation?.fields.keynotes
+              }
+            />
+          ))}
         </div>
       </article>
     </section>

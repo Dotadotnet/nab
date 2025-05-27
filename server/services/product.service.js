@@ -213,6 +213,7 @@ exports.getProducts = async (req, res) => {
   try {
     console.log(req.locale);
     const products = await Product.find({ isDeleted: false })
+      .sort({ createdAt: -1 })
       .select(
         "title thumbnail discountAmount campaign gallery status summary productId _id createdAt creator translations"
       )
@@ -240,6 +241,7 @@ exports.getProducts = async (req, res) => {
           },
           select: "translations"
         },
+
         {
           path: "variations",
           select: "price stock unit lowStockThreshold",
@@ -343,6 +345,9 @@ exports.getProduct = async (req, res) => {
             select: "fields.title fields.keynotes  language"
           },
           select: "translations"
+        },
+        {
+          path: "reviews"
         },
         {
           path: "tags",

@@ -1,5 +1,3 @@
-
-
 const { nabApi } = require("../nab");
 
 const reviewApi = nabApi.injectEndpoints({
@@ -10,12 +8,13 @@ const reviewApi = nabApi.injectEndpoints({
         url: "/review/add-review",
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         },
-        body,
+        credentials: "include",
+        body
       }),
 
-      invalidatesTags: ["Review", "Product", "User"],
+      invalidatesTags: ["Review", "Product", "User","Session"]
     }),
 
     // remove review
@@ -24,13 +23,13 @@ const reviewApi = nabApi.injectEndpoints({
         url: `/review/delete-review/${id}`,
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
       }),
 
-      invalidatesTags: ["Review", "Product", "User"],
-    }),
-  }),
+      invalidatesTags: ["Review", "Product", "User","Session"]
+    })
+  })
 });
 
 export const { useAddReviewMutation, useRemoveReviewMutation } = reviewApi;

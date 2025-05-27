@@ -191,5 +191,28 @@
     "OpenShopTitle": "Online Store Launch",
     "OpenShopSubtitle": "10% off on your first purchase",
     "OpenShopCta": "Shop Now"
+  },
+  "reviews": {
+    "title": "Traveler's",
+    "highlight": "Review",
+    "subtitle": "Discover the Impact of Our Products and Services Through Their Testimonials",
+    "addReview": "Add Review",
+    "noReviews": "No reviews found!",
+    "modalTitle": "Write Your Review",
+    "commentLimit": "Comment limited to 500 characters",
+    "starLimit": "Choose stars between 1 to 5",
+    "placeholder": "Write your thoughts...",
+    "submit": "Add Review",
+    "addingReview":"Adding Review"
+  },"newsletter":{
+    "title": "Indulge in the World of Nougat & Delights!",
+  "description": "Subscribe to receive the latest flavours, exclusive offers, and handcrafted sweets—before anyone else.",
+  "placeholder": "Enter your email address",
+  "button": "Subscribe",
+  "successMessage": "You've successfully subscribed!",
+  "productTitle": "Premium Almond Nougat",
+  "productType": "Traditional Sweet",
+  "pricePrefix": "Starts from",
+  "productDuration": "Available for 3 days only"
   }
 }
