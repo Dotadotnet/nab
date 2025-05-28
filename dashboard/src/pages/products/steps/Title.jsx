@@ -96,8 +96,8 @@ const TitleStep = ({ register, errors, prevStep, nextStep }) => {
         <textarea
           name="description"
           id="description"
-          rows="4"
-          maxLength="500"
+          rows="8"
+          maxLength="1200"
           {...register("description", {
             required: "وارد کردن خلاصه الزامی است",
             minLength: {

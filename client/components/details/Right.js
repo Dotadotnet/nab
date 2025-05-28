@@ -48,24 +48,7 @@ const Right = ({ product }) => {
 
       <Description product={product} />
       <Policies />
-      <div className="  flex md:hidden flex-col gap-y-2.5">
-        {product?.tags?.map((tag, index) => (
-          <DetailCard
-            key={index}
-            icon={"🏷️"}
-            title={
-              tag.translations?.find(
-                (tr) => tr.translation?.language === locale
-              )?.translation?.fields.title
-            }
-            content={
-              tag?.translations?.find(
-                (tr) => tr.translation?.language === locale
-              )?.translation?.fields.keynotes
-            }
-          />
-        ))}
-      </div>
+      
       <div
         className={`fixed z-[99999] bottom-0 left-0 w-full  shadow-lg  transition-transform duration-300 md:hidden ${
           showCart ? "translate-y-0" : "translate-y-full"
