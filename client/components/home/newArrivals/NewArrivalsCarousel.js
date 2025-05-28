@@ -18,7 +18,7 @@ function NewArrivalsCarousel({ products }) {
         modules={[Pagination, FreeMode]}
         className="w-full h-full z-50"
       >
-        {products?.slice(0, 4)?.map((product, index) => (
+        {products?.map((product, index) => (
           <SwiperSlide key={index}>
             <Card index={index} product={product} />
           </SwiperSlide>

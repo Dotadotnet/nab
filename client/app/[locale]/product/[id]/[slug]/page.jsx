@@ -22,7 +22,7 @@ const ProductDetailPage = async ({ params }) => {
     <>
       <Left product={product} />
       <Right product={product} />
-      <div className="  flex  flex-col gap-y-2.5">
+      <div className="  flex  flex-col gap-y-2.5 md:col-span-6 col-span-12">
         {product?.tags?.map((tag, index) => (
           <DetailCard
             key={index}
