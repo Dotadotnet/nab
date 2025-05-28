@@ -5,7 +5,6 @@ import language from "@/app/language";
 import { usePathname } from "next/navigation";
 import OutsideClick from "../outsideClick/OutsideClick";
 const LanguageSwitcher = () => {
-  const pathname = usePathname().split("/");
   const [isOpen, setIsOpen] = useState(false);
   const t = useLocale();
   const class_lang = new language(t);
@@ -13,16 +12,25 @@ const LanguageSwitcher = () => {
   const langs = class_lang.info;
   const langs_result = [];
   langs.forEach((lang) => {
-    pathname[1] = lang.lang;
+    const pathname = usePathname().split("/");
+    if (t == "fa") {
+      pathname.unshift(lang.lang)
+            pathname.unshift('')
+    } else {
+      pathname[1] = lang.lang;
+    }
     langs_result.push({
       lang: lang.lang,
       img: lang.img,
       name: lang.name,
-      link: pathname.join("/"),
+      link:   pathname.join("/").replace("//", "/"),
       loc: lang.loc,
       dir: lang.dir
     });
+
   });
+  console.log(langs_result);
+  
   return (
     <div className="relative">
       <button

@@ -4,6 +4,11 @@ const User = require("../models/user.model");
 const Translation = require("../models/translation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
+const Product = require("../models/product.model");
+const Blog = require("../models/blog.model");
+const Post = require("../models/post.model");
+
+
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
@@ -99,6 +104,40 @@ exports.addTag = async (req, res) => {
     });
   }
 };
+
+
+
+
+exports.getItem = async (req, res) => {
+  let { page, name } = req.params;
+  const tag = await Tag.find({ title : name });
+  const id =  tag[0]._id;
+  const Products = await Product.find();
+  const Posts = await Post.find();
+  const Blogs = await Blog.find();
+
+  const items = [].concat(Products, Posts, Blogs);
+  const result = [];
+
+  items.forEach(item => {
+    if (item.tags.includes(id)) {
+      result.push(item)
+    }
+  });
+  res.status(200).json({
+    acknowledgement: true,
+    message: "Ok",
+    description: "تگ‌ها با موفقیت دریافت شدند",
+    data: {
+      total: result.length,
+      data: result.splice(page - 1, page * 10),
+      tag: tag[0]
+    },
+  });
+
+
+};
+
 
 
 exports.getTags = async (req, res) => {

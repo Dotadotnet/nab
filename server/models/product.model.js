@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema(
       unique: [true, "محصول مشابه قبلاً ثبت شده است"],
       maxLength: [100, "عنوان نمی‌تواند بیشتر از ۱۰۰ کاراکتر باشد"]
     },
- translations: [
+    translations: [
       {
         translation: {
           type: mongoose.Schema.Types.ObjectId,
@@ -26,7 +26,7 @@ const productSchema = new mongoose.Schema(
         },
         language: {
           type: String,
-          enum: ["fa","en", "tr", "ar"],
+          enum: ["fa", "en", "tr", "ar"],
           required: true
         }
       }
@@ -42,7 +42,17 @@ const productSchema = new mongoose.Schema(
         default: "N/A"
       }
     },
-
+    canonicalUrl: {
+      type: String,
+      required: false,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          return /^(https?:\/\/[^\s$.?#].[^\s]*)$/.test(v);
+        },
+        message: "URL معتبر نیست",
+      },
+    },
     gallery: {
       type: [
         {
@@ -171,14 +181,16 @@ productSchema.pre("save", async function (next) {
       { new: true, upsert: true }
     );
     this.productId = counter.seq;
-
+    if (!this.canonicalUrl) {
+      const slugPart = this.slug ? this.slug : encodeURIComponent(this.title).replace(" ",'-');
+      this.canonicalUrl = `${defaultDomain}/product/${this.productId}/${slugPart}`;
+    }
     next();
   } catch (error) {
     console.error("خطا در تولید QR Code:", error);
     next(error);
   }
 
- 
 });
 
 const Product = mongoose.model("Product", productSchema);
