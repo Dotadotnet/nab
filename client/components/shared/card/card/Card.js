@@ -37,15 +37,17 @@ const Card = ({ index, product, ...rest }) => {
           </div>
 
           <div className="mt-4 flex justify-center">
-            <div className="rounded-full relative shadow-custom flex items-center  justify-center">
-              <Image
-                src={product?.thumbnail?.url}
-                alt={title}
-                width={300}
-                height={300}
-                loading="lazy"
-                className="w-full h-full  object-contain"
-              />
+            <div className="relative aspect-[1/1] w-full">
+              <div className="absolute inset-0 scale-95 shadow-custom rounded-full z-0" />
+
+              <div className="absolute inset-0 z-10">
+                <Image
+                  src={product?.thumbnail?.url}
+                  alt={product?.thumbnail?.public_id}
+                  fill
+                  className="object-contain rounded-full"
+                />
+              </div>
             </div>
           </div>
 
