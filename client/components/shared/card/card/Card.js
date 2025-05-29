@@ -37,13 +37,14 @@ const Card = ({ index, product, ...rest }) => {
           </div>
 
           <div className="mt-4 flex justify-center">
-            <div className="rounded-full relative shadow-custom flex items-center justify-center">
+            <div className="rounded-full relative shadow-custom flex items-center  justify-center">
               <Image
                 src={product?.thumbnail?.url}
-                alt={product?.thumbnail?.public_id}
-                width={150}
-                height={150}
-                className="w-full h-full scale-105 object-contain"
+                alt={title}
+                width={300}
+                height={300}
+                loading="lazy"
+                className="w-full h-full  object-contain"
               />
             </div>
           </div>
@@ -57,7 +58,8 @@ const Card = ({ index, product, ...rest }) => {
             <CardButton />
 
             <div className="text-left">
-              {product?.variations?.[0]?.price && product?.discountAmount > 0 ? (
+              {product?.variations?.[0]?.price &&
+              product?.discountAmount > 0 ? (
                 <>
                   <p className="text-sm text-red-500 line-through">
                     {new Intl.NumberFormat(locale).format(
@@ -78,7 +80,9 @@ const Card = ({ index, product, ...rest }) => {
                   {product?.variations?.[0]?.price
                     ? new Intl.NumberFormat(locale).format(
                         product?.variations?.[0]?.price
-                      ) + " " + t("rials")
+                      ) +
+                      " " +
+                      t("rials")
                     : t("notAvailable")}
                 </p>
               )}
