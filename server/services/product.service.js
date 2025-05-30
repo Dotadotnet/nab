@@ -211,7 +211,6 @@ exports.addProduct = async (req, res) => {
 /* get all products */
 exports.getProducts = async (req, res) => {
   try {
-    console.log(req.locale);
     const products = await Product.find({ isDeleted: false })
       .sort({ createdAt: -1 })
       .select(

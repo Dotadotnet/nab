@@ -37,14 +37,17 @@ const Card = ({ index, product, ...rest }) => {
           </div>
 
           <div className="mt-4 flex justify-center">
-            <div className="rounded-full relative shadow-custom flex items-center justify-center">
-              <Image
-                src={product?.thumbnail?.url}
-                alt={product?.thumbnail?.public_id}
-                width={150}
-                height={150}
-                className="w-full h-full scale-105 object-contain"
-              />
+            <div className="relative aspect-[1/1] w-full">
+              <div className="absolute inset-0 scale-95 shadow-custom rounded-full z-0" />
+
+              <div className="absolute inset-0 z-10">
+                <Image
+                  src={product?.thumbnail?.url}
+                  alt={product?.thumbnail?.public_id}
+                  fill
+                  className="object-contain rounded-full"
+                />
+              </div>
             </div>
           </div>
 
@@ -57,7 +60,8 @@ const Card = ({ index, product, ...rest }) => {
             <CardButton />
 
             <div className="text-left">
-              {product?.variations?.[0]?.price && product?.discountAmount > 0 ? (
+              {product?.variations?.[0]?.price &&
+              product?.discountAmount > 0 ? (
                 <>
                   <p className="text-sm text-red-500 line-through">
                     {new Intl.NumberFormat(locale).format(
@@ -78,7 +82,9 @@ const Card = ({ index, product, ...rest }) => {
                   {product?.variations?.[0]?.price
                     ? new Intl.NumberFormat(locale).format(
                         product?.variations?.[0]?.price
-                      ) + " " + t("rials")
+                      ) +
+                      " " +
+                      t("rials")
                     : t("notAvailable")}
                 </p>
               )}

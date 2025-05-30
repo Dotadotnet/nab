@@ -3,7 +3,9 @@ const Session = require("../models/session.model");
 
 async function initSession(req, res, next) {
   try {
-    let sessionData = await Session.findOne({ sessionId: req.sessionID });
+    const sessionData = await Session.findOne({
+      sessionId: req.sessionID
+    });
     if (!sessionData) {
       req.session.userId = `guest_${Date.now()}`;
       sessionData = await Session.create({

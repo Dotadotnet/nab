@@ -1,3 +1,4 @@
+import DetailCard from "@/components/details/DetailCard";
 import Left from "@/components/details/Left";
 import Right from "@/components/details/Right";
 import AllReviews from "@/components/shared/review/AllReviews";
@@ -21,6 +22,24 @@ const ProductDetailPage = async ({ params }) => {
     <>
       <Left product={product} />
       <Right product={product} />
+      <div className="  flex  flex-col gap-y-2.5 md:col-span-6 col-span-12">
+        {product?.tags?.map((tag, index) => (
+          <DetailCard
+            key={index}
+            icon={"🏷️"}
+            title={
+              tag.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.title
+            }
+            content={
+              tag?.translations?.find(
+                (tr) => tr.translation?.language === locale
+              )?.translation?.fields.keynotes
+            }
+          />
+        ))}
+      </div>
       <AllReviews
         targetId={product._id}
         targetType="product"

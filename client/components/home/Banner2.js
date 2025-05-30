@@ -21,6 +21,7 @@ const Banner2 = async ({ params }) => {
             alt="model"
             height={872}
             width={600}
+            sizes="(max-width: 768px) 100vw, 600px"
             className="lg:absolute bottom-0 left-0 order-2"
           />
           <article className="flex flex-col justify-start items-end order-1">

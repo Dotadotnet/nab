@@ -133,24 +133,7 @@ const Left = ({ product }) => {
             ))}
           </div>
         </div>
-        <div className="  hidden md:flex flex-col gap-y-2.5">
-          {product?.tags?.map((tag, index) => (
-            <DetailCard
-              key={index}
-              icon={"🏷️"}
-              title={
-                tag.translations?.find(
-                  (tr) => tr.translation?.language === locale
-                )?.translation?.fields.title
-              }
-              content={
-                tag?.translations?.find(
-                  (tr) => tr.translation?.language === locale
-                )?.translation?.fields.keynotes
-              }
-            />
-          ))}
-        </div>
+       
       </article>
     </section>
   );
