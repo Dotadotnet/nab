@@ -1,25 +1,35 @@
 "use client";
-import React from "react";
-import { AiTwotoneFire } from "react-icons/ai";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import React, { useState, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import language from "@/app/language";
-import Link from "next/link";
+import Image from "next/image";
+import  "./Right.css"; 
 
-function Right() {
+
+
+export default function Right({options}) {
   const t = useTranslations("Tools");
   const h = useTranslations("HomePage");
-  const router = useRouter();
   const lang = useLocale();
-  const language_class = new language(lang);
-  const dir = language_class.getInfo().dir;
-  const move_side = dir == "ltr" ? -200 : 200;
+
+  const [selected, setSelected] = useState(options[0]);
+  const [isActive, setIsActive] = useState(false);
+  const imgBoxRef = useRef(null);
+  const btnRef = useRef(null);
+
+  const toggleFlip = () => {
+    imgBoxRef.current?.classList.toggle("active");
+    btnRef.current?.classList.toggle("active");
+  };
+
+  const handleOptionClick = (item) => {
+    setSelected(item);
+    setIsActive(true);
+    setTimeout(() => setIsActive(false), 1000);
+  };
 
   return (
     <div className="col-span-2 h-full flex flex-col mt-1">
-      <div
+       <div
         className="w-full bg-primary md:mt-5 h-full rounded-xl relative flex flex-col justify-start gap-y-8"
         style={{
           backgroundImage: "url(/assets/home/banner/dots.svg)",
@@ -28,55 +38,78 @@ function Right() {
           overflow: "hidden"
         }}
       >
-        <div className="flex md:flex-row lg:flex-row justify-start flex-col-reverse md:m-0">
-          <div className="md:flex">
-            <div className="lg:ml-0 h-full w-full">
-              <div className="h-full w-full lg:mr-0 md:ml-auto">
-                <Image
-                  priority
-                  src="/assets/home/banner/model1.webp"
-                  alt="model"
-                  height={872}
-                  width={500}
-                  className="ltr:-scale-x-100 h-full mt-[10px] object-cover w-full lg:ml-0 md:ml-auto"
-                />
-              </div>
+        <div className="banner p-4">
+          <div className="content">
+            <h1 className="text-6xl absolute top-2 right-2 transform-fill md:text-4xl font-nozha font-bold text-white">
+              نقل و حلوای ناب{" "}
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="84"
+                  height="84"
+                  viewBox="0 0 16 16"
+                  className="icon"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M8 2.748v11.047c3.452-2.368 5.365-4.542 6.286-6.357c.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
+                  />
+                </svg>
+              </span>
+            </h1>
+            <h2></h2>
+          </div>
+
+          <div
+            ref={imgBoxRef}
+            className={`imgBox h-96 w-96 ${isActive ? "active" : ""}`}
+          >
+            <div className="food w-90 h-90 ">
+              <Image
+                src={selected.src}
+                alt={selected.title}
+                fill
+                className="object-cover rounded-xl"
+              />
+            </div>
+            <div className="description h-90 w-90 p-2 text-white">
+              <h3 className="text-xl font-bold">{selected.title}</h3>
+              <p className="text-sm">{selected.description}</p>
+              <span className="price text-lg text-white ">{selected.price} تومان</span>
             </div>
           </div>
-          <div className="flex flex-col gap-4 p-4 md:pt-16">
-            <h1 className="text-white font-nozha text-5xl w-full text-right">
-              {h("NoghlAndHalvaOf")} <span className="md:text-6xl text-black">{t("NameShop")}</span>
-            </h1>
 
-            <h2 className="md:text-3xl font-nozha text-4xl text-white w-full text-right">
-              {h("HeroRightSubTitle")}
-            </h2>
+          <button
+            className="btn bg-white text-black px-4 py-2 rounded mt-4"
+            ref={btnRef}
+            onClick={toggleFlip}
+          >
+            دیدن جزئیات
+          </button>
 
-             <motion.p
-              className="flex flex-row gap-x-0.5 items-center text-right justify-start md:text-md text-black"
-              initial={{ x: move_side, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-            >
-              {h("HeroRightCaption")}
-              <AiTwotoneFire className="text-[#ffa384] w-6 h-6 drop-shadow" />
-            </motion.p>
-
-            <Link href="/products">
-              <motion.button
-                className="px-8 py-4 cursor-pointer border border-black justify-start rounded-secondary bg-black hover:bg-black/90 text-white transition-colors drop-shadow w-fit mt-4"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 100, damping: 15 }}
-              >
-                {h("HeroRightStart")}
-              </motion.button>
-            </Link>
+          <div className="selections mt-4">
+            <div className="circle flex justify-center items-center gap-2 flex-wrap">
+              {options.map((item, i) => (
+                <div
+                  key={item.id}
+                  style={{ "--i": i }}
+                  className="options w-16 h-16 cursor-pointer"
+                  onClick={() => handleOptionClick(item)}
+                >
+                  <Image
+                    src={item.src}
+                    alt={item.title}
+                    width={300}
+                    height={300}
+                    className="rounded"
+                  />
+                </div>
+              ))}
+            </div>
+            <h2 className="text-center text-white mt-2 font-nozha">چرخ   مزه ها</h2>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default Right;

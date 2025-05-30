@@ -57,8 +57,8 @@ module.exports = class responseEdite {
         if (result[this.targetFild] && result[this.targetFild][0]["translation"]) {
             for (let i = 0; i < result[this.targetFild].length; i++) {
                 let translated = await Translation.findById(result[this.targetFild][i]["translation"]);
-                result[this.targetFild][i] = translated.fields;
-                if (translated.language == this.lang) {
+                result[this.targetFild][i] = translated?.fields;
+                if (translated?.language == this.lang) {
                     for (const [key, value] of Object.entries(Object.fromEntries(translated.fields))) {
                         result[key] = value;
                     }

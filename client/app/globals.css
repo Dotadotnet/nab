@@ -45,6 +45,8 @@
   --gridTemplateColumns-16: repeat(16, minmax(0, 1fr));
   --gridTemplateColumns-20: repeat(20, minmax(0, 1fr));
   --gridTemplateColumns-24: repeat(24, minmax(0, 1fr));
+  --width-90:350px;
+  --height-90:350px;
 }
 
 html {

@@ -250,7 +250,7 @@ exports.getProducts = async (req, res) => {
           }
         }
       ]);
-
+console.log("products", products);
     res.status(200).json({
       acknowledgement: true,
       message: "Ok",

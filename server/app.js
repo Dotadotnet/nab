@@ -4,7 +4,6 @@ require("dotenv").config();
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const error = require("./middleware/error.middleware");
-const responseEdite = require("./config/responseEditeMiddleware");
 
 const app = express();
 
@@ -43,32 +42,9 @@ app.use(cookieParser());
 
 
 
-app.use(async (req, res, next) => {
-  const originalSend = res.send;
-  res.send = async function (body) {
-    const ClassResponseEdite = new responseEdite(body , req)
-    const response = await ClassResponseEdite.getResult() ;
-    originalSend.call(this , response );
-  };
-  next();
-});
 
-//middleware to intercept response.json()
-// app.use((req, res, next) => {
-// 	const originalJson = res.json;
 
-// 	// Override the json function
-// 	res.json = function (body) {
-// 		// Modify the response body
-// 		const ModifybodyJson = { ...body, data: 'modified' }
-// 		console.log('Intercepted response.json():', body);
-// 		console.log('Intercepted response.json():', ModifybodyJson);
 
-// 		originalJson.call(this, ModifybodyJson);
-// 	};
-
-// 	next();
-// });
 
 
 
