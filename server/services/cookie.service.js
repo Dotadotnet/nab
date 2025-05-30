@@ -9,9 +9,7 @@ const remove = require("../utils/remove.util");
 exports.getCookie = async (req, res) => {
   let result = null;
   const keys = Object.keys(req.cookies);
-  const values = Object.values(req.cookies);
-  console.log(req.cookies);
-  
+  const values = Object.values(req.cookies);  
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     if (key == req.params.key) {

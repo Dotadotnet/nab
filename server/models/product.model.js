@@ -164,7 +164,6 @@ const productSchema = new mongoose.Schema(
         required: [true, "تگ محصول الزامی است"]
       }
     ],
-
     ...baseSchema.obj
   },
   { timestamps: true }

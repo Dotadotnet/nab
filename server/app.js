@@ -4,6 +4,7 @@ require("dotenv").config();
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const error = require("./middleware/error.middleware");
+const responseEdite = require("./config/responseEditeMiddleware");
 
 const app = express();
 
@@ -40,6 +41,39 @@ app.use(
 
 app.use(cookieParser());
 
+
+
+app.use(async (req, res, next) => {
+  const originalSend = res.send;
+  res.send = async function (body) {
+    const ClassResponseEdite = new responseEdite(body , req)
+    const response = await ClassResponseEdite.getResult() ;
+    originalSend.call(this , response );
+  };
+  next();
+});
+
+//middleware to intercept response.json()
+// app.use((req, res, next) => {
+// 	const originalJson = res.json;
+
+// 	// Override the json function
+// 	res.json = function (body) {
+// 		// Modify the response body
+// 		const ModifybodyJson = { ...body, data: 'modified' }
+// 		console.log('Intercepted response.json():', body);
+// 		console.log('Intercepted response.json():', ModifybodyJson);
+
+// 		originalJson.call(this, ModifybodyJson);
+// 	};
+
+// 	next();
+// });
+
+
+
+
+
 app.use("/api/unit", require("./routes/unit.route"));
 app.use("/api/tag", require("./routes/tag.route"));
 app.use("/api/category", require("./routes/category.route"));
@@ -58,6 +92,8 @@ app.use("/api/blog", require("./routes/blog.route"));
 app.use("/api/session", require("./routes/session.route"));
 app.use("/api/gallery", require("./routes/gallery.route"));
 app.use("/api/cookie", require("./routes/cookie.route"));
+
+
 
 app.use(error);
 

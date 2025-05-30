@@ -13,6 +13,17 @@ exports.get = async (req, res, next) => {
 };
 
 
+exports.getOne = async (req, res, next) => {
+  try {
+    await dynamicService.getOne(req,res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+
 
 /* update dynamic */
 exports.update = async (req, res, next) => {
