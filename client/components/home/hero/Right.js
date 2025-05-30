@@ -70,6 +70,7 @@ export default function Right({options}) {
                 alt={selected.title}
                 width={600}
                 height={600}
+                priority 
                 className="object-cover rounded-xl"
               />
             </div>
