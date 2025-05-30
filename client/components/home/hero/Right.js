@@ -68,7 +68,8 @@ export default function Right({options}) {
               <Image
                 src={selected.src}
                 alt={selected.title}
-                fill
+                width={600}
+                height={600}
                 className="object-cover rounded-xl"
               />
             </div>

@@ -7,7 +7,7 @@ const Hero = () => {
   const options = [
     {
       id: 4,
-      src: "/image/4.png",
+      src: "/image/4.webp",
       title: "نقل گل سرخ",
       description: "نقل سنتی با طعم گل سرخ، مناسب برای مجالس و هدیه",
       price: "2,000,000"
@@ -21,21 +21,21 @@ const Hero = () => {
     },
     {
       id: 2,
-      src: "/image/2.png",
+      src: "/image/2.webp",
       title: "نقل گردوئی",
       description: "نقل سنتی با مغز گردو، خوش‌طعم و مقوی برای پذیرایی",
       price: "1,800,000"
     },
     {
       id: 3,
-      src: "/image/3.png",
+      src: "/image/3.webp",
       title: "نقل خلال بیدمشک",
       description: "نقل لطیف با عطر بیدمشک طبیعی، آرامش‌بخش و خاص",
       price: "2,200,000"
     },
     {
       id: 5,
-      src: "/image/5.png",
+      src: "/image/5.webp",
       title: "حلوای گردوئی",
       description: "حلوای غنی شده با گردوی تازه و شیرین، مخصوص عصرانه",
       price: "1,800,000"
