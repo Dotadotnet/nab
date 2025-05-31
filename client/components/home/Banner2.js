@@ -19,9 +19,9 @@ const Banner2 = async ({ params }) => {
           <Image
             src="/assets/home/banner/kid.webp"
             alt="model"
-            height={872}
-            width={600}
-            sizes="(max-width: 768px) 100vw, 600px"
+            height={1024}
+            width={904}
+            sizes="(max-width: 768px) 100vw, 904px"
             className="lg:absolute bottom-0 left-0 order-2"
           />
           <article className="flex flex-col justify-start items-end order-1">

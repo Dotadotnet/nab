@@ -17,7 +17,7 @@ const Posts = () => {
                 key={index}
                 className="flex flex-col justify-center rtl min-h-[120px] lg:min-h-[200px]  "
               >
-                <div className="relative flex flex-row space-x-3 h-full space-x-reverse rounded-primary shadow-lg p-3 w-full md:min-w-[600px] max-w-[650px] mx-auto border border-white  bg-white/70 dark:bg-slate-800/70 dark:border-slate-600">
+                <div className="relative flex flex-row space-x-3 h-full space-x-reverse rounded-primary shadow-lg p-3 w-full md:min-w-[600px] gap-2 max-w-[650px] mx-auto border border-white  bg-white/70 dark:bg-slate-800/70 dark:border-slate-600">
                   <div className="w-1/3 grid place-items-center ">
                     <SkeletonImage borderRadius={"rounded-lg"} />
                   </div>
