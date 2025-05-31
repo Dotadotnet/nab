@@ -74,15 +74,6 @@ tagSchema.pre("save", async function (next) {
   }
 });
 
-tagSchema.pre("find", async function (next, req) {
-  const response = await fetch("http://localhost:8080/api/cookie/get/token", {
-    method: "GET"
-  });
-  const data = await response.text();
-  console.log(data)
-  next()
-});
-
 
 
 
