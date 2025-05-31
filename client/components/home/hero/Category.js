@@ -32,12 +32,12 @@ function Category() {
              text-gray-800 dark:text-white cursor-pointer shadow-lg bg-white dark:bg-gray-700 
              hover:shadow-xl dark:hover:text-white transition-colors duration-300"
         >
-          <motion.button
+          <motion.div
             whileHover={{ rotate: 10 }}
             className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-500"
           >
             {category.icon}
-          </motion.button>
+          </motion.div>
 
           <p className="text-center mt-4 text-2xl font-nozha transition-colors duration-300 dark:text-gray-100">
             {category.name}

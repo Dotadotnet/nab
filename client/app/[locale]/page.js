@@ -15,7 +15,7 @@ export default async function Home({ params }) {
   return (
     <>
       <Main>
-        <Hero />
+        <Hero params={params} />
         <NewArrivals params={params} />
         <Banner2 params={params} />
         {/* <Trending params={params} /> */}

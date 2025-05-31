@@ -1,49 +1,31 @@
+
+
+import { NavLink } from "react-router-dom";
 import ControlPanel from "../ControlPanel";
-import React, { useState, useEffect } from "react";
-import axios from "@/utils/axios";
-import ConfigInput from "./ConfigInput";
 
-const Settings = () => {
+export default function Setting() {
+  const settings = [
+    { name: "تنظیمات عمومی", path: "./general" },
+    { name: "اسلایدها", path: "./setting/slides" },
+    { name: "درباره ما", path: "./aboutus" },
+    { name: "تماس با ما", path: "./contact" },
+    { name: "محصولات ویژه", path: "./featuredProduct" },
+    { name: "سوالات متداول", path: "./faqs" }
+  ];
 
-    const [data, setData] = useState(null);
-
-    useEffect(() => {
-        if (data == null) {
-            axios.get('/settings/get-all').then(function (response) {
-                let data = response.data.data;
-                setData(data);
-            })
-        }
-    }, [data])
-
-
-
-
-
-    return (
-        <>
-            <ControlPanel>
-                <div className="grid grid-cols-1 gap-5  sm:grid-cols-2">
-
-                    {data == null
-                        ?
-                        <h1 className="text-center text-2xl"> درحال بارگزاری  </h1>
-                        :
-                        data.length == 0 ? <h1 className="text-center text-2xl"> هیچ تنظیماتی وجود ندارد  </h1>
-                            :
-                            data.map((item) => <ConfigInput item={item} />)
-                    }
-
-
-
-
-
-
-
-                </div>
-            </ControlPanel>
-        </>
-    );
-};
-
-export default Settings;
+  return (
+    <ControlPanel>
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {settings.map((setting) => (
+            <NavLink key={setting.path} to={setting.path}>
+              <button className="w-full custom-button  text-white py-4 px-6 rounded shadow transition duration-200">
+                {setting.name}
+              </button>
+            </NavLink>
+          ))}
+        </div>
+      </div>
+    </ControlPanel>
+  );
+}

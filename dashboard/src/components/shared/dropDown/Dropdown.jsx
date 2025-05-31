@@ -5,52 +5,38 @@ const Dropdown = ({
   value,
   handleSelect,
   onChange,
-  sendId = false,
   className = "h-12 w-full",
   isReadOnly = false,
-  iconOnly = false, // اضافه شده
+  iconOnly = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [selectedItem, setSelectedItem] = useState(() => {
-    return items.find((item) => item.value === value) || null;
-  });
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  const filteredItems = items.filter((item) => item?.value?.includes(searchTerm));
+  const filteredItems = items.filter(
+    (item) => typeof item?.value === "string" && item.value.includes(searchTerm)
+  );
 
   const handleItemSelect = (item) => {
     if (!isReadOnly) {
       setSelectedItem(item);
       if (handleSelect) {
-        handleSelect(sendId ? item.id : item.value);
+        handleSelect(item);
       } else if (onChange) {
-        onChange(sendId ? item.id : item.value);
+        onChange(item);
       }
       setIsOpen(false);
       setTooltipContent("");
     }
   };
 
-  const handleClickOutside = (event) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      setIsOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   useEffect(() => {
     if (value) {
-      const selected = items.find((item) => item.id === value);
-      setSelectedItem(selected);
+      const selected = items.find((item) => item.value === value);
+      setSelectedItem(selected || null);
     } else {
       setSelectedItem(null);
     }
@@ -61,14 +47,13 @@ const Dropdown = ({
     setTooltipContent(description);
     setTooltipPosition({
       top: rect.top + window.scrollY,
-      left: rect.right + 10,
+      left: rect.right + 10
     });
   };
 
   const handleMouseLeave = () => {
     setTooltipContent("");
   };
-
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <button
@@ -80,7 +65,17 @@ const Dropdown = ({
         disabled={isReadOnly}
       >
         <span className="ml-2 dark:text-gray-100 flex justify-center text-center">
-          {iconOnly && selectedItem?.icon ? selectedItem.icon : selectedItem?.value || ""}
+          {iconOnly && selectedItem?.icon ? (
+            <div dangerouslySetInnerHTML={{ __html: selectedItem.icon }} />
+          ) : (
+            <div className="flex items-center gap-2 ">
+              <span
+                className="w-5 h-5"
+                dangerouslySetInnerHTML={{ __html: selectedItem?.icon }}
+              />
+              <span>{selectedItem?.title || selectedItem?.value}</span>
+            </div>
+          )}
         </span>
         {!isReadOnly && !iconOnly && (
           <span className="dark:text-gray-100">
@@ -101,31 +96,35 @@ const Dropdown = ({
         )}
       </button>
       {isOpen && (
-        <div className="absolute mt-2 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg z-50 p-2">
-          <input
-            type="text"
-            placeholder="جستجو کن"
-            className="w-full px-4 py-2 border-b dark:border-gray-700 focus:outline-none dark:bg-gray-800"
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <ul className="max-h-40 overflow-y-auto flex mt-2 flex-col gap-y-2">
-            {filteredItems.map((item) => (
-              <li
-                key={item.id}
-                onClick={() => handleItemSelect(item)}
-                onMouseEnter={(e) => handleMouseEnter(e, item.description)}
-                onMouseLeave={handleMouseLeave}
-                className={`marker:relative  bg-gray-100 hover:bg-blue-100   ${iconOnly ?"flex justify-center":"px-2 py-2"} dark:bg-gray-700 dark:hover:bg-gray-900 rounded-md cursor-pointer group`}
-              >
-                {iconOnly ? item.icon : item.value}
-              </li>
-            ))}
-          </ul>
-        </div>
+         <ul className="absolute mt-2 w-full bg-white dark:bg-gray-800 border border-gray-300 !z-50 dark:border-gray-700 rounded-md shadow-lg  p-2">
+          {filteredItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleItemSelect(item)}
+              onMouseEnter={(e) => handleMouseEnter(e, item.description)}
+              onMouseLeave={handleMouseLeave}
+              className={`marker:relative mt-1 bg-gray-100 hover:bg-blue-100 ${
+                iconOnly ? "flex justify-center" : "px-2 py-2"
+              } dark:bg-gray-700 dark:hover:bg-gray-900 rounded-md cursor-pointer group`}
+            >
+              {iconOnly ? (
+                item.icon
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-5 h-5"
+                    dangerouslySetInnerHTML={{ __html: item.icon }}
+                  />
+                  <span>{item.title || item.value}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </ul>
       )}
       {tooltipContent && (
         <div
-          className="absolute bg-red-600/70 text-white text-xs text-center py-1 px-2 rounded-md shadow-lg backdrop-blur-md text-justify transition-opacity duration-200"
+          className="absolute bg-red-600/70 text-white text-xs  py-1 px-2 rounded-md shadow-lg backdrop-blur-md text-justify transition-opacity duration-200"
           style={{
             left: "30%",
             transform: "translateX(-50%)",
@@ -133,7 +132,7 @@ const Dropdown = ({
             whiteSpace: "wrap",
             pointerEvents: "none",
             zIndex: 50,
-            opacity: tooltipContent ? 1 : 0,
+            opacity: tooltipContent ? 1 : 0
           }}
         >
           {tooltipContent}

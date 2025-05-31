@@ -1,5 +1,4 @@
 /* Add the following code at the end of your main.css file */
-@import url("https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Roboto:ital,wght@0,100..900;1,100..900&family=Vazirmatn:wght@100..900&display=swap");
 :root {
   --primary: #e91e63; /* یا هر رنگی که مد نظر دارید */
 }
@@ -247,7 +246,7 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    height: 80vh;
+    height: 70vh;
     width: 100vh;
   }
   .banner .circle {

@@ -29,7 +29,6 @@ const LanguageSwitcher = () => {
     });
 
   });
-  console.log(langs_result);
   
   return (
     <div className="relative">

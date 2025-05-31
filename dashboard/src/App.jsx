@@ -24,6 +24,7 @@ import Products from "./pages/products";
 import AddProduct from "./pages/products/add";
 import UpdateProduct from "./pages/products/update/index";
 import Settings from "./pages/settings";
+import FeaturedProduct from "./pages/settings/featuredProduct/index";
 
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
           <Route exact path="/units" element={<Units />} />
           <Route exact path="/posts" element={<Posts />} />
           <Route exact path="/settings" element={<Settings />} />
+          <Route exact path="/settings/featuredProduct" element={<FeaturedProduct />} />
           <Route exact path="/posts/add" element={<AddPost />} />
           <Route exact path="/blogs" element={<Blogs />} />
           <Route exact path="/blogs/add" element={<AddBlog />} />

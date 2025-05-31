@@ -3,6 +3,7 @@
 @plugin "tailwind-scrollbar-hide";
 @plugin "@tailwindcss/forms";
 @import url("https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Poppins:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap");
 
 @font-face {
   font-family: "vazir";
@@ -28,6 +29,7 @@
 @theme {
   --font-nozha: "nozha";
   --font-vazir: "vazir";
+  --font-berkshire: "Berkshire Swash";
   --color-primary: #ed1945;
   --color-neutral: #515151;
   --color-secondary: #ed1945;
@@ -81,7 +83,14 @@ html[dir="ltr"] * {
 html[dir="ltr"] .font-nozha {
   word-spacing: 0.45rem;
 }
+html[dir="ltr"] h1 {
+  font-family: "Berkshire Swash", cursive ;
+  font-size: 2.5em;
+}
 
+html[dir="rtl"] h1 {
+  font-family: "nozha", sans-serif ;
+}
 .text-center {
   text-align: center !important;
 }
@@ -90,13 +99,15 @@ html[dir="ltr"] .font-nozha {
   font-family: "Vazir";
 }
 
-h1,
+
 h2 {
   font-family: "Vazir";
   @apply dark:text-gray-100;
 }
 
-
+.font-berkshire {
+  font-family: "Berkshire Swash", cursive;
+}
 
 .color-cyan {
   background-color: #152e4d;

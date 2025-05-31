@@ -35,7 +35,12 @@
     "GallaryImages": "گالری ناب",
     "similarProduct": "محصولات مشابه",
     "PopularProducts": "پرفروش ترین محصولات",
-    "ReadFromUs": "از ما بخوانید"
+    "ReadFromUs": "از ما بخوانید",
+
+  "title": "نقل و حلوای ناب",
+    "rial": "ریال",
+    "buy": "خرید",
+    "circle": "چرخه مزه‌ها"
   },
   "category": {
     "noghl": "نقل",

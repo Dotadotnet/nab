@@ -2,17 +2,17 @@
 import React, { useState, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import  "./Right.css"; 
+import "./Right.css";
+import Spinner from "@/components/shared/Spinner";
+import Link from "next/link";
 
-
-
-export default function Right({options}) {
-  const t = useTranslations("Tools");
+export default function Right({ options }) {
   const h = useTranslations("HomePage");
-  const lang = useLocale();
+  const locale = useLocale();
 
   const [selected, setSelected] = useState(options[0]);
   const [isActive, setIsActive] = useState(false);
+
   const imgBoxRef = useRef(null);
   const btnRef = useRef(null);
 
@@ -27,9 +27,16 @@ export default function Right({options}) {
     setTimeout(() => setIsActive(false), 1000);
   };
 
+  const { title, description } =
+    selected?.translations?.find((tr) => tr.translation?.language === locale)
+      ?.translation?.fields || {};
+  const { slug } =
+    selected?.product.translations?.find(
+      (tr) => tr.translation?.language === locale
+    )?.translation?.fields || {};
   return (
-    <div className="col-span-2 h-full flex flex-col mt-1">
-       <div
+    <div className="col-span-2  md:h-full  flex flex-col mt-1">
+      <div
         className="w-full bg-primary md:mt-5 h-full rounded-xl relative flex flex-col justify-start gap-y-8"
         style={{
           backgroundImage: "url(/assets/home/banner/dots.svg)",
@@ -40,15 +47,15 @@ export default function Right({options}) {
       >
         <div className="banner p-4">
           <div className="content">
-            <h1 className="text-6xl absolute top-2 right-2 transform-fill md:text-4xl font-nozha font-bold text-white">
-              نقل و حلوای ناب{" "}
+            <h1 className="text-6xl absolute top-2 ltr:left-2 right-2 transform-fill md:text-4xl   font-bold text-white">
+              {h("title")}
               <span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="84"
-                  height="84"
+                  width="24"
+                  height="24"
                   viewBox="0 0 16 16"
-                  className="icon"
+                  className="rotate-45"
                 >
                   <path
                     fill="currentColor"
@@ -57,27 +64,38 @@ export default function Right({options}) {
                 </svg>
               </span>
             </h1>
-            <h2></h2>
           </div>
 
           <div
             ref={imgBoxRef}
-            className={`imgBox h-96 w-96 ${isActive ? "active" : ""}`}
+            className={`imgBox z-50 h-96 w-96 ${isActive ? "active" : ""}`}
           >
-            <div className="food w-90 h-90 ">
+            <div className="food w-90 h-90">
               <Image
-                src={selected.src}
+                src={selected.thumbnail.url}
                 alt={selected.title}
                 width={600}
                 height={600}
-                priority 
+                priority
                 className="object-cover rounded-xl"
               />
             </div>
-            <div className="description h-90 w-90 p-2 text-white">
-              <h3 className="text-xl font-bold">{selected.title}</h3>
-              <p className="text-sm">{selected.description}</p>
-              <span className="price text-lg text-white ">{selected.price} تومان</span>
+            <div className="description  h-90 w-90 p-2 text-white">
+              <h3 className="text-xl font-bold">{title}</h3>
+              <p className="text-sm">{description}</p>
+              <span className="price text-lg text-white">
+                {selected.product.variations[0].price} {h("rial")}
+              </span>
+              <div className="flex flex-col">
+                <div className="flex justify-center mt-4">
+                  <Link
+                    className="bg-white text-primary rounded px-6 py-2 flex items-center justify-center gap-2"
+                    href={`/${locale}/product/${selected.product?.productId}/${slug}`}
+                  >
+                    {h("buy")}
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -86,29 +104,36 @@ export default function Right({options}) {
             ref={btnRef}
             onClick={toggleFlip}
           >
-            دیدن جزئیات
+            {h("seeMore")}
           </button>
 
-          <div className="selections mt-4">
+          <div className="selections mt-6">
             <div className="circle flex justify-center items-center gap-2 flex-wrap">
               {options.map((item, i) => (
                 <div
-                  key={item.id}
+                  key={i}
                   style={{ "--i": i }}
                   className="options w-16 h-16 cursor-pointer"
                   onClick={() => handleOptionClick(item)}
                 >
                   <Image
-                    src={item.src}
-                    alt={item.title}
+                    src={item.carouselThumbnail.url}
+                    alt={
+                      item.translations?.find(
+                        (tr) => tr.language === locale && tr.translation
+                      )?.translation?.fields?.title || "Product"
+                    }
                     width={300}
                     height={300}
+                    sizes="(max-width: 768px) 100vw, 300px"
                     className="rounded"
                   />
                 </div>
               ))}
             </div>
-            <h2 className="text-center text-white mt-2 font-nozha">چرخ   مزه ها</h2>
+            <h2 className="text-center text-white mt-2 font-nozha">
+              {h("circle")}
+            </h2>
           </div>
         </div>
       </div>

@@ -28,15 +28,18 @@
     "Policies4Title": "Quality Guarantee",
     "Policies4SubTitle": "Freshest noghl and halva.",
     "ProductsnNewUs": "Our New Products",
-    "seeMore": "See more",
     "TrendingProductsToDay": "Today's Bestsellers",
     "Banner3Title": "Unmatched Taste of Noghl and Halva",
     "Banner3SubTitle": "Enjoy the best traditional noghl and halva with unmatched quality!",
     "GallaryImages": "Nab Gallery",
     "similarProduct": "Similar Products",
     "PopularProducts": "Top Sellers",
-      "ReadFromUs": "Read from us"
-
+    "ReadFromUs": "Read from us",
+    "title": "Noghl and Halva by Nab",
+    "rial": "Rial",
+    "buy": "Buy",
+    "seeMore": "See More",
+    "circle": "Flavor Circle"
   },
   "category": {
     "noghl": "Noghl",
@@ -203,16 +206,17 @@
     "starLimit": "Choose stars between 1 to 5",
     "placeholder": "Write your thoughts...",
     "submit": "Add Review",
-    "addingReview":"Adding Review"
-  },"newsletter":{
+    "addingReview": "Adding Review"
+  },
+  "newsletter": {
     "title": "Indulge in the World of Nougat & Delights!",
-  "description": "Subscribe to receive the latest flavours, exclusive offers, and handcrafted sweets—before anyone else.",
-  "placeholder": "Enter your email address",
-  "button": "Subscribe",
-  "successMessage": "You've successfully subscribed!",
-  "productTitle": "Premium Almond Nougat",
-  "productType": "Traditional Sweet",
-  "pricePrefix": "Starts from",
-  "productDuration": "Available for 3 days only"
+    "description": "Subscribe to receive the latest flavours, exclusive offers, and handcrafted sweets—before anyone else.",
+    "placeholder": "Enter your email address",
+    "button": "Subscribe",
+    "successMessage": "You've successfully subscribed!",
+    "productTitle": "Premium Almond Nougat",
+    "productType": "Traditional Sweet",
+    "pricePrefix": "Starts from",
+    "productDuration": "Available for 3 days only"
   }
 }

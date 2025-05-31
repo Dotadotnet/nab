@@ -32,9 +32,13 @@
     "Banner3Title": "Eşi Benzeri Olmayan Noghl ve Halva Lezzeti",
     "Banner3SubTitle": "Eşi benzeri olmayan kaliteyle geleneksel noghl ve halva'nın tadını çıkarın!",
     "GallaryImages": "Nab Galeri",
-    "seeMore": "Daha fazla göster",
     "PopularProducts": "En Çok Satanlar",
-    "ReadFromUs": "Bizden oku"
+    "ReadFromUs": "Bizden oku",
+  "title": "Nab'den Nuga ve Helva",
+    "rial": "Riyal",
+    "buy": "Al",
+    "seeMore": "Daha Fazla Gör",
+    "circle": "Lezzet Çemberi"
   },
   "category": {
     "noghl": "Nokul",
@@ -201,17 +205,16 @@
     "placeholder": "Düşüncelerinizi yazın...",
     "submit": "Yorumu Gönder",
     "addingReview": "İnceleme ekleniyor"
-  },"newsletter":{
-    
-  "title": "Nuga ve Tatlı Dünyasını Keşfet!",
-  "description": "Yeni tatlardan, özel fırsatlardan ve el yapımı tatlılardan ilk sen haberdar ol!",
-  "placeholder": "E-posta adresinizi girin",
-  "button": "Abone Ol",
-  "successMessage": "Başarıyla abone oldunuz!",
-  "productTitle": "Özel Bademli Nuga",
-  "productType": "Geleneksel Tatlı",
-  "pricePrefix": "Başlangıç fiyatı:",
-  "productDuration": "Sadece 3 gün boyunca geçerli"
-}
-  
+  },
+  "newsletter": {
+    "title": "Nuga ve Tatlı Dünyasını Keşfet!",
+    "description": "Yeni tatlardan, özel fırsatlardan ve el yapımı tatlılardan ilk sen haberdar ol!",
+    "placeholder": "E-posta adresinizi girin",
+    "button": "Abone Ol",
+    "successMessage": "Başarıyla abone oldunuz!",
+    "productTitle": "Özel Bademli Nuga",
+    "productType": "Geleneksel Tatlı",
+    "pricePrefix": "Başlangıç fiyatı:",
+    "productDuration": "Sadece 3 gün boyunca geçerli"
+  }
 }
