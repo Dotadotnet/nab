@@ -312,10 +312,11 @@ exports.getDetailsProducts = async (res) => {
   });
 };
 
-/* get a single product */
-exports.getProduct = async (req, res) => {
+ gexports.getProduct = async (req, res) => {
   try {
     const productId = parseInt(req.params.id, 10);
+    console.log("📥 دریافت productId:", productId);
+    console.log("🌐 زبان مورد نظر:", req.locale);
 
     const product = await Product.findOne({ productId })
       .populate("category")
@@ -370,6 +371,13 @@ exports.getProduct = async (req, res) => {
           }
         }
       ]);
+
+    if (!product) {
+      console.log("❌ محصولی با این آیدی پیدا نشد");
+    } else {
+      console.log("✅ محصول پیدا شد:", product._id);
+    }
+
     res.status(200).json({
       acknowledgement: true,
       message: "Ok",
@@ -377,6 +385,7 @@ exports.getProduct = async (req, res) => {
       data: product
     });
   } catch (error) {
+    console.error("❗ خطا در دریافت محصول:", error.message);
     res.status(500).json({
       acknowledgement: false,
       message: "خطایی رخ داد",
