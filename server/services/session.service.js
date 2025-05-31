@@ -3,7 +3,7 @@ const Session = require("../models/session.model");
 
 async function initSession(req, res, next) {
   try {
-    const sessionData = await Session.findOne({
+    let  sessionData = await Session.findOne({
       sessionId: req.sessionID
     });
     if (!sessionData) {
