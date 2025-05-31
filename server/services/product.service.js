@@ -312,7 +312,7 @@ exports.getDetailsProducts = async (res) => {
   });
 };
 
- gexports.getProduct = async (req, res) => {
+ exports.getProduct = async (req, res) => {
   try {
     const productId = parseInt(req.params.id, 10);
     console.log("📥 دریافت productId:", productId);
