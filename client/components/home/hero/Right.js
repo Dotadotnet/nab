@@ -73,7 +73,7 @@ export default function Right({ options }) {
             <div className="food w-90 h-90">
               <Image
                 src={selected.thumbnail.url}
-                alt={selected.title}
+                alt={title}
                 width={600}
                 height={600}
                 priority
