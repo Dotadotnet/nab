@@ -77,8 +77,7 @@ export default function Right({ options }) {
                 width={600}
                 height={600}
                 priority
-                sizes="(max-width: 768px) 100vw, 600px"
-                className="object-cover rounded-xl"
+                className="object-cover w-full h-full rounded-xl"
               />
             </div>
             <div className="description  h-90 w-90 p-2 text-white">
