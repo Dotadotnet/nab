@@ -16,14 +16,13 @@ const Banner2 = async ({ params }) => {
           className="bg-yellow-50   dark:bg-red-500  dark:text-gray-100 h-full w-full rounded-primary relative flex flex-col gap-y-8 lg:p-24 px-8 pt-8"
           style={{ backgroundImage: "url(/assets/home/banner/dots.svg)" }}
         >
-          <Image
-            src="/assets/home/banner/kid.webp"
-            alt="model"
-            height={1024}
-            width={904}
-            sizes="(max-width: 768px) 100vw, 904px"
+            <Image
+              src="/assets/home/banner/kid.webp"
+              alt="model"
+              height={680}
+              width={600}
             className="lg:absolute bottom-0 left-0 order-2"
-          />
+            />
           <article className="flex flex-col justify-start items-end order-1">
             <div className="flex flex-col gap-y-4 max-w-lg lg:ml-auto lg:mr-0 mr-auto">
               <h2 className="md:text-6xl text-4xl">{t("title")}</h2>
