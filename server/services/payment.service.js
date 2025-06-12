@@ -2,7 +2,7 @@ const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
 const Purchase = require("../models/purchase.model");
 const User = require("../models/user.model");
-const soap = require("strong-soap").soap;
+const axios = require('axios');
 
 /* external import */
 require("dotenv").config();
@@ -10,7 +10,9 @@ require("dotenv").config();
 /* stripe setup */
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-// create payment
+/**
+ * تابع جهت تبدیل کدهای خطای Mellat به پیام‌های فارسی
+ */
 function getMellatErrorMessage(code) {
   const errors = {
     11: "شماره کارت نامعتبر است",
@@ -19,25 +21,25 @@ function getMellatErrorMessage(code) {
     23: "اعتبار کارت تمام شده است",
     34: "تعداد دفعات ورود رمز بیش از حد مجاز است",
     41: "کارت مفقودی است",
-    42: "کارت مسدود است"
-    // ادامه کدها...
+    42: "کارت مسدود است",
+    // می‌توانید سایر کدها را نیز اضافه کنید...
   };
   return errors[code] || "خطای نامشخص از سمت درگاه Mellat";
 }
+
+/**
+ * ایجاد پرداخت جدید با REST به جای SOAP
+ */
 exports.createPayment = async (req, res) => {
   try {
-    const { cartId, province, city, phone, fullName, gateway, userId } =
-      req.body;
-    console.log("req.body", req.body);
+    const { cartId, province, city, phone, fullName, gateway, userId } = req.body;
+
+    console.log("درخواست پرداخت دریافتی:", req.body);
+
+    // بررسی وجود سبد خرید
     const cart = await Cart.findById(cartId).populate([
-      {
-        path: "items.product",
-        select: "discountAmount"
-      },
-      {
-        path: "items.variation",
-        select: "price"
-      }
+      { path: "items.product", select: "discountAmount" },
+      { path: "items.variation", select: "price" }
     ]);
 
     if (!cart) {
@@ -46,8 +48,9 @@ exports.createPayment = async (req, res) => {
         description: "سبد خرید پیدا نشد"
       });
     }
-    let totalAmount = 0;
 
+    // محاسبه مبلغ کل
+    let totalAmount = 0;
     for (const item of cart.items) {
       const price = item.variation?.price || 0;
       const discountPercent = item.product?.discountAmount || 0;
@@ -57,90 +60,81 @@ exports.createPayment = async (req, res) => {
     }
 
     const amount = totalAmount;
-    console.log("cart", cart);
-    console.log("totalAmount", totalAmount);
-    const now = new Date();
-    const localDate = now.toISOString().slice(0, 10).replace(/-/g, "");
-    const localTime = now.toTimeString().slice(0, 8).replace(/:/g, "");
+    console.log("مبلغ نهایی پرداخت:", amount);
 
-    const orderId = Date.now();
+    const orderId = Date.now(); // شناسه سفارش منحصر به فرد
 
-    const args = {
+    // آماده‌سازی داده برای ارسال به REST API درگاه
+    const paymentPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
       userName: process.env.MELLAT_USERNAME,
       userPassword: process.env.MELLAT_PASSWORD,
       orderId: orderId,
       amount: amount,
-      localDate: localDate,
-      localTime: localTime,
+      localDate: new Date().toISOString().slice(0, 10).replace(/-/g, ""),
+      localTime: new Date().toTimeString().slice(0, 8).replace(/:/g, ""),
       additionalData: "",
       callBackUrl: `${process.env.ORIGIN_URL}/api/payment/callback`,
       payerId: 0
     };
-    console.log("args", args);
+
     const url = `${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`;
-    console.log("Before soap.createClient");
+    console.log("ارسال درخواست پرداخت به آدرس:", url);
 
-    soap.createClient(url, async function (err, client) {
-      console.log("Inside soap.createClient callback");
+    // ارسال درخواست POST به REST API درگاه Mellat
+    const response = await axios.post(url, paymentPayload);
 
-      if (err) {
-        console.error("Error creating SOAP client:", err);
-        return res.status(500).json({
-          acknowledgement: false,
-          description: err.message,
-          error: err
-        });
-      }
-      console.error("success connect soap");
+    const resData = response.data.return.split(",");
+    console.log("پاسخ Mellat:", resData);
 
-      client.bpPayRequest(args, async function (err, result) {
-        if (err) {
-          return res.status(500).json({
-            acknowledgement: false,
-            description: "SOAP Request Error",
-            error: err
-          });
-        }
+    if (resData[0] === "0") {
+      const refId = resData[1];
 
-        const resData = result.return.split(",");
-        console.log("resData", resData);
-        if (resData[0] === "0") {
-          const refId = resData[1];
-
-          const purchase = await Purchase.create({
-            customer: userId,
-            customerId: refId,
-            orderId: orderId,
-            totalAmount: amount,
-            products: [],
-            province,
-            city,
-            phone,
-            fullName,
-            status: "Pending"
-          });
-
-          return res.status(201).json({
-            acknowledgement: true,
-            message: "Redirect to Mellat Gateway",
-            url: `https://bpm.shaparak.ir/pgwchannel/startpay.mellat?RefId=${refId}`
-          });
-        } else {
-          return res.status(400).json({
-            acknowledgement: false,
-            description: `خطای ${resData}`,
-            errorCode: resData[0]
-          });
-        }
+      // ثبت سفارش در دیتابیس
+      const purchase = await Purchase.create({
+        customer: userId,
+        customerId: refId,
+        orderId: orderId,
+        totalAmount: amount,
+        products: cart.items.map(item => ({
+          product: item.product._id,
+          variation: item.variation._id,
+          quantity: item.quantity
+        })),
+        province,
+        city,
+        phone,
+        fullName,
+        status: "Pending"
       });
-    });
+
+      console.log("سفارش با موفقیت ثبت شد:", purchase);
+
+      // پاسخ موفق به کلاینت
+      return res.status(201).json({
+        acknowledgement: true,
+        description: "هدایت به درگاه Mellat",
+        url: `https://bpm.shaparak.ir/pgwchannel/startpay.mellat?RefId=${refId}`
+      });
+    } else {
+      // خطای برگشتی از درگاه
+      const errorCode = parseInt(resData[0], 10);
+      const errorMessage = getMellatErrorMessage(errorCode);
+
+      console.error(`خطای درگاه Mellat [کد: ${errorCode}]: ${errorMessage}`);
+
+      return res.status(400).json({
+        acknowledgement: false,
+        description: errorMessage,
+        errorCode: errorCode
+      });
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("خطای داخلی سرور:", error.response?.data || error.message || error);
+    return res.status(500).json({
       acknowledgement: false,
-      message: "Internal Server Error",
-      error: error.toString()
+      description: "خطای داخلی سرور",
+      error: error.response?.data || error.message || error.toString()
     });
   }
 };
