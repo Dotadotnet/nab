@@ -1,5 +1,3 @@
-
-
 const { nabApi } = require("../nab");
 
 const cartApi = nabApi.injectEndpoints({
@@ -10,26 +8,28 @@ const cartApi = nabApi.injectEndpoints({
         url: "/cart/add-to-cart",
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
         },
         credentials: "include",
-        body,
+        body
       }),
 
-      invalidatesTags: ["Cart", "User","Session"],
+      invalidatesTags: ["Cart", "User", "Session"]
     }),
 
     // get from cart
-    getFromCart: build.query({
-      query: () => ({
-        url: "/cart/get-from-cart",
+    getCart: build.query({
+      query: ({ id, locale }) => ({
+        url: `/cart/get-cart/${id}`,
         method: "GET",
+        credentials: "include",
+
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+          "Accept-Language": locale || "fa"
+        }
       }),
 
-      providesTags: ["Cart"],
+      providesTags: ["Cart"]
     }),
 
     // delete from cart
@@ -38,17 +38,17 @@ const cartApi = nabApi.injectEndpoints({
         url: `/cart/delete-cart/${id}`,
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
       }),
 
-      invalidatesTags: ["Cart", "User","Session"],
-    }),
-  }),
+      invalidatesTags: ["Cart", "User", "Session"]
+    })
+  })
 });
 
 export const {
   useAddToCartMutation,
-  useGetFromCartQuery,
-  useDeleteFromCartMutation,
+  useGetCartQuery,
+  useDeleteFromCartMutation
 } = cartApi;

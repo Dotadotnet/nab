@@ -6,36 +6,72 @@ import OutsideClick from "../outsideClick/OutsideClick";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import Trash from "@/components/icons/Trash";
-import { useDeleteFromCartMutation } from "@/services/cart/cartApi";
+import {
+  useDeleteFromCartMutation,
+  useGetCartQuery
+} from "@/services/cart/cartApi";
 import { toast } from "react-hot-toast";
 import Inform from "@/components/icons/Inform";
-import { useCreatePaymentMutation } from "@/services/payment/paymentApi";
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
-
+import Spinner from "../Spinner";
+import { useRouter } from "next/navigation";
 const MyCart = () => {
   const locale = useLocale();
-  const n = useTranslations("Navbar");
-  const t = useTranslations("Tools");
+  const t = useTranslations("payment");
 
   const [isOpen, setIsOpen] = useState(false);
   const { user, session } = useSelector((state) => state.auth);
-  const [removeFromCart, { isLoading, data, error }] =
-    useDeleteFromCartMutation();
+  const cartId = session?.cart || user?.cart ;
 
+  const [
+    deleteFromCart,
+    { isLoading: removingCart, data: deletedData, error: deleteError }
+  ] = useDeleteFromCartMutation();
+
+  const {
+    isLoading: loadingCart,
+    data: cartData,
+    error: cartError
+  } = useGetCartQuery( { id: cartId, locale }, {
+    skip: !cartId
+  });
+  const cartItems = cartData?.data.items || [];
   useEffect(() => {
-    if (isLoading)
-      toast.loading(n("DeletingCartBuy"), { id: "removeFromCart" });
-    if (data) toast.success(data?.description, { id: "removeFromCart" });
-    if (error?.data)
-      toast.error(error?.data?.description, { id: "removeFromCart" });
-  }, [isLoading, data, error]);
+    if (loadingCart) {
+      toast.loading(t("LoadingCartItems"), { id: "getCart" });
+    }
 
-  const cartItems = session?.cart || user?.cart || [];
+    if (cartData) {
+      toast.dismiss("getCart");
+    }
+
+    if (cartError) {
+      const errorMessage = cartError?.data?.description;
+      toast.error(errorMessage, { id: "getCart" });
+    }
+    if (removingCart)
+      toast.loading(t("DeletingCartBuy"), { id: "removeFromCart" });
+    if (deletedData)
+      toast.success(deletedData?.description, { id: "removeFromCart" });
+    if (deleteError?.deletedData)
+      toast.error(deleteError?.deletedData?.description, {
+        id: "removeFromCart"
+      });
+  }, [
+    removingCart,
+    deletedData,
+    deleteError,
+    loadingCart,
+    cartData,
+    cartError
+  ]);
+
+  console.log("cartItems", cartItems);
   return (
     <>
       <button
-        aria-label={n("BuyCart")}
+        aria-label={t("buyCart")}
         className="p-2 rounded-secondary bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors relative"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -53,14 +89,27 @@ const MyCart = () => {
       {isOpen && (
         <OutsideClick
           onOutsideClick={() => setIsOpen(false)}
-          className="absolute p-4 md:top-full bottom-full mb-8 ltr:left-0 rtl:right-0 w-80 h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-primary rounded p-1 flex flex-col gap-y-2.5"
+          className="absolute p-4 md:top-full bottom-full mb-8 ltr:left-0 rtl:right-0 w-80 h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-primary rounded  flex flex-col gap-y-2.5"
         >
           <div className="w-full h-full flex flex-col gap-y-8">
             {cartItems.length === 0 ? (
-              <p className="text-sm flex flex-row gap-x-1 items-center justify-center h-full w-full">
-                <Inform /> {n("NotFountProducts")}
-              </p>
+              <div className="flex flex-col gap-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-row gap-x-2 animate-pulse border border-gray-200 p-2 rounded"
+                  >
+                    <div className="h-[50px] w-[50px] bg-gray-300 rounded" />
+                    <div className="flex flex-col gap-y-2 flex-grow">
+                      <div className="h-3 w-3/4 bg-gray-300 rounded" />
+                      <div className="h-2 w-1/2 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
+              // بقیه کد...
+
               <div className="h-full w-full flex flex-col gap-y-4">
                 <div className="h-full overflow-y-auto flex  flex-col gap-y-2 scrollbar-hide">
                   {cartItems.map(({ product, variation, _id, quantity }) => {
@@ -75,7 +124,7 @@ const MyCart = () => {
                         key={_id}
                         className="flex flex-col gap-y-2 transition-all border border-gray-200  p-2 rounded hover:border-gray-300  group relative"
                       >
-                        <div className="flex flex-row gap-x-2" >
+                        <div className="flex flex-row gap-x-2">
                           <Image
                             src={product?.thumbnail?.url}
                             alt={product?.thumbnail?.public_id || "product"}
@@ -86,7 +135,7 @@ const MyCart = () => {
                           <article className="flex flex-col gap-y-2">
                             <h2 className="text-base line-clamp-1">{title}</h2>
                             <p className="text-xs">
-                              {summary || t("AnyCaption")}
+                              {summary || t("anyCaption")}
                             </p>
                           </article>
 
@@ -100,12 +149,12 @@ const MyCart = () => {
                         </div>
                         <p className="text-xs flex flex-row justify-between">
                           <span className="flex flex-row gap-x-0.5 items-baseline">
-                            {t("Price")} :
+                            {t("price")} :
                             <span className="text-xs text-red-500 line-through">
                               {variation?.price
                                 ? `${variation.price.toLocaleString(
                                     locale
-                                  )} ${t("Rial")}`
+                                  )} ${t("rial")}`
                                 : "?"}
                             </span>
                             {product.discountAmount && variation.price ? (
@@ -115,15 +164,13 @@ const MyCart = () => {
                                   variation.price *
                                     (product.discountAmount / 100)
                                 ).toLocaleString(locale)}{" "}
-                                {t("Rial")}
+                                {t("rial")}
                               </span>
                             ) : null}
                           </span>
                           <span className="flex flex-row gap-x-0.5 items-baseline">
-                            {t("Count")} :
-                            <span className="text-sm ">
-                              {quantity}
-                            </span>
+                            {t("count")} :
+                            <span className="text-sm ">{quantity}</span>
                           </span>
                         </p>
 
@@ -153,31 +200,26 @@ const MyCart = () => {
 };
 
 function Purchase({ cart }) {
-  const [createPayment, { isLoading, data, error }] =
-    useCreatePaymentMutation();
-  const t = useTranslations("Tools");
-
-  useEffect(() => {
-    if (isLoading)
-      toast.loading(t("RedirectingToPayment"), {
-        id: "createPayment"
-      });
-    if (data) {
-      toast.success(data?.description, { id: "createPayment" });
-      window.open(data?.url, "_blank");
-    }
-    if (error?.data)
-      toast.error(error?.data?.description, { id: "createPayment" });
-  }, [isLoading, data, error]);
+  const t = useTranslations("payment");
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <Link
-      href={`/checkout`}
+    <button
       type="button"
       className="px-8 py-2 border border-black rounded-secondary bg-black hover:bg-black/90 text-white transition-colors drop-shadow flex flex-row gap-x-2 items-center justify-center"
+      onClick={() => {
+        if (cart.length === 0) {
+          return;
+        } else {
+          setIsLoading(true);
+          router.push("/checkout");
+        }
+      }}
     >
-      {t("Settlement")}
-    </Link>
+      {isLoading && <Spinner />}
+      {!isLoading && t("settlement")}
+    </button>
   );
 }
 

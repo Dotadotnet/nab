@@ -218,5 +218,13 @@
     "productType": "Traditional Sweet",
     "pricePrefix": "Starts from",
     "productDuration": "Available for 3 days only"
+  },
+ "payment": {
+    "fullName": "Full Name",
+    "mobile": "Mobile Number",
+    "selectProvinceWarning": "Please select your province",
+    "selectCityWarning": "Please select your city",
+    "selectGateway": "Select Payment Gateway",
+    "multiStepHelp": "Please complete your information in multiple steps for payment"
   }
 }

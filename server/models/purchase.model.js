@@ -11,7 +11,6 @@ const purchaseSchema = new mongoose.Schema(
       type: Number,
       unique: true,
     },
-    // for customer
     customer: {
       type: ObjectId,
       ref: "User",

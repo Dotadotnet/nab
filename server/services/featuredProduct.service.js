@@ -179,7 +179,6 @@ exports.updateFeaturedProduct = async (req, res) => {
 exports.deleteFeaturedProduct = async (req, res, next) => {
   try {
     const featuredProduct = await FeaturedProduct.findById(req.params.id);
-    console.log(featuredProduct);
     if (!featuredProduct) {
       return res.status(404).json({
         acknowledgement: false,

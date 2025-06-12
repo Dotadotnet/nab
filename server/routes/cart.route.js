@@ -26,17 +26,20 @@ router.post(
 
 // get from cart
 router.get(
-  "/get-from-cart",
+  "/get-carts",
   verify,
   authorize("admin"),
+  localeMiddleware,
   cartController.getFromCart
 );
+
+router.get("/get-cart/:id",localeMiddleware, cartController.getFromCart);
+
 
 // update cart
 router.patch(
   "/update-cart/:id",
-  verify,
-  authorize("buyer"),
+  localeMiddleware,
   cartController.updateCart
 );
 

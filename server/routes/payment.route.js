@@ -18,8 +18,6 @@ const router = express.Router();
 // create payment
 router.post(
   "/create-payment",
-  verify,
-  authorize("buyer"),
   paymentController.createPayment
 );
 

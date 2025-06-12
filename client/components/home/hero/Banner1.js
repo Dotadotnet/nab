@@ -25,7 +25,6 @@ const Banner1 = async ({ params }) => {
   } catch (err) {
     error = err.message;
   }
-  console.log("featuredProducts", featuredProducts);
   return (
     <div className="grid md:grid-cols-3   justify-center grid-cols-1 gap-y-2 md:gap-4 ">
       <Right options={featuredProducts} />

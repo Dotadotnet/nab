@@ -37,7 +37,7 @@
     "PopularProducts": "پرفروش ترین محصولات",
     "ReadFromUs": "از ما بخوانید",
 
-  "title": "نقل و حلوای ناب",
+    "title": "نقل و حلوای ناب",
     "rial": "ریال",
     "buy": "خرید",
     "circle": "چرخه مزه‌ها"
@@ -218,5 +218,24 @@
     "productType": "محصول سنتی",
     "pricePrefix": "شروع از",
     "productDuration": "محدود برای ۳ روز"
+  },
+  "payment": {
+    "title": "تسویه حساب",
+    "totalPrice": "مجموع قیمت",
+    "shippingCost": "هزینه ارسال",
+    "fullName": "نام و نام خانوادگی",
+    "mobile": "شماره تلفن",
+    "selectProvinceWarning": "لطفاً استان خود را انتخاب کنید",
+    "selectCityWarning": "لطفاً شهر خود را انتخاب کنید",
+    "selectGateway": "انتخاب درگاه پرداخت",
+    "multiStepHelp": "لطفاً اطلاعات خود را در چند مرحله برای پرداخت تکمیل کنید",
+    "connetGetway":"اتصال به درگاه پرداخت",
+    "rial": "ریال",
+    "price": "قیمت",
+    "count": "تعداد",
+    "buyCart": "سبد خرید",
+    "settlement": "تسویه حساب",
+    "LoadingCartItems": "در حال بارگذاری اقلام سبد خرید...",
+    "anyCaption": "بدون توضیحات"
   }
 }

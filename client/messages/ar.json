@@ -220,5 +220,13 @@
     "productType": "منتج تقليدي",
     "pricePrefix": "يبدأ من",
     "productDuration": "متاح لمدة ٣ أيام فقط"
+  },
+  "payment": {
+    "fullName": "الاسم الكامل",
+    "mobile": "رقم الهاتف",
+    "selectProvinceWarning": "يرجى اختيار المحافظة الخاصة بك",
+    "selectCityWarning": "يرجى اختيار مدينتك",
+    "selectGateway": "اختر بوابة الدفع",
+    "multiStepHelp": "يرجى إكمال معلوماتك في عدة خطوات للدفع"
   }
 }
