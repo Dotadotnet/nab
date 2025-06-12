@@ -4,7 +4,8 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const baseSchema = require("./baseSchema.model");
-/* create purchase schema */
+const Counter = require("./counter");
+
 const purchaseSchema = new mongoose.Schema(
   {
     purchaseId: {
@@ -50,7 +51,7 @@ const purchaseSchema = new mongoose.Schema(
     },
 
     // order status
-    status: {
+    paymentStatus: {
       type: String,
       enum: ["pending", "delivered"],
       default: "pending",

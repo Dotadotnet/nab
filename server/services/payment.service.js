@@ -105,7 +105,6 @@ exports.createPayment = async (req, res) => {
         city,
         phone,
         fullName,
-        status: "Pending"
       });
 
       console.log("سفارش با موفقیت ثبت شد:", purchase);
@@ -133,7 +132,7 @@ exports.createPayment = async (req, res) => {
     console.error("خطای داخلی سرور:", error.response?.data || error.message || error);
     return res.status(500).json({
       acknowledgement: false,
-      description: "خطای داخلی سرور",
+      description: `خطای${error.message}`,
       error: error.response?.data || error.message || error.toString()
     });
   }
