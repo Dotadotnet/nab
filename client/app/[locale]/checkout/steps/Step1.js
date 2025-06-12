@@ -22,7 +22,7 @@ function Step1({ nextStep, cartId, loading }) {
     data: cartData,
     error: cartError
   } = useGetCartQuery( { id: cartId, locale }, {
-    skip: !cartId
+    skip: !cartId || cartId.length===0
   });
   const cartItems = cartData?.data.items || [];
   useEffect(() => {
