@@ -78,7 +78,7 @@ exports.createPayment = async (req, res) => {
       payerId: 0
     };
     console.log("args", args);
-    const url = "https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl";
+    const url = "http://94.182.135.26:4000/api/payment/mellat";
 console.log("Before soap.createClient");
 
     soap.createClient(url, async function (err, client) {
