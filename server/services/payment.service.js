@@ -79,8 +79,11 @@ exports.createPayment = async (req, res) => {
     };
     console.log("args", args);
     const url = "https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl";
+console.log("Before soap.createClient");
 
     soap.createClient(url, async function (err, client) {
+          console.log("Inside soap.createClient callback");
+
       if (err) {
         console.error("Error creating SOAP client:", err);
         return res.status(500).json({
