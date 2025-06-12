@@ -89,6 +89,7 @@ exports.createPayment = async (req, res) => {
           error: err
         });
       }
+    console.error("success connect soap");
 
       client.bpPayRequest(args, async function (err, result) {
         if (err) {
