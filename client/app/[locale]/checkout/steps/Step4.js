@@ -37,7 +37,6 @@ function Step4({  phone, setPhone,register }) {
             required
             className="form-control block w-full h-12 !px-4  text-gray-700 bg-white dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-green-600 focus:outline-none text-left "
             placeholder={t("fullName")}
-            inputMode="tel"
           />
         </label>
         <label
