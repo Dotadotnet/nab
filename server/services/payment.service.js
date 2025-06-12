@@ -77,21 +77,32 @@ exports.createPayment = async (req, res) => {
       callBackUrl: `${process.env.ORIGIN_URL}/api/payment/callback`,
       payerId: 0
     };
-console.log("args",args)
+    console.log("args", args);
     const url = "https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl";
 
     soap.createClient(url, async function (err, client) {
-      if (err)
-        return res.status(500).json({ description: err.message, error: err });
+      if (err) {
+        console.error("Error creating SOAP client:", err);
+        return res.status(500).json({
+          acknowledgement: false,
+          description: err.message,
+          error: err
+        });
+      }
 
       client.bpPayRequest(args, async function (err, result) {
-        if (err)
+        if (err) {
           return res
             .status(500)
-            .json({ message: "SOAP Request Error", error: err });
+            .json({
+              acknowledgement: false,
+              description: "SOAP Request Error",
+              error: err
+            });
+        }
 
         const resData = result.return.split(",");
-console.log("resData",resData)
+        console.log("resData", resData);
         if (resData[0] === "0") {
           const refId = resData[1];
 
@@ -116,7 +127,7 @@ console.log("resData",resData)
         } else {
           return res.status(400).json({
             acknowledgement: false,
-            description:`خطای ${resData}` ,
+            description: `خطای ${resData}`,
             errorCode: resData[0]
           });
         }
