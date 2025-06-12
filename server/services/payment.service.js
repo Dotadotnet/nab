@@ -78,11 +78,11 @@ exports.createPayment = async (req, res) => {
       payerId: 0
     };
     console.log("args", args);
-    const url = "http://94.182.135.26:4000/api/payment/mellat";
-console.log("Before soap.createClient");
+    const url = `${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`;
+    console.log("Before soap.createClient");
 
     soap.createClient(url, async function (err, client) {
-          console.log("Inside soap.createClient callback");
+      console.log("Inside soap.createClient callback");
 
       if (err) {
         console.error("Error creating SOAP client:", err);
@@ -92,17 +92,15 @@ console.log("Before soap.createClient");
           error: err
         });
       }
-    console.error("success connect soap");
+      console.error("success connect soap");
 
       client.bpPayRequest(args, async function (err, result) {
         if (err) {
-          return res
-            .status(500)
-            .json({
-              acknowledgement: false,
-              description: "SOAP Request Error",
-              error: err
-            });
+          return res.status(500).json({
+            acknowledgement: false,
+            description: "SOAP Request Error",
+            error: err
+          });
         }
 
         const resData = result.return.split(",");
