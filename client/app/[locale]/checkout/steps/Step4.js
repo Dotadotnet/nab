@@ -68,7 +68,7 @@ function Step4({  phone, setPhone,register }) {
               className={`cursor-pointer  p-2 transition-all group inline-flex items-center border border-green-300 dark:border-blue-600 !px-4 !py-2 rounded-md text-green-500 dark:text-blue-500 bg-green-50 dark:bg-gray-900`}
             >
               <Image
-                src="/image/behpardakht.jpeg"
+                src="/image/behpardakht.webp"
                 alt="درگاه بانک ملت "
                 width={100}
                 height={40}
