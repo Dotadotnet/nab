@@ -240,7 +240,6 @@ exports.getProducts = async (req, res) => {
           },
           select: "translations"
         },
-
         {
           path: "variations",
           select: "price stock unit lowStockThreshold",

@@ -39,6 +39,8 @@ const Info = () => {
 
   const { id } = router.query;
 
+  console.log(id);
+  
   const {
     formState: { errors },
     register,

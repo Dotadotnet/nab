@@ -25,6 +25,38 @@ exports.signIn = async (req, res, next) => {
   }
 };
 
+
+exports.getFields = async (req, res, next) => {
+  try {
+    await adminService.getFields(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+
+exports.getTables = async (req, res, next) => {
+  try {
+    await adminService.getTables(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+exports.test = async (req, res, next) => {
+  try {
+    await adminService.test(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
 /* reset admin password */
 exports.forgotPassword = async (req, res, next) => {
   try {

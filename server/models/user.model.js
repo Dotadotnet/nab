@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const { ObjectId } = mongoose.Schema.Types;
-const baseSchema = require("./baseSchema.model");
+const baseSchema = require("./baseschema.model");
 const Counter = require("./counter");
 
 const userSchema = new mongoose.Schema(

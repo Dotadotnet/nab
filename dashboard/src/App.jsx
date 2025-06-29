@@ -24,7 +24,13 @@ import Products from "./pages/products";
 import AddProduct from "./pages/products/add";
 import UpdateProduct from "./pages/products/update/index";
 import Settings from "./pages/settings";
+import ChoiceType from "./pages/edite/choice-type";
+import Change from "./pages/edite/change";
+
 import FeaturedProduct from "./pages/settings/featuredProduct/index";
+import ChoiceTypeTable from "./pages/edite/choice-type/table";
+import SettingsConfig from "./pages/settings/general/index";
+import General from "./pages/settings/General";
 
 
 function App() {
@@ -50,6 +56,11 @@ function App() {
           <Route exact path="/units" element={<Units />} />
           <Route exact path="/posts" element={<Posts />} />
           <Route exact path="/settings" element={<Settings />} />
+          <Route exact path="/settings/config" element={<SettingsConfig />} />
+          <Route exact path="/settings/general" element={<General />} />
+          <Route exact path="/edite/change" element={<Change />} />
+          <Route exact path="/edite/choice-type" element={<ChoiceType />} />
+          <Route exact path="/edite/choice-type/:table" element={<ChoiceTypeTable />} />
           <Route exact path="/settings/featuredProduct" element={<FeaturedProduct />} />
           <Route exact path="/posts/add" element={<AddPost />} />
           <Route exact path="/blogs" element={<Blogs />} />

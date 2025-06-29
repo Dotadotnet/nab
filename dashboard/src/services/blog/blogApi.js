@@ -27,6 +27,7 @@ const blogApi = nabApi.injectEndpoints({
     }),
 
     // update blog
+
     updateBlog: builder.mutation({
       query: ({ id, body }) => ({
         url: `/blog/update-blog/${id}`,

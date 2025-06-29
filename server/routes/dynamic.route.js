@@ -19,6 +19,7 @@ const router = express.Router();
 /* router methods integration */
 
 router.get("/get-one/:model/:key/:value", localeMiddleware, dynamicController.getOne);
+router.get("/get-all/:model", localeMiddleware, dynamicController.getAll);
 router.get("/get/:model/:key/:value", localeMiddleware, dynamicController.get);
 router.patch("/update/:model/:key/:value/:field/:newvalue", verify, authorize("superAdmin", "admin"), dynamicController.update);
 router.delete("/delete/:model/:key/:value", verify, authorize("superAdmin", "admin"), dynamicController.delete);

@@ -7,6 +7,9 @@ const Review = require("../models/review.model");
 const Admin = require("../models/admin.model");
 const remove = require("../utils/remove.util");
 const token = require("../utils/token.util");
+const mongoose = require("mongoose");
+const { translate } = require("google-translate-api-x");
+
 
 /* sign up an admin */
 exports.signUp = async (req, res) => {
@@ -76,6 +79,7 @@ exports.signUp = async (req, res) => {
 };
 
 /* sign in an admin */
+
 exports.signIn = async (req, res) => {
   const admin = await Admin.findOne({ email: req.body.email });
   if (!admin) {
@@ -150,10 +154,43 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-exports.persistLogin = async (req, res) => {
-  console.log(req.admin)
-  const admin = await Admin.findById(req.admin._id).select("-password -phone");
 
+exports.getTables = async (req, res) => {
+  const db_names = mongoose.modelNames();
+  res.status(200).json({
+    acknowledgement: true,
+    message: "OK",
+    description: "ورود با موفقیت انجام شد",
+    data: db_names
+  });
+};
+
+exports.getFields = async (req, res) => {
+  const db_names = mongoose.modelNames();
+  const table = req.params.table;
+  const schemas = [];
+  mongoose.modelNames().forEach(function (modelName) {
+    schemas.push(mongoose.model(modelName).schema.obj);
+  })
+  res.status(200).json({
+    acknowledgement: true,
+    message: "OK",
+    description: "ورود با موفقیت انجام شد",
+    data: schemas
+  });
+};
+
+exports.test = async (req, res) => {
+  res.status(200).json({
+    acknowledgement: true,
+    message: "OK",
+    description: "ورود با موفقیت انجام شد",
+    data: 'd'
+  });
+};
+
+exports.persistLogin = async (req, res) => {
+  const admin = await Admin.findById(req.admin._id).select("-password -phone");
   if (!admin) {
     res.status(404).json({
       acknowledgement: false,

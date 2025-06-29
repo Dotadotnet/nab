@@ -28,7 +28,14 @@ router.post("/sign-in", adminController.signIn);
 router.patch("/forgot-password", adminController.forgotPassword);
 
 // login persistance
-router.get("/me", verify,  adminController.persistLogin);
+router.get("/me", verify, adminController.persistLogin);
+
+
+router.get("/test", adminController.test);
+
+router.get("/get-tables" , verify , authorize("superAdmin") , adminController.getTables);
+router.get("/get-fields/:table" , verify , authorize("superAdmin") , adminController.getFields);
+
 
 // get all admins
 router.get(

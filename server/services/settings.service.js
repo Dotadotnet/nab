@@ -28,7 +28,8 @@ exports.getAll = async (req, res) => {
                 key: config.key,
                 value: pass_value,
                 type: config.type,
-                name: config.name
+                name: config.name,
+                editeble: config.editeble == false ? false : true
             })
         }
     }
@@ -51,3 +52,4 @@ exports.getAll = async (req, res) => {
         data: result
     });
 };
+

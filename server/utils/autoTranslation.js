@@ -1,31 +1,41 @@
 const Translation = require("../models/translation.model");
 
 
-module.exports = class responseEdite {
+module.exports = class autoTranslation {
     targetFild = "translations";
     constructor(OrginalResponse, req) {
+
+
         this.data = OrginalResponse;
         this.req = req;
         this.lang = this.req.cookies.NEXT_LOCALE ? this.req.cookies.NEXT_LOCALE : "fa";
+        if (req.headers.panel) {
+            this.lang = 'fa';
+        }
     }
 
     async getResult() {
-        // اگه استرینگ بود خودش رو برمیگردونه
-        try {
-            let result = JSON.parse(this.data);
-        } catch (error) {
-            return this.data;
+        let result = this.data;
+        if (typeof result == "string") {
+            // اگه استرینگ بود خودش رو برمیگردونه            
+            try {
+                let result = JSON.parse(this.data);
+            } catch (error) {
+                return this.data;
+            }
+            // اگه استرینگ بود خودش رو برمیگردونه
         }
-        // اگه استرینگ بود خودش رو برمیگردونه
-        let result = JSON.parse(this.data);
+
         if (result[this.targetFild]) {
             // اگر آبجکت مول مستقیم اومده بود
+
             result = await this.treanslateObjectModel(result);
             // اگر آبجکت مول مستقیم اومده بود
         } else {
             await this.visit(result)
         }
-        return JSON.stringify(result);
+
+        return result;
     }
 
     async visit(data) {
@@ -53,18 +63,23 @@ module.exports = class responseEdite {
     }
 
     async treanslateObjectModel(modelObject) {
-        let result = modelObject;
-        if (result[this.targetFild] && result[this.targetFild][0]["translation"]) {
-            for (let i = 0; i < result[this.targetFild].length; i++) {
-                let translated = await Translation.findById(result[this.targetFild][i]["translation"]);
-                result[this.targetFild][i] = translated?.fields;
-                if (translated?.language == this.lang) {
-                    for (const [key, value] of Object.entries(Object.fromEntries(translated.fields))) {
-                        result[key] = value;
-                    }
-                }
+        let object_translate = {};
+        if (modelObject[this.targetFild] && modelObject[this.targetFild][0]["translation"]) {
+            for (let i = 0; i < modelObject[this.targetFild].length; i++) {
+                let translated = await Translation.findById(modelObject[this.targetFild][i]["translation"]);
+                object_translate[translated.language] = Object.fromEntries(translated.fields);
             }
         }
+        const result = {};
+        Object.keys(modelObject._doc).forEach(key => {
+            const value = modelObject._doc[key];
+            result[key] = value
+        });
+        Object.keys(object_translate[this.lang]).forEach(key => {
+            const value = object_translate[this.lang][key];
+            result[key] = value
+        });
+        result[this.targetFild] = object_translate;
         return result;
     }
 

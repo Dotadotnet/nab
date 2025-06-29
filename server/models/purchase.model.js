@@ -3,7 +3,7 @@
 /* external imports */
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
-const baseSchema = require("./baseSchema.model");
+const baseSchema = require("./baseschema.model");
 /* create purchase schema */
 const purchaseSchema = new mongoose.Schema(
   {

@@ -1,4 +1,4 @@
-const FeaturedProduct = require("../models/featuredProduct.model");
+const FeaturedProduct = require("../models/featuredproduct.model");
 const remove = require("../utils/remove.util");
 const Translation = require("../models/translation.model");
 const translateFields = require("../utils/translateFields");

@@ -11,11 +11,15 @@ import Category from "@/components/icons/Category";
 import Tag from "@/components/icons/Tag";
 import Setting from "@/components/icons/Setting";
 import News from "@/components/icons/News";
+import Edit from "@/components/icons/Edit";
 import logo from "/logo.png";
 import Social from "@/components/icons/Social";
 import Country from "@/components/icons/Country";
 import PSale from "@/components/icons/PSale";
 import Product from "@/components/icons/Products";
+import { MdTypeSpecimen } from "react-icons/md";
+import { MdOutlinePublishedWithChanges } from "react-icons/md";
+
 
 function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   const location = useLocation();
@@ -82,6 +86,15 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
     { title: "محصولات", icon: Product, path: "/products" },
     { title: "مجله", icon: Blog, path: "/blogs" },
     { title: "گالری", icon: Gallery, path: "/galleries" },
+    {
+      title: "تغییر",
+      icon: Edit,
+      subItems: [
+        { title: "تغییر دادن", icon: MdOutlinePublishedWithChanges, path: "/edite/change" },
+        { title: "نوع عناصر", icon: MdTypeSpecimen, path: "/edite/choice-type" }
+      ]
+    },
+
     { title: "تنظیمات", icon: Setting, path: "/settings" },
     {
       title: "اخبار",
@@ -97,9 +110,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   return (
     <div className="min-w-fit">
       <div
-        className={`fixed inset-0 bg-gray-900 bg-opacity-30 z-40 lg:hidden lg:z-auto transition-opacity duration-200 ${
-          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-gray-900 bg-opacity-30 z-40 lg:hidden lg:z-auto transition-opacity duration-200 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         aria-hidden="true"
       ></div>
 
@@ -107,9 +119,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
       <div
         id="sidebar"
         ref={sidebar}
-        className={`flex lg:!flex flex-col absolute z-40 right-0 top-0 lg:static lg:right-auto lg:top-auto lg:translate-x-0 h-auto  overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:!w-64 shrink-0 bg-white dark:bg-gray-800 p-3 transition-all duration-200 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "translate-x-64"
-        }`}
+        className={`flex h-full lg:!flex flex-col absolute z-40 right-0 top-0 lg:static lg:right-auto lg:top-auto lg:translate-x-0 h-auto  overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:!w-64 shrink-0 bg-white dark:bg-gray-800 p-3 transition-all duration-200 ease-in-out ${sidebarOpen ? "translate-x-0" : "translate-x-64"
+          }`}
       >
         {/* Sidebar header */}
         <div className="flex md:justify-center justify-between mb-10 pr-3 sm:px-2">
@@ -157,7 +168,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                 صفحات
               </span>
             </h3>
-            <ul className="mt-3">
+            <ul className="mt-3 overflow-auto">
               {sidebarItems.map((item, index) => (
                 <SidebarItem
                   key={index}

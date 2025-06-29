@@ -25,6 +25,10 @@ const settingsSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "لطفا نام را وارد کنید"]
+    },
+    editeble: {
+        type: Boolean,
+        default: true,
     }
 }, { timestamps: true });
 

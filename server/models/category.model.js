@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const { ObjectId } = mongoose.Schema.Types;
 const Counter = require("./counter")
-const baseSchema = require("./baseSchema.model");
+const baseSchema = require("./baseschema.model");
 /* ایجاد اسکیمای دسته‌بندی */
 const categorySchema = new mongoose.Schema(
   {
