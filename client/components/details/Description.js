@@ -22,7 +22,6 @@ const Description = ({ product }) => {
   const h = useTranslations("product");
   const t = useTranslations("reviews");
 
-  console.log("product", product);
   useEffect(() => {
     if (isLoading) {
       toast.loading(h("addReviewLoading"), { id: "addReview" });

@@ -34,7 +34,7 @@
     "GallaryImages": "Nab Galeri",
     "PopularProducts": "En Çok Satanlar",
     "ReadFromUs": "Bizden oku",
-  "title": "Nab'den Nuga ve Helva",
+    "title": "Nab'den Nuga ve Helva",
     "rial": "Riyal",
     "buy": "Al",
     "seeMore": "Daha Fazla Gör",
@@ -216,5 +216,13 @@
     "productType": "Geleneksel Tatlı",
     "pricePrefix": "Başlangıç fiyatı:",
     "productDuration": "Sadece 3 gün boyunca geçerli"
+  },
+  "payment": {
+    "fullName": "Ad Soyad",
+    "mobile": "Telefon Numarası",
+    "selectProvinceWarning": "Lütfen ilinizi seçin",
+    "selectCityWarning": "Lütfen şehrinizi seçin",
+    "selectGateway": "Ödeme Geçidini Seçin",
+    "multiStepHelp": "Lütfen ödeme için bilgilerinizi birkaç adımda tamamlayın"
   }
 }

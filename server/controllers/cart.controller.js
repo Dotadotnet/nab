@@ -17,7 +17,7 @@ exports.addToCart = async (req, res, next) => {
 /* get from cart */
 exports.getFromCart = async (req, res, next) => {
   try {
-    await cartService.getFromCart(res);
+    await cartService.getFromCart(req,res);
   } catch (error) {
     next(error);
   } finally {

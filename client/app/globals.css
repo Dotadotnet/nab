@@ -542,3 +542,22 @@ focus {
 .swiper-wrapper {
   margin-bottom: 30px !important;
 }
+
+.iran-map-wrapper {
+  position: relative;
+  width: 100%!important;
+  height: 100%;
+  overflow: hidden;
+}
+.iran-provinces-map-wrapper{
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  width: 100%;
+}
+.iran-provinces-map-wrapper svg{
+  position: relative;
+  width: 100%!important;
+  height: 100%!important;
+  overflow: hidden;
+}

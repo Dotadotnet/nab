@@ -14,7 +14,6 @@ const Left = ({ product }) => {
   );
   const locale = useLocale();
   function getColumnSpanClass(index, totalThumbnails) {
-    console.log(totalThumbnails);
     if (totalThumbnails === 1) {
       return "col-span-12";
     } else if (totalThumbnails === 2) {

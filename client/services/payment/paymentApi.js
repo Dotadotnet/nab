@@ -9,9 +9,6 @@ const paymentApi = nabApi.injectEndpoints({
       query: (body) => ({
         url: "/payment/create-payment",
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
         body,
       }),
     }),
