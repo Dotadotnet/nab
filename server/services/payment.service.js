@@ -27,47 +27,51 @@ exports.createPayment = async (req, res) => {
     console.log("✅ createPayment called with body:", req.body);
     console.log("🔐 Session ID:", req.sessionID);
 
-    const { cartId, province, city, phone, fullName, gateway, userId } = req.body;
+    const { cartId, province, city, phone, fullName, gateway } = req.body;
 
+    // 🛠 نرمال‌سازی شماره موبایل
+    const normalizedPhone = phone.replace(/[-\s]/g, "");
+    if (!/^09\d{9}$/.test(normalizedPhone)) {
+      return res.status(400).json({
+        acknowledgement: false,
+        description: "شماره تماس معتبر نیست. باید با 09 شروع شود"
+      });
+    }
+
+    // 📌 پیدا کردن سبد خرید
     const cart = await Cart.findById(cartId).populate([
       { path: "items.product", select: "discountAmount" },
       { path: "items.variation", select: "price" }
     ]);
-
     if (!cart) {
       console.warn("❌ Cart not found:", cartId);
-      return res.status(404).json({
-        acknowledgement: false,
-        description: "سبد خرید پیدا نشد"
-      });
+      return res.status(404).json({ acknowledgement: false, description: "سبد خرید پیدا نشد" });
     }
 
     console.log("🛒 Cart loaded:", cart._id);
     console.log("🛒 Cart items:", cart.items.length);
 
+    // 💰 محاسبه مبلغ
     let totalAmount = 0;
     for (const item of cart.items) {
       const price = item.variation?.price || 0;
       const discountPercent = item.product?.discountAmount || 0;
       const discountAmount = (price * discountPercent) / 100;
-      const itemPrice = Math.max(price - discountAmount, 0);
-      totalAmount += itemPrice * item.quantity;
+      totalAmount += Math.max(price - discountAmount, 0) * item.quantity;
     }
-
     console.log("🧮 Total calculated amount:", totalAmount);
 
     const amount = totalAmount;
     const orderId = Date.now();
-
     const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/callback`;
-    console.log("🔁 Callback URL:", callBackUrl);
 
+    // 📡 درخواست به بانک
     const paymentPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
       userName: process.env.MELLAT_USERNAME,
       userPassword: process.env.MELLAT_PASSWORD,
-      orderId: orderId,
-      amount: amount,
+      orderId,
+      amount,
       localDate: new Date().toISOString().slice(0, 10).replace(/-/g, ""),
       localTime: new Date().toTimeString().slice(0, 8).replace(/:/g, ""),
       additionalData: "",
@@ -75,80 +79,80 @@ exports.createPayment = async (req, res) => {
       payerId: 0
     };
 
-    const url = `${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`;
-    console.log("📡 Sending payment request to:", url);
     console.log("📦 Payload:", paymentPayload);
-
-    const response = await axios.post(url, paymentPayload);
-
+    const response = await axios.post(`${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`, paymentPayload);
     console.log("📥 Response from Mellat:", response.data);
 
     const resData = response.data.return.split(",");
-
-
-    if (resData[0] === "0") {
-      const refId = resData[1];
-      console.log("✅ Payment initiated successfully. RefId:", refId);
-
-      let user = await User.findOne({ phone });
-      if (!user) {
-        console.log("👤 User not found. Creating new user...");
-        user = await User.create({
-          phone,
-          phoneVerified: false,
-          name: fullName,
-          sessions: [req.sessionID]
-        });
-        console.log("👤 New user created:", user._id);
-      } else {
-        console.log("👤 Existing user found:", user._id);
-      }
-
-      const address = await Address.create({
-        user: user._id,
-        province,
-        city,
-        isDefault: true
-      });
-      console.log("📍 Address created:", address._id);
-
-      if (!user.addresses.includes(address._id)) {
-        user.addresses.push(address._id);
-        await user.save();
-        console.log("📬 Address added to user.");
-      }
-
-      const purchase = await Purchase.create({
-        customerId: refId,
-        customer: user._id,
-        paymentId: orderId,
-        sessionId: sessionData._id,
-        totalAmount: amount,
-        products: cart.items.map((item) => ({
-          product: item.product._id,
-          variation: item.variation._id,
-          quantity: item.quantity
-        })),
-        gateway
-      });
-      console.log("🛒 Purchase created:", purchase._id);
-
-      return res.status(201).json({
-        acknowledgement: true,
-        description: "هدایت به درگاه Mellat",
-        url: `https://bpm.shaparak.ir/pgwchannel/startpay.mellat?RefId=${refId}`
-      });
-    } else {
+    if (resData[0] !== "0") {
       const errorCode = parseInt(resData[0], 10);
-      const errorMessage = getMellatErrorMessage(errorCode);
-      console.warn("⚠️ Payment initiation failed:", errorCode, errorMessage);
-
       return res.status(400).json({
         acknowledgement: false,
-        description: errorMessage,
-        errorCode: errorCode
+        description: getMellatErrorMessage(errorCode),
+        errorCode
       });
     }
+
+    const refId = resData[1];
+    console.log("✅ Payment initiated successfully. RefId:", refId);
+
+    // 🗝 پیدا کردن سشن واقعی
+    const sessionData = await Session.findOne({ sessionId: req.sessionID });
+    const sessionArray = sessionData ? [sessionData._id] : [];
+    if (!sessionData) console.warn("⚠️ Session not found for sessionID:", req.sessionID);
+
+    // 👤 پیدا یا ساخت کاربر
+    let user = await User.findOne({ phone: normalizedPhone });
+    if (!user) {
+      console.log("👤 User not found. Creating new user...");
+      user = await User.create({
+        phone: normalizedPhone,
+        phoneVerified: false,
+        name: fullName,
+        sessions: sessionArray
+      });
+      console.log("👤 New user created:", user._id);
+    } else {
+      console.log("👤 Existing user found:", user._id);
+    }
+
+    // 📍 ذخیره آدرس
+    const address = await Address.create({
+      user: user._id,
+      province,
+      city,
+      isDefault: true
+    });
+    console.log("📍 Address created:", address._id);
+
+    if (!user.addresses.includes(address._id)) {
+      user.addresses.push(address._id);
+      await user.save();
+      console.log("📬 Address added to user.");
+    }
+
+    // 🛒 ساخت خرید
+    const purchase = await Purchase.create({
+      customerId: refId,
+      customer: user._id,
+      paymentId: orderId,
+      sessionId: sessionData?._id || null,
+      totalAmount: amount,
+      products: cart.items.map(item => ({
+        product: item.product._id,
+        variation: item.variation._id,
+        quantity: item.quantity
+      })),
+      gateway
+    });
+    console.log("🛒 Purchase created:", purchase._id);
+
+    return res.status(201).json({
+      acknowledgement: true,
+      description: "هدایت به درگاه Mellat",
+      url: `https://bpm.shaparak.ir/pgwchannel/startpay.mellat?RefId=${refId}`
+    });
+
   } catch (error) {
     console.error("❌ خطای داخلی سرور:", error.response?.data || error.message || error);
     return res.status(500).json({
@@ -158,6 +162,7 @@ exports.createPayment = async (req, res) => {
     });
   }
 };
+
 
 
 
