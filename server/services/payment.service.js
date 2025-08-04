@@ -25,6 +25,7 @@ function getMellatErrorMessage(code) {
 exports.createPayment = async (req, res) => {
   try {
     console.log("✅ createPayment called with body:", req.body);
+    console.log("🔐 Session ID:", req.sessionID);
 
     const { cartId, province, city, phone, fullName, gateway, userId } = req.body;
 
@@ -41,6 +42,9 @@ exports.createPayment = async (req, res) => {
       });
     }
 
+    console.log("🛒 Cart loaded:", cart._id);
+    console.log("🛒 Cart items:", cart.items.length);
+
     let totalAmount = 0;
     for (const item of cart.items) {
       const price = item.variation?.price || 0;
@@ -56,7 +60,7 @@ exports.createPayment = async (req, res) => {
     const orderId = Date.now();
 
     const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`;
-    console.log("🔁 callback URL:", callBackUrl);
+    console.log("🔁 Callback URL:", callBackUrl);
 
     const paymentPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
@@ -80,15 +84,24 @@ exports.createPayment = async (req, res) => {
     console.log("📥 Response from Mellat:", response.data);
 
     const resData = response.data.return.split(",");
+
     const sessionData = await Session.findOne({ sessionId: req.sessionID });
+    if (!sessionData) {
+      console.error("❌ Session not found for sessionID:", req.sessionID);
+      return res.status(400).json({
+        acknowledgement: false,
+        description: "جلسه (سشن) یافت نشد"
+      });
+    }
+    console.log("📚 Session found:", sessionData._id);
 
     if (resData[0] === "0") {
       const refId = resData[1];
       console.log("✅ Payment initiated successfully. RefId:", refId);
 
       let user = await User.findOne({ phone });
-
       if (!user) {
+        console.log("👤 User not found. Creating new user...");
         user = await User.create({
           phone,
           phoneVerified: false,
@@ -96,6 +109,8 @@ exports.createPayment = async (req, res) => {
           sessions: [sessionData._id]
         });
         console.log("👤 New user created:", user._id);
+      } else {
+        console.log("👤 Existing user found:", user._id);
       }
 
       const address = await Address.create({
@@ -135,7 +150,6 @@ exports.createPayment = async (req, res) => {
     } else {
       const errorCode = parseInt(resData[0], 10);
       const errorMessage = getMellatErrorMessage(errorCode);
-
       console.warn("⚠️ Payment initiation failed:", errorCode, errorMessage);
 
       return res.status(400).json({
@@ -153,6 +167,7 @@ exports.createPayment = async (req, res) => {
     });
   }
 };
+
 
 
 exports.verifyMellatPayment = async (req, res) => {
