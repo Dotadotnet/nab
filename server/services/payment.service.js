@@ -24,8 +24,9 @@ function getMellatErrorMessage(code) {
 
 exports.createPayment = async (req, res) => {
   try {
-    const { cartId, province, city, phone, fullName, gateway, userId } =
-      req.body;
+    console.log("✅ createPayment called with body:", req.body);
+
+    const { cartId, province, city, phone, fullName, gateway, userId } = req.body;
 
     const cart = await Cart.findById(cartId).populate([
       { path: "items.product", select: "discountAmount" },
@@ -33,6 +34,7 @@ exports.createPayment = async (req, res) => {
     ]);
 
     if (!cart) {
+      console.warn("❌ Cart not found:", cartId);
       return res.status(404).json({
         acknowledgement: false,
         description: "سبد خرید پیدا نشد"
@@ -48,8 +50,13 @@ exports.createPayment = async (req, res) => {
       totalAmount += itemPrice * item.quantity;
     }
 
+    console.log("🧮 Total calculated amount:", totalAmount);
+
     const amount = totalAmount;
     const orderId = Date.now();
+
+    const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`;
+    console.log("🔁 callback URL:", callBackUrl);
 
     const paymentPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
@@ -60,16 +67,24 @@ exports.createPayment = async (req, res) => {
       localDate: new Date().toISOString().slice(0, 10).replace(/-/g, ""),
       localTime: new Date().toTimeString().slice(0, 8).replace(/:/g, ""),
       additionalData: "",
-      callBackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`,
+      callBackUrl,
       payerId: 0
     };
 
     const url = `${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`;
+    console.log("📡 Sending payment request to:", url);
+    console.log("📦 Payload:", paymentPayload);
+
     const response = await axios.post(url, paymentPayload);
+
+    console.log("📥 Response from Mellat:", response.data);
+
     const resData = response.data.return.split(",");
     const sessionData = await Session.findOne({ sessionId: req.sessionID });
+
     if (resData[0] === "0") {
       const refId = resData[1];
+      console.log("✅ Payment initiated successfully. RefId:", refId);
 
       let user = await User.findOne({ phone });
 
@@ -80,18 +95,23 @@ exports.createPayment = async (req, res) => {
           name: fullName,
           sessions: [sessionData._id]
         });
+        console.log("👤 New user created:", user._id);
       }
+
       const address = await Address.create({
         user: user._id,
         province,
         city,
         isDefault: true
       });
+      console.log("📍 Address created:", address._id);
 
       if (!user.addresses.includes(address._id)) {
         user.addresses.push(address._id);
         await user.save();
+        console.log("📬 Address added to user.");
       }
+
       const purchase = await Purchase.create({
         customerId: refId,
         customer: user._id,
@@ -103,9 +123,9 @@ exports.createPayment = async (req, res) => {
           variation: item.variation._id,
           quantity: item.quantity
         })),
-
         gateway
       });
+      console.log("🛒 Purchase created:", purchase._id);
 
       return res.status(201).json({
         acknowledgement: true,
@@ -116,6 +136,8 @@ exports.createPayment = async (req, res) => {
       const errorCode = parseInt(resData[0], 10);
       const errorMessage = getMellatErrorMessage(errorCode);
 
+      console.warn("⚠️ Payment initiation failed:", errorCode, errorMessage);
+
       return res.status(400).json({
         acknowledgement: false,
         description: errorMessage,
@@ -123,10 +145,7 @@ exports.createPayment = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(
-      "خطای داخلی سرور:",
-      error.response?.data || error.message || error
-    );
+    console.error("❌ خطای داخلی سرور:", error.response?.data || error.message || error);
     return res.status(500).json({
       acknowledgement: false,
       description: `خطای ${error.message}`,
@@ -134,6 +153,7 @@ exports.createPayment = async (req, res) => {
     });
   }
 };
+
 
 exports.verifyMellatPayment = async (req, res) => {
   try {
