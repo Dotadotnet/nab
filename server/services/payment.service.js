@@ -59,7 +59,7 @@ exports.createPayment = async (req, res) => {
     const amount = totalAmount;
     const orderId = Date.now();
 
-    const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`;
+    const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/callback`;
     console.log("🔁 Callback URL:", callBackUrl);
 
     const paymentPayload = {
@@ -85,15 +85,6 @@ exports.createPayment = async (req, res) => {
 
     const resData = response.data.return.split(",");
 
-    const sessionData = await Session.findOne({ sessionId: req.sessionID });
-    if (!sessionData) {
-      console.error("❌ Session not found for sessionID:", req.sessionID);
-      return res.status(400).json({
-        acknowledgement: false,
-        description: "جلسه (سشن) یافت نشد"
-      });
-    }
-    console.log("📚 Session found:", sessionData._id);
 
     if (resData[0] === "0") {
       const refId = resData[1];
@@ -106,7 +97,7 @@ exports.createPayment = async (req, res) => {
           phone,
           phoneVerified: false,
           name: fullName,
-          sessions: [sessionData._id]
+          sessions: [req.sessionID]
         });
         console.log("👤 New user created:", user._id);
       } else {
