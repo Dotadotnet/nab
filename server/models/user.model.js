@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema(
         default: "N/A"
       }
     },
+    sessions: [{ type: ObjectId, ref: "Session" }],
     cart: [{ type: ObjectId, ref: "Cart" }],
     favorites: [{ type: ObjectId, ref: "Favorite" }],
     reviews: [{ type: ObjectId, ref: "Review" }],
@@ -69,7 +70,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* بررسی اینکه کاربر حداقل شماره تلفن یا حساب گوگل داشته باشد */
 userSchema.pre("validate", function (next) {
   if (!this.phone && !this.googleId) {
     return next(
@@ -79,7 +79,6 @@ userSchema.pre("validate", function (next) {
   next();
 });
 
-/* مقداردهی `userId` از `Counter` */
 userSchema.pre("save", async function (next) {
   if (!this.isNew || this.userId) {
     return next();

@@ -13,3 +13,25 @@ exports.createPayment = async (req, res, next) => {
     console.log(`Route: ${req.url} || Method: ${req.method}`);
   }
 };
+
+exports.verifyMellatPayment = async (req, res, next) => {
+  try {
+    await paymentService.verifyMellatPayment(req, res);
+  } catch (err) {
+    next(err);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+exports.completeOrder  = async (req, res, next) => {
+  try {
+    await paymentService.completeOrder(req, res);
+  } catch (err) {
+    next(err);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+

@@ -20,6 +20,17 @@ router.post(
   "/create-payment",
   paymentController.createPayment
 );
+router.post(
+  "/callback",
+  paymentController.verifyMellatPayment 
+);
+
+router.post(
+  "/completeOrder/:id",
+  paymentController.completeOrder 
+);
+
+
 
 /* export router */
 module.exports = router;

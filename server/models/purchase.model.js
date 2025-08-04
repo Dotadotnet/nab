@@ -1,5 +1,3 @@
-
-
 /* external imports */
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
@@ -10,51 +8,58 @@ const purchaseSchema = new mongoose.Schema(
   {
     purchaseId: {
       type: Number,
-      unique: true,
+      unique: true
     },
     customer: {
       type: ObjectId,
-      ref: "User",
+      ref: "User"
     },
 
-    // for products
+    sessionId: {
+    type: ObjectId,
+      ref: "Session"    },
+
     products: [
       {
         product: {
           type: ObjectId,
-          ref: "Product",
+          ref: "Product"
         },
-
+        variation: {
+          type: ObjectId,
+          ref: "Variation"
+        },
         quantity: {
           type: Number,
-          default: 1,
-        },
-      },
+          default: 1
+        }
+      }
     ],
 
-    // for customer ID
     customerId: {
       type: String,
-      required: true,
+      required: true
     },
 
-    // for order ID
-    orderId: {
+    paymentId: {
       type: String,
-      required: true,
+      required: true
     },
-
-    // for total amount
     totalAmount: {
       type: Number,
-      required: true,
+      required: true
     },
 
-    // order status
-    paymentStatus: {
+    shippingStatus: {
       type: String,
-      enum: ["pending", "delivered"],
-      default: "pending",
+      enum: ["pending", "shipped", "failed"],
+      default: "pending"
+    },
+
+    gateway: {
+      type: String,
+      enum: ["mellat", "zarinpal", "idpay"],
+      required: true
     },
 
     ...baseSchema.obj
@@ -64,22 +69,22 @@ const purchaseSchema = new mongoose.Schema(
 
 purchaseSchema.pre("save", async function (next) {
   if (!this.isNew || this.purchaseId) {
-    return next(); 
+    return next();
   }
 
   try {
     const counter = await Counter.findOneAndUpdate(
       { name: "purchaseId" },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true } 
+      { new: true, upsert: true }
     );
 
-    this.purchaseId = counter.seq; 
+    this.purchaseId = counter.seq;
     next();
   } catch (error) {
     next(error);
   }
-}); 
+});
 /* create purchase model */
 const Purchase = mongoose.model("Purchase", purchaseSchema);
 

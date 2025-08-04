@@ -37,7 +37,6 @@ const sessionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// متد برای افزایش تعداد بازدیدها
 sessionSchema.methods.incrementVisitCount = async function () {
   this.visitCount += 1;
   await this.save();

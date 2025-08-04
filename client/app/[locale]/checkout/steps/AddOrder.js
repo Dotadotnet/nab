@@ -40,20 +40,20 @@ function AddOrder() {
 
   const [createPayment, { isLoading, data, error }] =
     useCreatePaymentMutation();
-const onSubmit = async (data) => {
-  const body = {
-    cartId,
-    province: selectedProvince,
-    city: selectedCity,
-    phone,
-    fullName: data.fullName,
-    gateway: "mellat",
+  const onSubmit = async (data) => {
+    const body = {
+      cartId,
+      province: selectedProvince,
+      city: selectedCity,
+      phone,
+      fullName: data.fullName,
+      gateway: "mellat"
+    };
+
+    console.log(body);
+
+    await createPayment(body);
   };
-
-  console.log(body);
-
-  await createPayment(body);
-};
 
   useEffect(() => {
     if (isLoading)

@@ -12,7 +12,15 @@ const paymentApi = nabApi.injectEndpoints({
         body,
       }),
     }),
+     completeOrder: build.mutation({
+      query: ({ id, body}) => ({
+        url: `/payment/completeOrder/${id}`,
+        method: "POST",
+        body, 
+      }),
+    }),
+
   }),
 });
 
-export const { useCreatePaymentMutation } = paymentApi;
+export const { useCreatePaymentMutation, useCompleteOrderMutation } = paymentApi;
