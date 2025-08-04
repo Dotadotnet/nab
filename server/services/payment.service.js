@@ -60,7 +60,7 @@ exports.createPayment = async (req, res) => {
       localDate: new Date().toISOString().slice(0, 10).replace(/-/g, ""),
       localTime: new Date().toTimeString().slice(0, 8).replace(/:/g, ""),
       additionalData: "",
-      callBackUrl: `${NEXT_PUBLIC_BASE_URL}/api/payment/callback`,
+      callBackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payment/callback`,
       payerId: 0
     };
 
