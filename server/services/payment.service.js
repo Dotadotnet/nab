@@ -168,6 +168,11 @@ exports.createPayment = async (req, res) => {
 
 exports.verifyMellatPayment = async (req, res) => {
   try {
+    console.log("📥 Callback method:", req.method);
+console.log("📥 Callback headers:", req.headers);
+console.log("📥 Callback body:", req.body);
+console.log("📥 Callback query:", req.query);
+
     const { RefId, ResCode, SaleOrderId, SaleReferenceId } = req.body;
 
     console.log("📥 callback data:", req.body);
