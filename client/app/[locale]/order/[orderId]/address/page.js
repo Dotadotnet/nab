@@ -34,18 +34,19 @@ export default function OrderAddress() {
       toast.error(error?.data?.description, { id: "add-address" });
     }
   }, [isLoading, data, error]);
-  const onSubmit = async (formDataInput) => {
-    const formData = new FormData();
-    formData.append("postalCode", formDataInput.postalCode);
-    formData.append("address", formDataInput.address);
-    formData.append("plateNumber", formDataInput.plateNumber);
-    formData.append("orderId", orderId);
-    formData.append("userNote", formDataInput.userNote);
-     for (let pair of formData.entries()) {
-    console.log(`${pair[0]}: ${pair[1]}`);
-  }
-  await completeOrder({id: orderId, body: formData });
+const onSubmit = async (formDataInput) => {
+  const payload = {
+    postalCode: formDataInput.postalCode,
+    address: formDataInput.address,
+    plateNumber: formDataInput.plateNumber,
+    orderId: orderId,
+    userNote: formDataInput.userNote
   };
+
+  console.log("payload to send:", payload);
+
+  await completeOrder({ id: orderId, body: payload });
+};
 
   return (
     <section className="w-screen h-screen flex justify-center items-center p-4 relative overflow-hidden">
