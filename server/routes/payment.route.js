@@ -26,7 +26,7 @@ router.post(
 );
 
 router.post(
-  "/completeOrder/:id",
+  "/completeOrder/:orderId",
   paymentController.completeOrder 
 );
 
