@@ -269,7 +269,7 @@ exports.completeOrder = async (req, res) => {
     const orderId = req.params.orderId;
     console.log("📥 completeOrder data:", req.body);
 
-    const { addressId, postalCode, address, plateNumber, userNote } = req.body;
+    const {  postalCode, address, plateNumber, userNote } = req.body;
 
     const order = await Order.findOne({ orderId }).populate("customer");
     if (!order) {
@@ -281,11 +281,8 @@ exports.completeOrder = async (req, res) => {
     }
 
     const userId = order.customer._id; // 👈 اصلاح شد
+const existingAddress = await Address.findOne({ user: userId });
 
-    const existingAddress = await Address.findOne({
-      _id: addressId,
-      user: userId
-    });
     if (!existingAddress) {
       return res.status(404).json({
         acknowledgement: false,
