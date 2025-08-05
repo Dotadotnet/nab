@@ -68,7 +68,6 @@ const orderSchema = new mongoose.Schema(
 );
 
 /* create order model */
-const Order = mongoose.model("Order", orderSchema);
 orderSchema.pre("save", async function (next) {
   if (this.isNew) {
     try {
@@ -93,6 +92,7 @@ orderSchema.pre("save", async function (next) {
     next();
   }
 });
+const Order = mongoose.model("Order", orderSchema);
 
 /* export order model */
 module.exports = Order;
