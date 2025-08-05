@@ -169,30 +169,36 @@ exports.createPayment = async (req, res) => {
 exports.verifyMellatPayment = async (req, res) => {
   try {
     console.log("📥 Callback method:", req.method);
-console.log("📥 Callback headers:", req.headers);
-console.log("📥 Callback body:", req.body);
-console.log("📥 Callback query:", req.query);
+    console.log("📥 Callback headers:", req.headers);
+    console.log("📥 Callback body:", req.body);
+    console.log("📥 Callback query:", req.query);
+
+    const clientBaseUrl = process.env.NEXT_PUBLIC_CLIENT_URL;
 
     const { RefId, ResCode, SaleOrderId, SaleReferenceId } = req.body;
 
     console.log("📥 callback data:", req.body);
 
     if (!SaleOrderId || !SaleReferenceId) {
-      return res.redirect(`/payment/failure?reason=اطلاعات پرداخت ناقص است`);
+      return res.redirect(
+        `${clientBaseUrl}/payment/failure?reason=اطلاعات پرداخت ناقص است`
+      );
     }
 
-    // خطا در پرداخت (کاربر پرداخت را کنسل کرده یا خطایی رخ داده)
+    // پرداخت ناموفق
     if (ResCode !== "0") {
       await Purchase.findOneAndUpdate(
         { paymentId: SaleOrderId },
         { paymentStatus: "failed", shippingStatus: "failed" }
       );
       return res.redirect(
-        `/payment/failure?reason=${getMellatErrorMessage(Number(ResCode))}`
+        `${clientBaseUrl}/payment/failure?reason=${getMellatErrorMessage(
+          Number(ResCode)
+        )}`
       );
     }
 
-    // تأیید نهایی پرداخت از سمت بانک ملت
+    // تأیید نهایی بانک ملت
     const verificationPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
       userName: process.env.MELLAT_USERNAME,
@@ -206,7 +212,6 @@ console.log("📥 Callback query:", req.query);
     const verifyRes = await axios.post(verifyUrl, verificationPayload);
 
     const verifyResult = verifyRes?.data?.return?.toString();
-
     console.log("✅ نتیجه verify:", verifyResult);
 
     if (verifyResult === "0") {
@@ -218,16 +223,18 @@ console.log("📥 Callback query:", req.query);
           shippingStatus: "shipped"
         },
         { new: true }
-      ).populate("user items.product");
+      ).populate("customer products.product");
 
       if (!updatedPurchase) {
-        return res.redirect(`/payment/failure?reason=خرید یافت نشد`);
+        return res.redirect(
+          `${clientBaseUrl}/payment/failure?reason=خرید یافت نشد`
+        );
       }
 
       const order = await Order.create({
-        customer: updatedPurchase.user._id,
+        customer: updatedPurchase.customer._id,
         purchase: updatedPurchase._id,
-        items: updatedPurchase.items.map((item) => ({
+        items: updatedPurchase.products.map((item) => ({
           product: item.product._id,
           quantity: item.quantity,
           price: item.price
@@ -237,16 +244,17 @@ console.log("📥 Callback query:", req.query);
         paymentRefId: SaleReferenceId
       });
 
-      return res.redirect(`/order/${order.orderId}/address`);
+      return res.redirect(`${clientBaseUrl}/order/${order.orderId}/address`);
     } else {
       const errorMessage = getMellatErrorMessage(parseInt(verifyResult));
-      return res.redirect(`/payment/failure?reason=${errorMessage}`);
+      return res.redirect(`${clientBaseUrl}/payment/failure?reason=${errorMessage}`);
     }
   } catch (err) {
     console.error("❌ خطای تأیید پرداخت:", err);
-    return res.redirect(`/payment/failure?reason=خطای داخلی سرور`);
+    return res.redirect(`${process.env.NEXT_PUBLIC_CLIENT_URL}/payment/failure?reason=خطای داخلی سرور`);
   }
 };
+
 
 exports.completeOrder = async (req, res) => {
   try {
