@@ -26,6 +26,7 @@ exports.verifyMellatPayment = async (req, res, next) => {
 
 exports.completeOrder  = async (req, res, next) => {
   try {
+    console.log("dawdawd")
     await paymentService.completeOrder(req, res);
   } catch (err) {
     next(err);

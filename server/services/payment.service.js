@@ -45,7 +45,9 @@ exports.createPayment = async (req, res) => {
     ]);
     if (!cart) {
       console.warn("❌ Cart not found:", cartId);
-      return res.status(404).json({ acknowledgement: false, description: "سبد خرید پیدا نشد" });
+      return res
+        .status(404)
+        .json({ acknowledgement: false, description: "سبد خرید پیدا نشد" });
     }
 
     console.log("🛒 Cart loaded:", cart._id);
@@ -80,7 +82,10 @@ exports.createPayment = async (req, res) => {
     };
 
     console.log("📦 Payload:", paymentPayload);
-    const response = await axios.post(`${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`, paymentPayload);
+    const response = await axios.post(
+      `${process.env.IRAN_SHAPARAK_API_URL}/payment/mellat`,
+      paymentPayload
+    );
     console.log("📥 Response from Mellat:", response.data);
 
     const resData = response.data.return.split(",");
@@ -99,7 +104,8 @@ exports.createPayment = async (req, res) => {
     // 🗝 پیدا کردن سشن واقعی
     const sessionData = await Session.findOne({ sessionId: req.sessionID });
     const sessionArray = sessionData ? [sessionData._id] : [];
-    if (!sessionData) console.warn("⚠️ Session not found for sessionID:", req.sessionID);
+    if (!sessionData)
+      console.warn("⚠️ Session not found for sessionID:", req.sessionID);
 
     // 👤 پیدا یا ساخت کاربر
     let user = await User.findOne({ phone: normalizedPhone });
@@ -138,7 +144,7 @@ exports.createPayment = async (req, res) => {
       paymentId: orderId,
       sessionId: sessionData?._id || null,
       totalAmount: amount,
-      products: cart.items.map(item => ({
+      products: cart.items.map((item) => ({
         product: item.product._id,
         variation: item.variation._id,
         quantity: item.quantity
@@ -152,9 +158,11 @@ exports.createPayment = async (req, res) => {
       description: "هدایت به درگاه Mellat",
       url: `https://bpm.shaparak.ir/pgwchannel/startpay.mellat?RefId=${refId}`
     });
-
   } catch (error) {
-    console.error("❌ خطای داخلی سرور:", error.response?.data || error.message || error);
+    console.error(
+      "❌ خطای داخلی سرور:",
+      error.response?.data || error.message || error
+    );
     return res.status(500).json({
       acknowledgement: false,
       description: `خطای ${error.message}`,
@@ -162,9 +170,6 @@ exports.createPayment = async (req, res) => {
     });
   }
 };
-
-
-
 
 exports.verifyMellatPayment = async (req, res) => {
   try {
@@ -247,21 +252,24 @@ exports.verifyMellatPayment = async (req, res) => {
       return res.redirect(`${clientBaseUrl}/order/${order.orderId}/address`);
     } else {
       const errorMessage = getMellatErrorMessage(parseInt(verifyResult));
-      return res.redirect(`${clientBaseUrl}/payment/failure?reason=${errorMessage}`);
+      return res.redirect(
+        `${clientBaseUrl}/payment/failure?reason=${errorMessage}`
+      );
     }
   } catch (err) {
     console.error("❌ خطای تأیید پرداخت:", err);
-    return res.redirect(`${process.env.NEXT_PUBLIC_CLIENT_URL}/payment/failure?reason=خطای داخلی سرور`);
+    return res.redirect(
+      `${process.env.NEXT_PUBLIC_CLIENT_URL}/payment/failure?reason=خطای داخلی سرور`
+    );
   }
 };
 
-
 exports.completeOrder = async (req, res) => {
   try {
-    const { orderId, addressId, postalCode, address, plateNumber, userNote } =
-      req.body;
+    const orderId = req.params.orderId;
     console.log("📥 completeOrder data:", req.body);
-    const order = await Order.findById(orderId).populate("user");
+    const { addressId, postalCode, address, plateNumber, userNote } = req.body;
+const order = await Order.findOne({ orderId }).populate("customer");
     if (!order)
       return res.status(404).json({
         acknowledgement: false,
