@@ -268,29 +268,33 @@ exports.completeOrder = async (req, res) => {
   try {
     const orderId = req.params.orderId;
     console.log("📥 completeOrder data:", req.body);
+
     const { addressId, postalCode, address, plateNumber, userNote } = req.body;
-const order = await Order.findOne({ orderId }).populate("customer");
-    if (!order)
+
+    const order = await Order.findOne({ orderId }).populate("customer");
+    if (!order) {
       return res.status(404).json({
         acknowledgement: false,
         message: "خطای داخلی سرور",
         description: "سفارش مورد نظر یافت نشد"
       });
+    }
 
-    const userId = order.user._id;
+    const userId = order.customer._id; // 👈 اصلاح شد
 
     const existingAddress = await Address.findOne({
       _id: addressId,
       user: userId
     });
-    if (!existingAddress)
+    if (!existingAddress) {
       return res.status(404).json({
         acknowledgement: false,
         message: "خطای داخلی سرور",
         description: "آدرس مورد نظر یافت نشد"
       });
+    }
 
-    // 3. آپدیت آدرس
+    // آپدیت آدرس
     existingAddress.postalCode = postalCode;
     existingAddress.address = address;
     existingAddress.plateNumber = plateNumber;
