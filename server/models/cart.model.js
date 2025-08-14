@@ -32,13 +32,13 @@ const cartSchema = new mongoose.Schema(
 
     items: [
       {
-           product: { type: ObjectId, ref: "Product", required: true },
-      variation: { type: ObjectId, ref: "Variation", required: true },
-      quantity: { type: Number, default: 1, min: 1, required: true },
-       addedAt: { type: Date, default: Date.now }
+        product: { type: ObjectId, ref: "Product", required: true },
+        variation: { type: ObjectId, ref: "Variation", required: true },
+        quantity: { type: Number, default: 1, min: 1, required: true },
+        addedAt: { type: Date, default: Date.now }
       }
     ],
-    paymentStatus : {
+    paymentStatus: {
       type: String,
       enum: ["pending", "paid", "expired"],
       default: "pending"

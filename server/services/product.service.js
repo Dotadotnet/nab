@@ -315,8 +315,7 @@ exports.getDetailsProducts = async (res) => {
  exports.getProduct = async (req, res) => {
   try {
     const productId = parseInt(req.params.id, 10);
-    console.log("📥 دریافت productId:", productId);
-    console.log("🌐 زبان مورد نظر:", req.locale);
+
 
     const product = await Product.findOne({ productId })
       .populate("category")

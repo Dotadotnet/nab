@@ -1,9 +1,11 @@
 /* internal imports */
 const Cart = require("../models/cart.model");
+const Product = require("../models/product.model");
 const User = require("../models/user.model");
 const Session = require("../models/session.model");
-/* Add to Cart */
+const { sendSms } = require("../utils/smsService");
 
+const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map(p => p.trim());
 exports.addToCart = async (req, res) => {
   try {
     const { product, quantity = 1, variation } = req.body;
@@ -14,6 +16,8 @@ exports.addToCart = async (req, res) => {
     const variationId = variation.toString();
 
     let cart;
+    let isNewCart = false; // برای فهمیدن اینکه سبد خرید تازه ساخته شده یا نه
+
     if (userId) {
       cart = await Cart.findOne({ user: userId, paymentStatus: "pending" });
     } else {
@@ -29,6 +33,7 @@ exports.addToCart = async (req, res) => {
         guest: userId ? null : guestSessionId,
         items: [{ product: productId, variation: variationId, quantity }]
       });
+      isNewCart = true;
     } else {
       const itemIndex = cart.items.findIndex(
         (item) =>
@@ -59,6 +64,21 @@ exports.addToCart = async (req, res) => {
       );
     }
 
+    // 📲 ارسال پیامک به صاحب فروشگاه
+const itemsText = await Promise.all(
+  cart.items.map(async (item, index) => {
+    const productDoc = await Product.findById(item.product).select("title");
+    const productTitle = productDoc?.title || "بدون عنوان";
+    return `📦 ${productTitle}: تعداد ${item.quantity}`;
+  })
+);
+const message = isNewCart
+  ? `🛒 یک سبد خرید جدید ایجاد شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`
+  : `➕ محصول جدید به سبد خرید اضافه شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`;
+console.log(shopOwnerPhones)
+await Promise.all(shopOwnerPhones.map(phone => sendSms(phone, message)));
+
+
     return res.status(201).json({
       acknowledgement: true,
       message: "Ok",
@@ -80,38 +100,81 @@ exports.getCarts = async (req, res) => {
     const { page = 1, limit = 5, search = "" } = req.query;
     const skip = (page - 1) * limit;
 
-
     const carts = await Cart.find()
       .skip(Number(skip))
       .limit(Number(limit))
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate([
+        {
+          path: "items.product",
+          select: "thumbnail discountAmount translations",
+          populate: [
+            {
+              path: "translations.translation",
+              match: { language: req.locale },
+              select: "fields.title fields.summary  language"
+            },
+            {
+              path: "category",
+              select: "title"
+            }
+          ]
+        },
+        {
+          path: "items.variation",
+          select: "price unit",
+          populate: {
+            path: "unit",
+            select: "value",
+            populate: {
+              path: "translations.translation",
+              match: { language: req.locale },
+              select: "fields.title language"
+            }
+          }
+        }
+      ]);
 
+    // Calculate totals for each cart
+    const cartsWithTotals = carts.map((cart) => {
+      let totalAmountWithDiscount = 0;
+      let totalAmountWithoutDiscount = 0;
 
-    const total = carts.length;
+      for (const item of cart.items) {
+        const price = item.variation?.price || 0;
+        const discountPercent = item.product?.discountAmount || 0;
+        const discountAmount = (price * discountPercent) / 100;
 
+        totalAmountWithDiscount +=
+          Math.max(price - discountAmount, 0) * item.quantity;
+        totalAmountWithoutDiscount += price * item.quantity;
+      }
+
+      return {
+        ...cart._doc,
+        totalAmountWithDiscount,
+        totalAmountWithoutDiscount
+      };
+    });
+
+    const total = Cart.countDocuments(query);
+    console.log("Total carts:", total);
     res.status(200).json({
       acknowledgement: true,
       message: "Ok",
       description: "کارت‌ها با موفقیت دریافت شدند",
-      data: carts,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: cartsWithTotals,
+      total
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       acknowledgement: false,
       message: "خطا در دریافت کارت‌ها",
-      error: error.message,
+      error: error.message
     });
   }
 };
-
-
 /* get from cart */
 exports.getFromCart = async (req, res) => {
   const cart = await Cart.findById({
