@@ -25,6 +25,8 @@ router.post(
   paymentController.verifyMellatPayment 
 );
 
+router.get("/get-all-payments", paymentController.getAllPayments);
+
 router.post(
   "/completeOrder/:orderId",
   paymentController.completeOrder 

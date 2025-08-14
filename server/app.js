@@ -69,6 +69,8 @@ app.use("/api/blog", require("./routes/blog.route"));
 app.use("/api/session", require("./routes/session.route"));
 app.use("/api/gallery", require("./routes/gallery.route"));
 app.use("/api/featuredProduct", require("./routes/featuredProduct.route"));
+app.use("/api/order", require("./routes/order.route"));
+app.use("/api/address", require("./routes/address.route"));
 
 
 

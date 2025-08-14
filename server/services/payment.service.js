@@ -6,6 +6,7 @@ const axios = require("axios");
 const Session = require("../models/session.model");
 const Order = require("../models/order.model");
 const Address = require("../models/address.model");
+const { sendSms } = require("../utils/smsService");
 
 require("dotenv").config();
 
@@ -21,6 +22,9 @@ function getMellatErrorMessage(code) {
   };
   return errors[code] || "خطای نامشخص از سمت درگاه Mellat";
 }
+const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map((p) =>
+  p.trim()
+);
 
 exports.createPayment = async (req, res) => {
   try {
@@ -152,7 +156,21 @@ exports.createPayment = async (req, res) => {
       })),
       gateway
     });
-    console.log("🛒 Purchase created:", purchase._id);
+    const purchaseMessage = `🛍 خرید جدید ثبت شد!
+    🆔 شناسه خرید: ${purchase.purchaseId}
+📌 شناسه سبد خرید: ${cart.cartId}
+💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
+👤 مشتری: ${user.phone}-${user.name}`;
+
+    if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
+      const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
+        ? SHOP_OWNER_PHONE
+        : [SHOP_OWNER_PHONE];
+
+      await Promise.all(
+        shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
+      );
+    }
 
     return res.status(201).json({
       acknowledgement: true,
@@ -197,6 +215,18 @@ exports.verifyMellatPayment = async (req, res) => {
         { paymentId: SaleOrderId },
         { paymentStatus: "failed", shippingStatus: "failed", ResCode: ResCode }
       );
+      const failedMessage = `پرداخت سفارش ${
+        failedPurchase?._id || SaleOrderId
+      } با خطا مواجه شد.`;
+      if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
+        const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
+          ? SHOP_OWNER_PHONE
+          : [SHOP_OWNER_PHONE];
+
+        await Promise.all(
+          shopOwnerPhones.map((phone) => sendSms(phone, failedMessage))
+        );
+      }
       return res.redirect(
         `${clientBaseUrl}/payment/failure?reason=${getMellatErrorMessage(
           Number(ResCode)
@@ -257,7 +287,22 @@ exports.verifyMellatPayment = async (req, res) => {
         user: updatedPurchase.customer._id,
         isDefault: true
       });
+      let successMessage = "";
+      if (defaultAddress && defaultAddress.isComplete) {
+        successMessage = `✅ سفارش ${order.orderId} با موفقیت تکمیل شد.`;
+      } else {
+        successMessage = `✅ سفارش ${order.orderId} پرداخت شد اما اطلاعات آدرس تکمیل نیست.`;
+      }
 
+      if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
+        const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
+          ? SHOP_OWNER_PHONE
+          : [SHOP_OWNER_PHONE];
+
+        await Promise.all(
+          shopOwnerPhones.map((phone) => sendSms(phone, successMessage))
+        );
+      }
       if (defaultAddress && defaultAddress.isComplete) {
         return res.redirect(`${clientBaseUrl}/order/${order.orderId}/success`);
       } else {
@@ -317,7 +362,7 @@ exports.completeOrder = async (req, res) => {
     res.status(200).json({
       acknowledgement: true,
       message: "OK",
-      description: "آدرس با موفقیت به‌روزرسانی شد"
+      description: "آدرس با موفقیت تکمیل  شد"
     });
   } catch (error) {
     console.error("completeOrder error:", error.message);
@@ -325,6 +370,93 @@ exports.completeOrder = async (req, res) => {
       acknowledgement: false,
       message: "خطای داخلی سرور",
       description: "خطای داخلی سرور در هنگام تکمیل سفارش"
+    });
+  }
+};
+
+exports.getAllPayments = async (req, res) => {
+  try {
+    const { page = 1, limit = 5, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    let query = { isDeleted: false };
+
+    if (search) {
+      query = {
+        ...query,
+        $or: [
+          { _id: search },
+          { customerId: { $regex: search, $options: "i" } } // جستجو بر اساس customerId یا هر فیلدی که میخواید
+        ]
+      };
+    }
+
+    const payments = await Purchase.find(query)
+      .skip(Number(skip))
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .populate([
+        {
+          path: "customer",
+          select: "name email phone "
+        },
+        {
+          path: "products.product",
+          select: "thumbnail discountAmount title",
+          
+        },
+        {
+          path: "products.variation",
+          select: "price unit",
+          populate: {
+            path: "unit",
+            select: "value",
+            populate: {
+              path: "translations.translation",
+              match: { language: req.locale },
+              select: "fields.title language"
+            }
+          }
+        }
+      ]);
+
+    // محاسبه مجموع قیمت‌ها
+    const paymentsWithTotals = payments.map((payment) => {
+      let totalAmountWithDiscount = 0;
+      let totalAmountWithoutDiscount = 0;
+
+      for (const item of payment.products) {
+        const price = item.variation?.price || 0;
+        const discountPercent = item.product?.discountAmount || 0;
+        const discountAmount = (price * discountPercent) / 100;
+
+        totalAmountWithDiscount +=
+          Math.max(price - discountAmount, 0) * item.quantity;
+        totalAmountWithoutDiscount += price * item.quantity;
+      }
+
+      return {
+        ...payment._doc,
+        totalAmountWithDiscount,
+        totalAmountWithoutDiscount
+      };
+    });
+
+    const total = await Purchase.countDocuments(query);
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "پرداخت‌ها با موفقیت دریافت شدند",
+      data: paymentsWithTotals,
+      total
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت پرداخت‌ها",
+      error: error.message
     });
   }
 };

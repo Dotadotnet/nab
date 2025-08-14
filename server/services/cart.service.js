@@ -100,7 +100,20 @@ exports.getCarts = async (req, res) => {
     const { page = 1, limit = 5, search = "" } = req.query;
     const skip = (page - 1) * limit;
 
-    const carts = await Cart.find()
+    let query = { isDeleted: false };
+
+    if (search) {
+      // جستجو بر اساس id یا نام کاربر
+      query = {
+        ...query,
+        $or: [
+          { _id: search },
+          { guest: { $regex: search, $options: "i" } }
+        ]
+      };
+    }
+
+    const carts = await Cart.find(query)
       .skip(Number(skip))
       .limit(Number(limit))
       .sort({ createdAt: -1 })
@@ -112,7 +125,7 @@ exports.getCarts = async (req, res) => {
             {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title fields.summary  language"
+              select: "fields.title fields.summary language"
             },
             {
               path: "category",
@@ -135,7 +148,7 @@ exports.getCarts = async (req, res) => {
         }
       ]);
 
-    // Calculate totals for each cart
+    // محاسبه مجموع قیمت‌ها
     const cartsWithTotals = carts.map((cart) => {
       let totalAmountWithDiscount = 0;
       let totalAmountWithoutDiscount = 0;
@@ -157,12 +170,12 @@ exports.getCarts = async (req, res) => {
       };
     });
 
-    const total = Cart.countDocuments(query);
-    console.log("Total carts:", total);
+    const total = await Cart.countDocuments(query);
+
     res.status(200).json({
       acknowledgement: true,
       message: "Ok",
-      description: "کارت‌ها با موفقیت دریافت شدند",
+      description: "سبدها با موفقیت دریافت شدند",
       data: cartsWithTotals,
       total
     });
@@ -170,11 +183,12 @@ exports.getCarts = async (req, res) => {
     console.error(error);
     res.status(500).json({
       acknowledgement: false,
-      message: "خطا در دریافت کارت‌ها",
+      message: "خطا در دریافت سبدها",
       error: error.message
     });
   }
 };
+
 /* get from cart */
 exports.getFromCart = async (req, res) => {
   const cart = await Cart.findById({

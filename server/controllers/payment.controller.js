@@ -36,3 +36,12 @@ exports.completeOrder  = async (req, res, next) => {
 };
 
 
+exports.getAllPayments = async (req, res, next) => {
+  try {
+    await paymentService.getAllPayments(req,res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};

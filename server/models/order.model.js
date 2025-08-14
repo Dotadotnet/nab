@@ -24,10 +24,7 @@ const orderSchema = new mongoose.Schema(
       required: true
     },
 
-    sessionId: {
-      type: ObjectId,
-      ref: "Session"
-    },
+
 
     trackingCode: {
       type: String
@@ -48,12 +45,10 @@ const orderSchema = new mongoose.Schema(
       ref: "Address"
     },
 
-    customerNote: {
+    userNote: {
       type: String
     },
-   userNote: {
-      type: String
-    },
+
     adminNote: {
       type: String
     },
