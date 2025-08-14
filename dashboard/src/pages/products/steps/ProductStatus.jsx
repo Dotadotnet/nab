@@ -38,17 +38,12 @@ const ProductStatus = ({
     [fetchTagsData]
   );
 
-  // تابع برای به‌روزرسانی لیست تگ‌ها بعد از افزودن تگ جدید
-  const refreshTags = useCallback(() => {
-    refetchTags();
-  }, [refetchTags]);
 
-  // مدیریت تغییرات انتخابی
+
   const handleOptionsChange = (newSelectedOptions) => {
     setSelectedOptions(newSelectedOptions);
   };
 
-  // نمایش وضعیت دریافت تگ‌ها
   useEffect(() => {
     if (fetchingTags) {
       toast.loading("در حال دریافت تگ‌ها ...", { id: "fetchTags" });

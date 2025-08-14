@@ -16,8 +16,14 @@ const purchaseSchema = new mongoose.Schema(
     },
 
     sessionId: {
-    type: ObjectId,
-      ref: "Session"    },
+      type: ObjectId,
+      ref: "Session"
+    },
+    cart: {
+      type: ObjectId,
+      ref: "Cart",
+      required: true
+    },
 
     products: [
       {
@@ -40,6 +46,10 @@ const purchaseSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    saleReferenceId: {
+      type: String,
+      required: true
+    },
 
     paymentId: {
       type: String,
@@ -55,7 +65,14 @@ const purchaseSchema = new mongoose.Schema(
       enum: ["pending", "shipped", "failed"],
       default: "pending"
     },
-
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed", "expired", "refunded", "canceled"],
+      default: "pending"
+    },
+    ResCode: {
+      type: String
+    },
     gateway: {
       type: String,
       enum: ["mellat", "zarinpal", "idpay"],

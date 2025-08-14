@@ -1,24 +1,21 @@
-
-
-const { nabApi } = require("../nab");
+import { nabApi } from "../nab";
 
 const cartApi = nabApi.injectEndpoints({
   endpoints: (build) => ({
-    // add to cart
+    // Add to cart
     addToCart: build.mutation({
-      query: (body) => ({
-        url: "/cart/add-to-cart",
+      query: (cartItem) => ({
+        url: "/cart/add",
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        body,
+        body: cartItem,
       }),
-
-      invalidatesTags: ["Cart", "User"],
+      invalidatesTags: ["Cart", "Admin"],
     }),
 
-    // get from cart
+    // Get single user's cart
     getFromCart: build.query({
       query: () => ({
         url: "/cart/get-from-cart",
@@ -27,12 +24,23 @@ const cartApi = nabApi.injectEndpoints({
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       }),
-
       providesTags: ["Cart"],
     }),
 
-    // delete from cart
-    deleteFromCart: build.mutation({
+    // Get paginated carts (admin or listing)
+    getCarts: build.query({
+      query: ({ page = 1, limit = 5, search = "" } = {}) => ({
+        url: `/cart/get-carts?page=${page}&limit=${limit}&search=${search}`,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["Cart"],
+    }),
+
+    // Delete from cart
+    deleteCart: build.mutation({
       query: (id) => ({
         url: `/cart/delete-cart/${id}`,
         method: "DELETE",
@@ -40,8 +48,7 @@ const cartApi = nabApi.injectEndpoints({
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       }),
-
-      invalidatesTags: ["Cart", "User"],
+      invalidatesTags: ["Cart", "Admin"],
     }),
   }),
 });
@@ -49,5 +56,6 @@ const cartApi = nabApi.injectEndpoints({
 export const {
   useAddToCartMutation,
   useGetFromCartQuery,
-  useDeleteFromCartMutation,
+  useGetCartsQuery,
+  useDeleteCartMutation,
 } = cartApi;

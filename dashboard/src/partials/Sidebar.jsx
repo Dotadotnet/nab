@@ -16,6 +16,10 @@ import Social from "@/components/icons/Social";
 import Country from "@/components/icons/Country";
 import PSale from "@/components/icons/PSale";
 import Product from "@/components/icons/Products";
+import Cart from "@/components/icons/Cart";
+import Payment from "@/components/icons/Payment";
+import Order from "@/components/icons/Order";
+import Address from "@/components/icons/Address";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   const location = useLocation();
@@ -80,6 +84,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
     { title: "تگها", icon: Tag, path: "/tags" },
     { title: "پست ها ", icon: Post, path: "/posts" },
     { title: "محصولات", icon: Product, path: "/products" },
+    { title: "سبد های خرید", icon: Cart, path: "/carts" },
+    { title: "پرداخت ها", icon: Payment, path: "/payments" },
+    { title: "سفارشات", icon: Order, path: "/orders" },
+    { title: "آدرس ها", icon: Address, path: "/addresses" },
     { title: "مجله", icon: Blog, path: "/blogs" },
     { title: "گالری", icon: Gallery, path: "/galleries" },
     { title: "تنظیمات", icon: Setting, path: "/settings" },

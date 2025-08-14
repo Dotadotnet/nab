@@ -20,6 +20,10 @@ import Galleries from "./pages/galleries";
 import Units from "./pages/units";
 import Categories from "./pages/categories";
 import AddCategory from "./pages/categories/add";
+import Addresses from "./pages/addresses";
+import Carts from "./pages/carts";
+import Payments from "./pages/payments";
+import Orders from "./pages/orders";
 import Products from "./pages/products";
 import AddProduct from "./pages/products/add";
 import UpdateProduct from "./pages/products/update/index";
@@ -57,6 +61,10 @@ function App() {
           <Route exact path="/galleries" element={<Galleries />} />
           <Route exact path="/categories/add" element={<AddCategory />} />
           <Route exact path="/products" element={<Products />} />
+          <Route exact path="/addresses" element={<Addresses />} />
+          <Route exact path="/payments" element={<Payments />} />
+          <Route exact path="/orders" element={<Orders />} />
+          <Route exact path="/carts" element={<Carts />} />
           <Route exact path="/products/add" element={<AddProduct />} />
           <Route exact path="/products/update/:product_id" element={<UpdateProduct />} />
           <Route path="/posts/info/:id" element={<PostInfo />} />

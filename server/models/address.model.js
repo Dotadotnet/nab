@@ -18,12 +18,19 @@ const addressSchema = new mongoose.Schema(
       required: true
     },
     address: {
-      type: String,
-    },
-    postalCode: {
       type: String
     },
+    plateNumber: { 
+      type: Number,
+    },
+    postalCode: {
+      type: Number,
+    },
     isDefault: {
+      type: Boolean,
+      default: false
+    },
+    isComplete: {
       type: Boolean,
       default: false
     },
@@ -31,6 +38,22 @@ const addressSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// بررسی کامل بودن قبل از ذخیره
+addressSchema.pre("save", function (next) {
+  const requiredFields = [
+    this.province,
+    this.city,
+    this.address,
+    this.plaque,
+    this.postalCode
+  ];
+  const allFilled = requiredFields.every(
+    field => typeof field === "string" && field.trim().length > 0
+  );
+  this.isComplete = allFilled;
+  next();
+});
 
 const Address = mongoose.model("Address", addressSchema);
 module.exports = Address;

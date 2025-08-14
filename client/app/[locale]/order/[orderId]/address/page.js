@@ -71,6 +71,7 @@ const onSubmit = async (formDataInput) => {
               {...register("postalCode", { required: "کد پستی الزامی است" })}
               className="form-control block w-full h-12 !px-4  text-gray-700 bg-white dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-green-600 focus:outline-none text-left "
               placeholder="کد پستی"
+              type="Number"
             />
             {errors.postalCode && (
               <span className="text-red-500 text-sm">
@@ -86,6 +87,7 @@ const onSubmit = async (formDataInput) => {
               {...register("address", { required: "آدرس الزامی است" })}
               className="form-control block w-full h-12 !px-4  text-gray-700 bg-white dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-green-600 focus:outline-none text-left "
               placeholder="آدرس"
+              
             />
             {errors.address && (
               <span className="text-red-500 text-sm">
@@ -101,6 +103,7 @@ const onSubmit = async (formDataInput) => {
               {...register("plateNumber", { required: "پلاک الزامی است" })}
               className="form-control block w-full h-12 !px-4  text-gray-700 bg-white dark:text-gray-100 dark:bg-slate-800 border border-solid border-gray-300 rounded transition ease-in-out focus:text-gray-700  dark:focus:text-gray-100 focus:bg-white focus:border-green-600 focus:outline-none text-left "
               placeholder="پلاک"
+              type="Number"
             />
             {errors.plateNumber && (
               <span className="text-red-500 text-sm">

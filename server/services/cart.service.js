@@ -15,27 +15,36 @@ exports.addToCart = async (req, res) => {
 
     let cart;
     if (userId) {
-      cart = await Cart.findOne({ user: userId, paymentStatus : "pending" });
+      cart = await Cart.findOne({ user: userId, paymentStatus: "pending" });
     } else {
-      cart = await Cart.findOne({ guest: guestSessionId, paymentStatus : "pending" });
+      cart = await Cart.findOne({
+        guest: guestSessionId,
+        paymentStatus: "pending"
+      });
     }
 
     if (!cart) {
       cart = await Cart.create({
         user: userId,
         guest: userId ? null : guestSessionId,
-        items: [{ product: productId, variation: variationId, quantity }],
+        items: [{ product: productId, variation: variationId, quantity }]
       });
     } else {
-      const itemIndex = cart.items.findIndex(item => 
-        item.product.toString() === productId && item.variation.toString() === variationId
+      const itemIndex = cart.items.findIndex(
+        (item) =>
+          item.product.toString() === productId &&
+          item.variation.toString() === variationId
       );
 
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += quantity;
         cart.items[itemIndex].addedAt = new Date();
       } else {
-        cart.items.push({ product: productId, variation: variationId, quantity });
+        cart.items.push({
+          product: productId,
+          variation: variationId,
+          quantity
+        });
       }
       await cart.save();
     }
@@ -54,56 +63,90 @@ exports.addToCart = async (req, res) => {
       acknowledgement: true,
       message: "Ok",
       description: "محصول با موفقیت به سبد خرید اضافه شد",
-      cart,
+      cart
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       acknowledgement: false,
       message: "خطا در افزودن محصول به سبد خرید",
+      error: error.message
+    });
+  }
+};
+
+exports.getCarts = async (req, res) => {
+  try {
+    const { page = 1, limit = 5, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+
+    const carts = await Cart.find()
+      .skip(Number(skip))
+      .limit(Number(limit))
+      .sort({ createdAt: -1 });
+
+
+    const total = carts.length;
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "کارت‌ها با موفقیت دریافت شدند",
+      data: carts,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت کارت‌ها",
       error: error.message,
     });
   }
 };
 
 
-
-
-
 /* get from cart */
 exports.getFromCart = async (req, res) => {
-  console.log("req locale cart", req.locale);
-  console.log("eq.params.id", req.params.id);
- const cart = await Cart.findById(req.params.id).populate([
-      {
-        path: "items.product",
-        select: "thumbnail discountAmount translations",
-        populate: [
-          {
-            path: "translations.translation",
-            match: { language: req.locale },
-            select: "fields.title fields.summary fields.slug language",
-          },
-          {
-            path: "category",
-            select: "title",
-          },
-        ],
-      },
-      {
-        path: "items.variation",
-        select: "price unit",
-        populate: {
-          path: "unit",
-          select: "value",
-          populate: {
-            path: "translations.translation",
-            match: { language: req.locale },
-            select: "fields.title language",
-          },
+  const cart = await Cart.findById({
+    _id: req.params.id,
+    paymentStatus: "pending"
+  }).populate([
+    {
+      path: "items.product",
+      select: "thumbnail discountAmount translations",
+      populate: [
+        {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "fields.title fields.summary fields.slug language"
         },
-      },
-    ]);
+        {
+          path: "category",
+          select: "title"
+        }
+      ]
+    },
+    {
+      path: "items.variation",
+      select: "price unit",
+      populate: {
+        path: "unit",
+        select: "value",
+        populate: {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "fields.title language"
+        }
+      }
+    }
+  ]);
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",

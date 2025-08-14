@@ -36,7 +36,6 @@ const MyCart = () => {
   } = useGetCartQuery( { id: cartId, locale }, {
 skip: !cartId || cartId.length === 0
   });
-  console.log("cartId",cartId)
   const cartItems = cartData?.data.items || [];
   useEffect(() => {
     if (loadingCart) {

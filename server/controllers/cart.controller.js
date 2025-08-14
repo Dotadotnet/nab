@@ -25,6 +25,17 @@ exports.getFromCart = async (req, res, next) => {
   }
 };
 
+/* get from cart */
+exports.getCarts = async (req, res, next) => {
+  try {
+    await cartService.getCarts(req,res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
 /* update cart */
 exports.updateCart = async (req, res, next) => {
   try {

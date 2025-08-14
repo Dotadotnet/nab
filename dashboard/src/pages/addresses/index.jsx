@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  useGetCategoriesQuery,
-  useDeleteCategoryMutation
-} from "@/services/category/categoryApi";
+  useGetAddressesQuery,
+  useDeleteAddressMutation
+} from "@/services/address/addressApi";
 import DeleteModal from "@/components/shared/modal/DeleteModal";
 import { toast } from "react-hot-toast";
 import StatusIndicator from "@/components/shared/tools/StatusIndicator";
@@ -10,59 +10,57 @@ import SkeletonItem from "@/components/shared/skeleton/SkeletonItem";
 import Pagination from "@/components/shared/pagination/Pagination";
 import Search from "@/components/shared/search";
 import ControlPanel from "../ControlPanel";
-import AddButton from "@/components/shared/button/AddButton";
 
-const ListCategory = () => {
+const ListAddress = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const { data, isLoading, error, refetch } = useGetCategoriesQuery({
+  const { data, isLoading, error, refetch } = useGetAddressesQuery({
     page: currentPage,
     limit: itemsPerPage,
     status: statusFilter === "all" ? undefined : statusFilter,
     search: searchTerm
   });
   const totalPages = data ? Math.ceil(data.total / itemsPerPage) : 1;
-  const categories = useMemo(() => data?.data || [], [data]);
+  const addresses = useMemo(() => data?.data || [], [data]);
   const [
-    removeCategory,
-    { isLoading: isRemoving, data: deleteCategory, error: removeError }
-  ] = useDeleteCategoryMutation();
+    removeAddress,
+    { isLoading: isRemoving, data: deleteAddress, error: removeError }
+  ] = useDeleteAddressMutation();
   console.log(searchTerm);
   useEffect(() => {
     if (isLoading) {
-      toast.loading("در حال دریافت دسته بندی...", { id: "category-loading" });
+      toast.loading("در حال دریافت آدرس ها...", { id: "address-loading" });
     }
 
 
     if (error?.data) {
-      toast.error(error?.data?.message, { id: "category-loading" });
+      toast.error(error?.data?.message, { id: "address-loading" });
 
       if (isRemoving) {
-        toast.loading("در حال حذف  ...", { id: "category-remove" });
+        toast.loading("در حال حذف  ...", { id: "address-remove" });
       }
 
-      if (deleteCategory && !isRemoving) {
-        toast.dismiss("category-remove");
+      if (deleteAddress && !isRemoving) {
+        toast.dismiss("address-remove");
       }
 
       if (removeError?.data) {
-        toast.error(removeError?.data?.message, { id: "category-remove" });
+        toast.error(removeError?.data?.message, { id: "address-remove" });
       }
     }
 
     // اضافه کردن بررسی برای عملیات موفق حذف
-    if (deleteCategory && !isRemoving) {
-      toast.success("دسته بندی با موفقیت حذف شد.", { id: "category-remove" });
+    if (deleteAddress && !isRemoving) {
+      toast.success("آدرس ها با موفقیت حذف شد.", { id: "address-remove" });
     }
-  }, [data, error, isLoading, isRemoving, removeError, deleteCategory]);
+  }, [data, error, isLoading, isRemoving, removeError, deleteAddress]);
 
   return (
     <>
       <ControlPanel>
         <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        <AddButton link="./add" />
         <div className="mt-8 w-full grid grid-cols-12 text-slate-400 px-4 ">
           <div className="col-span-11 lg:col-span-3  text-sm">
             <span className="hidden lg:flex">نویسنده</span>
@@ -82,22 +80,22 @@ const ListCategory = () => {
         </div>
 
         {/* نمایش داده‌های دسته‌بندی‌ها */}
-        {isLoading || (categories && categories.length == 0) ? (
+        {isLoading || (addresses && addresses.length == 0) ? (
           <SkeletonItem repeat={5} />
         ) : (
-          categories.map((category) => {
+          addresses.map((address) => {
             const { title, description } =
-              category?.translations[0].translation?.fields || {};
+              address?.translations[0].translation?.fields || {};
             return (
               <div
-                key={category._id}
+                key={address._id}
                 className="mt-4 p-1 grid grid-cols-12 rounded-xl cursor-pointer border border-gray-200 gap-2 dark:border-white/10 dark:bg-slate-800 bg-white px-2 transition-all dark:hover:border-slate-700 hover:border-slate-100 hover:bg-green-100 dark:hover:bg-gray-800 dark:text-slate-100"
               >
                 <div className="col-span-10 lg:col-span-3 text-center flex items-center">
-                  <StatusIndicator isActive={category.status === "active"} />
+                  <StatusIndicator isActive={address.status === "active"} />
                   <div className="py-2 flex justify-center items-center gap-x-2 text-right">
                     <img
-                      src={category?.creator?.avatar.url}
+                      src={address?.creator?.avatar.url}
                       alt={``}
                       height={100}
                       width={100}
@@ -106,19 +104,19 @@ const ListCategory = () => {
                     <article className="flex-col flex gap-y-2  ">
                       <span className="line-clamp-1 text-base ">
                         <span className="hidden lg:flex ">
-                          {category?.creator?.name}
+                          {address?.creator?.name}
                         </span>
                         <span className=" lg:hidden ">{title}</span>
                       </span>
                       <span className="text-xs hidden lg:flex">
-                        {new Date(category.createdAt).toLocaleDateString(
+                        {new Date(address.createdAt).toLocaleDateString(
                           "fa-IR"
                         )}
                       </span>
                       <span className=" lg:hidden text-xs  line-clamp-1">
                         {description
                           ? description
-                          : new Date(category.createdAt).toLocaleDateString(
+                          : new Date(address.createdAt).toLocaleDateString(
                               "fa-IR"
                             )}
                       </span>
@@ -143,16 +141,16 @@ const ListCategory = () => {
 
                 <div className="hidden lg:col-span-2 col-span-5 gap-2 text-right lg:flex justify-left items-center">
                   <article className="flex-col flex gap-y-2">
-                    <span className="flex text-right">{category.slug}</span>
+                    <span className="flex text-right">{address.slug}</span>
                   </article>
                 </div>
 
                 <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
                   <article className="lg:flex-row flex flex-col justify-center gap-x-2  gap-y-2">
                     <DeleteModal
-                      message="آیا از حذف این دسته بندی اطمینان دارید؟"
+                      message="آیا از حذف این آدرس ها اطمینان دارید؟"
                       isLoading={isRemoving}
-                      onDelete={() => removeCategory(category?._id)}
+                      onDelete={() => removeAddress(address?._id)}
                     />
                   </article>
                 </div>
@@ -172,4 +170,4 @@ const ListCategory = () => {
   );
 };
 
-export default ListCategory;
+export default ListAddress;

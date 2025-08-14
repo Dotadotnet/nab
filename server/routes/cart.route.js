@@ -28,9 +28,9 @@ router.post(
 router.get(
   "/get-carts",
   verify,
-  authorize("admin"),
+  authorize("admin","superAdmin"),
   localeMiddleware,
-  cartController.getFromCart
+  cartController.getCarts
 );
 
 router.get("/get-cart/:id",localeMiddleware, cartController.getFromCart);

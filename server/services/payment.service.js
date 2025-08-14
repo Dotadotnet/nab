@@ -107,7 +107,6 @@ exports.createPayment = async (req, res) => {
     if (!sessionData)
       console.warn("⚠️ Session not found for sessionID:", req.sessionID);
 
-    // 👤 پیدا یا ساخت کاربر
     let user = await User.findOne({ phone: normalizedPhone });
     if (!user) {
       console.log("👤 User not found. Creating new user...");
@@ -121,7 +120,8 @@ exports.createPayment = async (req, res) => {
     } else {
       console.log("👤 Existing user found:", user._id);
     }
-
+    user.cart.push(cart._id);
+    user.sessions.push(sessionArray);
     // 📍 ذخیره آدرس
     const address = await Address.create({
       user: user._id,
@@ -142,6 +142,7 @@ exports.createPayment = async (req, res) => {
       customerId: refId,
       customer: user._id,
       paymentId: orderId,
+      cart: cart._id,
       sessionId: sessionData?._id || null,
       totalAmount: amount,
       products: cart.items.map((item) => ({
@@ -194,7 +195,7 @@ exports.verifyMellatPayment = async (req, res) => {
     if (ResCode !== "0") {
       await Purchase.findOneAndUpdate(
         { paymentId: SaleOrderId },
-        { paymentStatus: "failed", shippingStatus: "failed" }
+        { paymentStatus: "failed", shippingStatus: "failed", ResCode: ResCode }
       );
       return res.redirect(
         `${clientBaseUrl}/payment/failure?reason=${getMellatErrorMessage(
@@ -203,7 +204,6 @@ exports.verifyMellatPayment = async (req, res) => {
       );
     }
 
-    // تأیید نهایی بانک ملت
     const verificationPayload = {
       terminalId: process.env.MELLAT_TERMINAL_ID,
       userName: process.env.MELLAT_USERNAME,
@@ -225,7 +225,7 @@ exports.verifyMellatPayment = async (req, res) => {
         {
           paymentStatus: "paid",
           saleReferenceId: SaleReferenceId,
-          shippingStatus: "shipped"
+          shippingStatus: "pending"
         },
         { new: true }
       ).populate("customer products.product");
@@ -235,6 +235,10 @@ exports.verifyMellatPayment = async (req, res) => {
           `${clientBaseUrl}/payment/failure?reason=خرید یافت نشد`
         );
       }
+      await Cart.findOneAndUpdate(
+        { user: updatedPurchase.customer._id, paymentStatus: "pending" },
+        { paymentStatus: "paid" }
+      );
 
       const order = await Order.create({
         customer: updatedPurchase.customer._id,
@@ -249,7 +253,16 @@ exports.verifyMellatPayment = async (req, res) => {
         paymentRefId: SaleReferenceId
       });
 
-      return res.redirect(`${clientBaseUrl}/order/${order.orderId}/address`);
+      const defaultAddress = await Address.findOne({
+        user: updatedPurchase.customer._id,
+        isDefault: true
+      });
+
+      if (defaultAddress && defaultAddress.isComplete) {
+        return res.redirect(`${clientBaseUrl}/order/${order.orderId}/success`);
+      } else {
+        return res.redirect(`${clientBaseUrl}/order/${order.orderId}/address`);
+      }
     } else {
       const errorMessage = getMellatErrorMessage(parseInt(verifyResult));
       return res.redirect(
@@ -269,7 +282,7 @@ exports.completeOrder = async (req, res) => {
     const orderId = req.params.orderId;
     console.log("📥 completeOrder data:", req.body);
 
-    const {  postalCode, address, plateNumber, userNote } = req.body;
+    const { postalCode, address, plateNumber, userNote } = req.body;
 
     const order = await Order.findOne({ orderId }).populate("customer");
     if (!order) {
@@ -281,7 +294,7 @@ exports.completeOrder = async (req, res) => {
     }
 
     const userId = order.customer._id; // 👈 اصلاح شد
-const existingAddress = await Address.findOne({ user: userId });
+    const existingAddress = await Address.findOne({ user: userId });
 
     if (!existingAddress) {
       return res.status(404).json({
