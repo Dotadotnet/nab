@@ -108,24 +108,18 @@ exports.createPayment = async (req, res) => {
     // 🗝 پیدا کردن سشن واقعی
     const sessionData = await Session.findOne({ sessionId: req.sessionID });
     const sessionArray = sessionData ? [sessionData._id] : [];
-    if (!sessionData)
-      console.warn("⚠️ Session not found for sessionID:", req.sessionID);
 
-    let user = await User.findOne({ phone: normalizedPhone });
-    if (!user) {
-      console.log("👤 User not found. Creating new user...");
-      user = await User.create({
-        phone: normalizedPhone,
-        phoneVerified: false,
-        name: fullName,
-        sessions: sessionArray
-      });
-      console.log("👤 New user created:", user._id);
-    } else {
-      console.log("👤 Existing user found:", user._id);
-    }
+  let user = await User.findOne({ phone: normalizedPhone });
+  if (!user) {
+    console.log("👤 User not found. Creating new user...");
+    user = await User.create({
+      phone: normalizedPhone,
+      phoneVerified: false,
+      name: fullName,
+    });
+  }
     user.cart.push(cart._id);
-    user.sessions.push(sessionArray);
+    user.sessions.push(req.sessionID);
     // 📍 ذخیره آدرس
     const address = await Address.create({
       user: user._id,
