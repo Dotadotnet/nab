@@ -112,7 +112,7 @@ exports.createPayment = async (req, res) => {
     console.log("sessionData", sessionData);
     let user = await User.findOne({ phone: normalizedPhone });
     if (!user) {
-      console.log("👤 User not found. Creating new user...");
+      console.log("👤 User not found  شدی. Creating new user...");
       user = await User.create({
         phone: normalizedPhone,
         phoneVerified: false,
