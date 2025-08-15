@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 
@@ -25,8 +26,8 @@ function PaymentFailurePage() {
           )}
 
           <p className="text-sm">
-            در صورتی که مبلغی از حساب شما کسر شده اما سفارش ثبت نشده است،
-            لطفاً با پشتیبانی تماس بگیرید تا پیگیری لازم انجام شود.
+            در صورتی که مبلغی از حساب شما کسر شده اما سفارش ثبت نشده است، لطفاً
+            با پشتیبانی تماس بگیرید تا پیگیری لازم انجام شود.
           </p>
 
           <div className="text-sm text-blue-700">
@@ -38,18 +39,16 @@ function PaymentFailurePage() {
               09144455602
             </a>
           </div>
-          
         </div>
-       <div className="flex justify-center mt-4">
-          <button
-            onClick={() => router.push("/")}
+        <div className="flex justify-center mt-4">
+          <Link
+            href="/"
             className="bg-red-400 text-white px-4 py-2 rounded hover:bg-red-500 transition"
           >
             بازگشت به صفحه اصلی
-          </button>
+          </Link>
         </div>
       </div>
-      
     </section>
   );
 }
