@@ -31,6 +31,7 @@ async function initSession(req, res, next) {
 // get session
 async function getSession(req, res, next) {
   try {
+    console.log("req.sessionId",req.sessionID)
     const sessionData = await Session.findOne({
       sessionId: req.sessionID
     });

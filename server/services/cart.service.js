@@ -64,19 +64,19 @@ exports.addToCart = async (req, res) => {
       );
     }
 
-    // 📲 ارسال پیامک به صاحب فروشگاه
-const itemsText = await Promise.all(
-  cart.items.map(async (item, index) => {
-    const productDoc = await Product.findById(item.product).select("title");
-    const productTitle = productDoc?.title || "بدون عنوان";
-    return `📦 ${productTitle}: تعداد ${item.quantity}`;
-  })
-);
-const message = isNewCart
-  ? `🛒 یک سبد خرید جدید ایجاد شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`
-  : `➕ محصول جدید به سبد خرید اضافه شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`;
-console.log(shopOwnerPhones)
-await Promise.all(shopOwnerPhones.map(phone => sendSms(phone, message)));
+//     // 📲 ارسال پیامک به صاحب فروشگاه
+// const itemsText = await Promise.all(
+//   cart.items.map(async (item, index) => {
+//     const productDoc = await Product.findById(item.product).select("title");
+//     const productTitle = productDoc?.title || "بدون عنوان";
+//     return `📦 ${productTitle}: تعداد ${item.quantity}`;
+//   })
+// );
+// const message = isNewCart
+//   ? `🛒 یک سبد خرید جدید ایجاد شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`
+//   : `➕ محصول جدید به سبد خرید اضافه شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`;
+// console.log(shopOwnerPhones)
+// await Promise.all(shopOwnerPhones.map(phone => sendSms(phone, message)));
 
 
     return res.status(201).json({

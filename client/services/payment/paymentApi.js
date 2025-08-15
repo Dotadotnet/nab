@@ -1,5 +1,3 @@
-
-
 const { nabApi } = require("../nab");
 
 const paymentApi = nabApi.injectEndpoints({
@@ -9,18 +7,22 @@ const paymentApi = nabApi.injectEndpoints({
       query: (body) => ({
         url: "/payment/create-payment",
         method: "POST",
-        body,
+        credentials: "include",
+       
+
+        body
       }),
+      providesTags: ["Session"]
     }),
-     completeOrder: build.mutation({
-      query: ({ id, body}) => ({
+    completeOrder: build.mutation({
+      query: ({ id, body }) => ({
         url: `/payment/completeOrder/${id}`,
         method: "POST",
-        body, 
-      }),
-    }),
-
-  }),
+        body
+      })
+    })
+  })
 });
 
-export const { useCreatePaymentMutation, useCompleteOrderMutation } = paymentApi;
+export const { useCreatePaymentMutation, useCompleteOrderMutation } =
+  paymentApi;

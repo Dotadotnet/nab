@@ -50,7 +50,6 @@ function AddOrder() {
       gateway: "mellat"
     };
 
-    console.log(body);
 
     await createPayment(body);
   };
