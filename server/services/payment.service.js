@@ -271,15 +271,23 @@ exports.verifyMellatPayment = async (req, res) => {
         isDefault: true
       });
       let successMessage = "";
-      let customerMessage = `✅ سفارش شما با موفقیت ثبت شد! از اینکه نقل و حلوا ناب را انتخاب کردید صمیمانه سپاسگزاریم. شماره سفارش شما: ${updatedPurchase.orderId}. با اشتیاق منتظر استقبال دوباره شما هستیم.`;
+      let customerMessage = `سفارش شما با موفقیت ثبت و در اسرع وقت ارسال خواهد شد.\n`;
+      customerMessage += `🎁 از اینکه نقل و حلوا ناب را انتخاب کردید سپاسگزاریم.\n`;
+      customerMessage += `🆔 شماره سفارش شما: ${order.orderId}\n`;
+      customerMessage += `🙏 با اشتیاق منتظر استقبال دوباره شما هستیم.`;
 
       if (defaultAddress && defaultAddress.isComplete) {
-        successMessage = `✅ سفارش ${order.orderId} با موفقیت تکمیل شد.`;
-        customerMessage += ` سفارش شما تکمیل شده و به زودی ارسال خواهد شد.`;
+        successMessage = `سفارش ${order.orderId} با موفقیت تکمیل شد.`;
+        customerMessage += `\n📦 سفارش شما تکمیل شده و به زودی ارسال خواهد شد.`;
       } else {
-        successMessage = `✅ سفارش ${order.orderId} پرداخت شد اما اطلاعات آدرس تکمیل نیست.`;
-        customerMessage += ` لطفا آدرس خود را تکمیل کنید.`;
+        successMessage = `سفارش ${order.orderId} پرداخت شد اما اطلاعات آدرس تکمیل نیست.`;
+        customerMessage += `\n⚠️ لطفا آدرس خود را تکمیل نمائید.`;
       }
+
+      await Promise.all([
+        ...shopOwnerPhones.map((phone) => sendSms(phone, successMessage)),
+        sendSms(updatedPurchase.customer.phone, customerMessage)
+      ]);
 
       await Promise.all([
         ...shopOwnerPhones.map((phone) => sendSms(phone, successMessage)),
