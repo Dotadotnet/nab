@@ -149,6 +149,7 @@ exports.createPayment = async (req, res) => {
         variation: item.variation._id,
         quantity: item.quantity
       })),
+      saleReferenceId,
       gateway
     });
     const purchaseMessage = `🛍 خرید جدید ثبت شد!
