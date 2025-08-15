@@ -156,7 +156,7 @@ exports.createPayment = async (req, res) => {
     📌 شناسه سبد خرید: ${cart.cartId}
     💰 مبلغ سفارش: ${totalAmount.toLocaleString("fa-IR")} تومان
     👤 مشتری: ${user.phone}-${user.name}`;
-
+console.log("shopOwnerPhones",shopOwnerPhones)
     await Promise.all(
       shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
     );
