@@ -48,7 +48,6 @@ const purchaseSchema = new mongoose.Schema(
     },
     saleReferenceId: {
       type: String,
-      required: true
     },
 
     paymentId: {
