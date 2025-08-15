@@ -151,21 +151,21 @@ exports.createPayment = async (req, res) => {
       })),
       gateway
     });
-    const purchaseMessage = `🛍 خرید جدید ثبت شد!
-    🆔 شناسه خرید: ${purchase.purchaseId}
-📌 شناسه سبد خرید: ${cart.cartId}
-💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
-👤 مشتری: ${user.phone}-${user.name}`;
+//     const purchaseMessage = `🛍 خرید جدید ثبت شد!
+//     🆔 شناسه خرید: ${purchase.purchaseId}
+// 📌 شناسه سبد خرید: ${cart.cartId}
+// 💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
+// 👤 مشتری: ${user.phone}-${user.name}`;
 
-    if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
-      const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
-        ? SHOP_OWNER_PHONE
-        : [SHOP_OWNER_PHONE];
+//     if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
+//       const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
+//         ? SHOP_OWNER_PHONE
+//         : [SHOP_OWNER_PHONE];
 
-      await Promise.all(
-        shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
-      );
-    }
+//       await Promise.all(
+//         shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
+//       );
+//     }
 
     return res.status(201).json({
       acknowledgement: true,
