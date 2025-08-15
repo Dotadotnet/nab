@@ -151,21 +151,15 @@ exports.createPayment = async (req, res) => {
       })),
       gateway
     });
-    //     const purchaseMessage = `🛍 خرید جدید ثبت شد!
-    //     🆔 شناسه خرید: ${purchase.purchaseId}
-    // 📌 شناسه سبد خرید: ${cart.cartId}
-    // 💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
-    // 👤 مشتری: ${user.phone}-${user.name}`;
+    const purchaseMessage = `🛍 یک سفارش برای ارسال به درگاه ثبت شد
+        🆔 شناسه خرید: ${purchase.purchaseId}
+    📌 شناسه سبد خرید: ${cart.cartId}
+    💰 مبلغ سفارش: ${totalAmount.toLocaleString("fa-IR")} تومان
+    👤 مشتری: ${user.phone}-${user.name}`;
 
-    //     if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
-    //       const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
-    //         ? SHOP_OWNER_PHONE
-    //         : [SHOP_OWNER_PHONE];
-
-    //       await Promise.all(
-    //         shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
-    //       );
-    //     }
+    await Promise.all(
+      shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
+    );
 
     return res.status(201).json({
       acknowledgement: true,
@@ -277,15 +271,20 @@ exports.verifyMellatPayment = async (req, res) => {
         isDefault: true
       });
       let successMessage = "";
+      let customerMessage = `✅ سفارش شما با موفقیت ثبت شد! از اینکه نقل و حلوا ناب را انتخاب کردید صمیمانه سپاسگزاریم. شماره سفارش شما: ${updatedPurchase.orderId}. با اشتیاق منتظر استقبال دوباره شما هستیم.`;
+
       if (defaultAddress && defaultAddress.isComplete) {
         successMessage = `✅ سفارش ${order.orderId} با موفقیت تکمیل شد.`;
+        customerMessage += ` سفارش شما تکمیل شده و به زودی ارسال خواهد شد.`;
       } else {
         successMessage = `✅ سفارش ${order.orderId} پرداخت شد اما اطلاعات آدرس تکمیل نیست.`;
+        customerMessage += ` لطفا آدرس خود را تکمیل کنید.`;
       }
 
-        await Promise.all(
-          shopOwnerPhones.map((phone) => sendSms(phone, successMessage))
-        );
+      await Promise.all([
+        ...shopOwnerPhones.map((phone) => sendSms(phone, successMessage)),
+        sendSms(updatedPurchase.customer.phone, customerMessage)
+      ]);
 
       if (defaultAddress && defaultAddress.isComplete) {
         return res.redirect(`${clientBaseUrl}/order/${order.orderId}/success`);
