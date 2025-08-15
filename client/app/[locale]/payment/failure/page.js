@@ -38,8 +38,17 @@ function PaymentFailurePage() {
               09144455602
             </a>
           </div>
+          
         </div>
       </div>
+       <div className="flex justify-center mt-4">
+          <button
+            onClick={() => router.push("/")}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            بازگشت به صفحه اصلی
+          </button>
+        </div>
     </section>
   );
 }

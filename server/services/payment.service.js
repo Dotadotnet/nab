@@ -151,21 +151,21 @@ exports.createPayment = async (req, res) => {
       })),
       gateway
     });
-//     const purchaseMessage = `🛍 خرید جدید ثبت شد!
-//     🆔 شناسه خرید: ${purchase.purchaseId}
-// 📌 شناسه سبد خرید: ${cart.cartId}
-// 💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
-// 👤 مشتری: ${user.phone}-${user.name}`;
+    //     const purchaseMessage = `🛍 خرید جدید ثبت شد!
+    //     🆔 شناسه خرید: ${purchase.purchaseId}
+    // 📌 شناسه سبد خرید: ${cart.cartId}
+    // 💰 ارزش کل: ${totalAmount.toLocaleString("fa-IR")} تومان
+    // 👤 مشتری: ${user.phone}-${user.name}`;
 
-//     if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
-//       const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
-//         ? SHOP_OWNER_PHONE
-//         : [SHOP_OWNER_PHONE];
+    //     if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
+    //       const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
+    //         ? SHOP_OWNER_PHONE
+    //         : [SHOP_OWNER_PHONE];
 
-//       await Promise.all(
-//         shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
-//       );
-//     }
+    //       await Promise.all(
+    //         shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
+    //       );
+    //     }
 
     return res.status(201).json({
       acknowledgement: true,
@@ -213,15 +213,9 @@ exports.verifyMellatPayment = async (req, res) => {
       const failedMessage = `پرداخت سفارش ${
         failedPurchase?._id || SaleOrderId
       } با خطا مواجه شد.`;
-      if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
-        const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
-          ? SHOP_OWNER_PHONE
-          : [SHOP_OWNER_PHONE];
-
-        await Promise.all(
-          shopOwnerPhones.map((phone) => sendSms(phone, failedMessage))
-        );
-      }
+      await Promise.all(
+        shopOwnerPhones.map((phone) => sendSms(phone, failedMessage))
+      );
       return res.redirect(
         `${clientBaseUrl}/payment/failure?reason=${getMellatErrorMessage(
           Number(ResCode)
@@ -289,15 +283,10 @@ exports.verifyMellatPayment = async (req, res) => {
         successMessage = `✅ سفارش ${order.orderId} پرداخت شد اما اطلاعات آدرس تکمیل نیست.`;
       }
 
-      if (SHOP_OWNER_PHONE && SHOP_OWNER_PHONE.length > 0) {
-        const shopOwnerPhones = Array.isArray(SHOP_OWNER_PHONE)
-          ? SHOP_OWNER_PHONE
-          : [SHOP_OWNER_PHONE];
-
         await Promise.all(
           shopOwnerPhones.map((phone) => sendSms(phone, successMessage))
         );
-      }
+
       if (defaultAddress && defaultAddress.isComplete) {
         return res.redirect(`${clientBaseUrl}/order/${order.orderId}/success`);
       } else {
