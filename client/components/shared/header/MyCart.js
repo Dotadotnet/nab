@@ -11,31 +11,33 @@ import {
   useGetCartQuery
 } from "@/services/cart/cartApi";
 import { toast } from "react-hot-toast";
-import Inform from "@/components/icons/Inform";
-import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import Spinner from "../Spinner";
 import { useRouter } from "next/navigation";
 const MyCart = () => {
   const locale = useLocale();
   const t = useTranslations("payment");
+  const [handledDelete, setHandledDelete] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const { user, session } = useSelector((state) => state.auth);
-  const cartId = session?.cart || user?.cart ;
+  const cartId = session?.cart || user?.cart;
 
   const [
     deleteFromCart,
-    { isLoading: removingCart, data: deletedData, error: deleteError }
+    { isLoading: removingCart, data: deletedData, error: deleteError, reset }
   ] = useDeleteFromCartMutation();
 
   const {
     isLoading: loadingCart,
     data: cartData,
     error: cartError
-  } = useGetCartQuery( { id: cartId, locale }, {
-skip: !cartId || cartId.length === 0
-  });
+  } = useGetCartQuery(
+    { id: cartId, locale },
+    {
+      skip: !cartId || cartId.length === 0
+    }
+  );
   const cartItems = cartData?.data.items || [];
   useEffect(() => {
     if (loadingCart) {
@@ -52,8 +54,16 @@ skip: !cartId || cartId.length === 0
     }
     if (removingCart)
       toast.loading(t("DeletingCartBuy"), { id: "removeFromCart" });
-    if (deletedData)
-      toast.success(deletedData?.description, { id: "removeFromCart" });
+
+    if (deletedData) {
+      if (deletedData.acknowledgement) {
+        toast.success(deletedData.description, { id: "removeFromCart" });
+      } else {
+        toast.error(deletedData.description, { id: "removeFromCart" });
+      }
+      reset();
+    }
+
     if (deleteError?.deletedData)
       toast.error(deleteError?.deletedData?.description, {
         id: "removeFromCart"
@@ -67,7 +77,6 @@ skip: !cartId || cartId.length === 0
     cartError
   ]);
 
-  console.log("cartItems", cartItems);
   return (
     <>
       <button
@@ -141,8 +150,8 @@ skip: !cartId || cartId.length === 0
 
                           <button
                             type="button"
-                            className="opacity-0 transition-opacity group-hover:opacity-100 absolute top-2 left-2 border p-1 rounded-secondary bg-red-100 text-red-900 border-red-900"
-                            onClick={() => removeFromCart(_id)}
+                            className="opacity-0 cursor-pointer transition-opacity group-hover:opacity-100 absolute top-2 left-2 border p-1 rounded-secondary bg-red-100 text-red-900 border-red-900"
+                            onClick={() => deleteFromCart(_id)}
                           >
                             <Trash />
                           </button>

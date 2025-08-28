@@ -37,9 +37,8 @@ const cartApi = nabApi.injectEndpoints({
       query: (id) => ({
         url: `/cart/delete-cart/${id}`,
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        }
+        credentials: "include",
+
       }),
 
       invalidatesTags: ["Cart", "User", "Session"]

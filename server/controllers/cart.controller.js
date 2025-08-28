@@ -50,7 +50,7 @@ exports.updateCart = async (req, res, next) => {
 /* delete cart */
 exports.deleteCart = async (req, res, next) => {
   try {
-    await cartService.deleteCart(req, res);
+    await cartService.deleteCartItem(req, res);
   } catch (error) {
     next(error);
   } finally {

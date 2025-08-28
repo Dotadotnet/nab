@@ -1,11 +1,12 @@
 /* internal imports */
 const Cart = require("../models/cart.model");
-const Product = require("../models/product.model");
-const User = require("../models/user.model");
 const Session = require("../models/session.model");
+const User = require("../models/user.model");
 const { sendSms } = require("../utils/smsService");
 
-const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map(p => p.trim());
+const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map((p) =>
+  p.trim()
+);
 exports.addToCart = async (req, res) => {
   try {
     console.log("📥 Request body:", req.body);
@@ -53,7 +54,10 @@ exports.addToCart = async (req, res) => {
       );
 
       if (itemIndex > -1) {
-        console.log("🔄 افزایش تعداد محصول موجود در سبد:", cart.items[itemIndex]);
+        console.log(
+          "🔄 افزایش تعداد محصول موجود در سبد:",
+          cart.items[itemIndex]
+        );
         cart.items[itemIndex].quantity += quantity;
         cart.items[itemIndex].addedAt = new Date();
       } else {
@@ -99,7 +103,6 @@ exports.addToCart = async (req, res) => {
   }
 };
 
-
 exports.getCarts = async (req, res) => {
   try {
     const { page = 1, limit = 5, search = "" } = req.query;
@@ -111,10 +114,7 @@ exports.getCarts = async (req, res) => {
       // جستجو بر اساس id یا نام کاربر
       query = {
         ...query,
-        $or: [
-          { _id: search },
-          { guest: { $regex: search, $options: "i" } }
-        ]
+        $or: [{ _id: search }, { guest: { $regex: search, $options: "i" } }]
       };
     }
 
@@ -249,16 +249,54 @@ exports.updateCart = async (req, res) => {
 };
 
 /* delete cart */
-exports.deleteCart = async (req, res) => {
-  const cart = await Cart.findByIdAndDelete(req.params.id);
+exports.deleteCartItem = async (req, res) => {
+  try {
+    const sessionId = req.sessionID;
+    const { id } = req.params;
 
-  await User.findByIdAndUpdate(cart.user, {
-    $pull: { cart: cart._id }
-  });
+    // پیدا کردن session
+    const session = await Session.findOne({ sessionId }).populate("cart");
+    if (!session) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "Session not found"
+      });
+    }
 
-  res.status(200).json({
-    acknowledgement: true,
-    message: "Ok",
-    description: "Cart deleted successfully"
-  });
+    const cart = session.cart.find((c) => c.paymentStatus === "pending");
+    if (!cart) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "No active cart found"
+      });
+    }
+
+    const itemIndex = cart.items.findIndex(
+      (item) => item._id.toString() === id
+    );
+    if (itemIndex === -1) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "Item not found in cart"
+      });
+    }
+
+    cart.items.splice(itemIndex, 1);
+    await cart.save();
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Item deleted from cart successfully",
+      description: "محصول با موفقیت از سبد حرید حذف شد",
+      cart
+    });
+  } catch (error) {
+    console.error("❌ Error deleting cart item:", error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "Error deleting item from cart",
+      description: `${error.message} خطای سرور`,
+      error: error.message
+    });
+  }
 };

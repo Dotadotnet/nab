@@ -46,8 +46,7 @@ router.patch(
 // delete cart
 router.delete(
   "/delete-cart/:id",
-  verify,
-  authorize("buyer"),
+
   cartController.deleteCart
 );
 

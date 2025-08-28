@@ -21,7 +21,6 @@ const Session = ({ children }) => {
   } = usePersistSessionQuery({ locale });
 
   const session = useMemo(() => sessionData?.data || null, [sessionData]);
-  console.log("session", session);
   useEffect(() => {
     if (!isFetching && session) {
       dispatch(setSession(session));
