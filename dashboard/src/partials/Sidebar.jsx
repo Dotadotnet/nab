@@ -165,7 +165,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                 صفحات
               </span>
             </h3>
-            <ul className="mt-3">
+            <ul className="mt-3 max-h-screen overflow-h-auto">
               {sidebarItems.map((item, index) => (
                 <SidebarItem
                   key={index}

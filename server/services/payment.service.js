@@ -112,7 +112,7 @@ exports.createPayment = async (req, res) => {
     console.log("sessionData", sessionData);
     let user = await User.findOne({ phone: normalizedPhone });
     if (!user) {
-      console.log("👤 User not found. Creating new user...");
+      console.log("👤 User not found  شدی. Creating new user...");
       user = await User.create({
         phone: normalizedPhone,
         phoneVerified: false,
@@ -158,7 +158,7 @@ exports.createPayment = async (req, res) => {
     📌 شناسه سبد خرید: ${cart.cartId}
     💰 مبلغ سفارش: ${totalAmount.toLocaleString("fa-IR")} تومان
     👤 مشتری: ${user.phone}-${user.name}`;
-
+console.log("shopOwnerPhones",shopOwnerPhones)
     await Promise.all(
       shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
     );
