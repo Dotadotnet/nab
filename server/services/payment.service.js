@@ -119,6 +119,8 @@ exports.createPayment = async (req, res) => {
         name: fullName
       });
     }
+    console.log("fullName",fullName)
+    console.log("user",user)
     user.cart.push(cart._id);
     user.sessions.push(sessionData._id);
     // 📍 ذخیره آدرس

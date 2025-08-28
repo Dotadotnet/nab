@@ -1,21 +1,35 @@
 const Session = require("../models/session.model");
 // initialize session
-
 async function initSession(req, res, next) {
   try {
-    let  sessionData = await Session.findOne({
+    console.log("🔹 initSession called, sessionID:", req.sessionID);
+
+    let sessionData = await Session.findOne({
       sessionId: req.sessionID
     });
+    console.log("🔹 Found sessionData:", sessionData);
+
     if (!sessionData) {
       req.session.userId = `guest_${Date.now()}`;
+      console.log("🆕 Creating new session with userId:", req.session.userId);
+
       sessionData = await Session.create({
         sessionId: req.sessionID,
         userId: req.session.userId,
         role: "buyer"
       });
+      console.log("✅ New session created:", sessionData);
     } else {
+      console.log("🔄 Existing session found, incrementing visit count...");
       await sessionData.incrementVisitCount();
+      console.log("✅ Visit count incremented:", sessionData.visitCount);
     }
+
+    console.log("📤 Sending response:", {
+      sessionId: sessionData.sessionId,
+      userId: sessionData.userId,
+      role: sessionData.role
+    });
 
     res.json({
       sessionId: sessionData.sessionId,
@@ -23,10 +37,11 @@ async function initSession(req, res, next) {
       role: sessionData.role
     });
   } catch (err) {
-    console.error("Error in createSession:", err);
+    console.error("❌ Error in createSession:", err);
     next(err);
   }
 }
+
 
 // get session
 async function getSession(req, res, next) {

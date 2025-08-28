@@ -8,6 +8,10 @@ const { sendSms } = require("../utils/smsService");
 const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map(p => p.trim());
 exports.addToCart = async (req, res) => {
   try {
+    console.log("📥 Request body:", req.body);
+    console.log("📥 SessionID:", req.sessionID);
+    console.log("📥 UserID:", req?.user?._id);
+
     const { product, quantity = 1, variation } = req.body;
     const userId = req?.user?._id || null;
     const guestSessionId = req.sessionID;
@@ -16,11 +20,14 @@ exports.addToCart = async (req, res) => {
     const variationId = variation.toString();
 
     let cart;
-    let isNewCart = false; // برای فهمیدن اینکه سبد خرید تازه ساخته شده یا نه
+    let isNewCart = false;
 
+    // 🔍 بررسی سبد خرید
     if (userId) {
+      console.log("🔎 جستجو سبد خرید برای کاربر:", userId);
       cart = await Cart.findOne({ user: userId, paymentStatus: "pending" });
     } else {
+      console.log("🔎 جستجو سبد خرید برای مهمان:", guestSessionId);
       cart = await Cart.findOne({
         guest: guestSessionId,
         paymentStatus: "pending"
@@ -28,13 +35,17 @@ exports.addToCart = async (req, res) => {
     }
 
     if (!cart) {
+      console.log("🆕 سبد خرید جدید ساخته می‌شود...");
       cart = await Cart.create({
         user: userId,
         guest: userId ? null : guestSessionId,
         items: [{ product: productId, variation: variationId, quantity }]
       });
       isNewCart = true;
+      console.log("✅ سبد خرید جدید ساخته شد:", cart._id);
     } else {
+      console.log("✅ سبد خرید موجود پیدا شد:", cart._id);
+
       const itemIndex = cart.items.findIndex(
         (item) =>
           item.product.toString() === productId &&
@@ -42,9 +53,11 @@ exports.addToCart = async (req, res) => {
       );
 
       if (itemIndex > -1) {
+        console.log("🔄 افزایش تعداد محصول موجود در سبد:", cart.items[itemIndex]);
         cart.items[itemIndex].quantity += quantity;
         cart.items[itemIndex].addedAt = new Date();
       } else {
+        console.log("➕ محصول جدید به سبد اضافه می‌شود...");
         cart.items.push({
           product: productId,
           variation: variationId,
@@ -52,11 +65,15 @@ exports.addToCart = async (req, res) => {
         });
       }
       await cart.save();
+      console.log("💾 سبد خرید ذخیره شد.");
     }
 
+    // 🔗 ارتباط سبد خرید با کاربر یا سشن
     if (userId) {
+      console.log("🔗 اتصال سبد خرید به کاربر:", userId);
       await User.findByIdAndUpdate(userId, { cart: cart._id });
     } else {
+      console.log("🔗 اتصال سبد خرید به سشن مهمان:", guestSessionId);
       await Session.findOneAndUpdate(
         { sessionId: guestSessionId },
         { cart: cart._id },
@@ -64,20 +81,7 @@ exports.addToCart = async (req, res) => {
       );
     }
 
-//     // 📲 ارسال پیامک به صاحب فروشگاه
-// const itemsText = await Promise.all(
-//   cart.items.map(async (item, index) => {
-//     const productDoc = await Product.findById(item.product).select("title");
-//     const productTitle = productDoc?.title || "بدون عنوان";
-//     return `📦 ${productTitle}: تعداد ${item.quantity}`;
-//   })
-// );
-// const message = isNewCart
-//   ? `🛒 یک سبد خرید جدید ایجاد شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`
-//   : `➕ محصول جدید به سبد خرید اضافه شد.\n${itemsText.join("\n")}\n📌 شناسه سبد: ${cart.cartId}`;
-// console.log(shopOwnerPhones)
-// await Promise.all(shopOwnerPhones.map(phone => sendSms(phone, message)));
-
+    console.log("📤 پاسخ به کلاینت با cart:", cart._id);
 
     return res.status(201).json({
       acknowledgement: true,
@@ -86,7 +90,7 @@ exports.addToCart = async (req, res) => {
       cart
     });
   } catch (error) {
-    console.error(error);
+    console.error("❌ خطا در افزودن محصول به سبد خرید:", error);
     return res.status(500).json({
       acknowledgement: false,
       message: "خطا در افزودن محصول به سبد خرید",
@@ -94,6 +98,7 @@ exports.addToCart = async (req, res) => {
     });
   }
 };
+
 
 exports.getCarts = async (req, res) => {
   try {
