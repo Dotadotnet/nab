@@ -36,7 +36,7 @@
     "PopularProducts": "Top Sellers",
     "ReadFromUs": "Read from us",
     "title": "Noghl and Halva by Nab",
-    "rial": "Rial",
+    "rial": "Toman",
     "buy": "Buy",
     "seeMore": "See More",
     "circle": "Flavor Circle"
@@ -63,7 +63,7 @@
   },
 
   "product": {
-    "rials": "Rial",
+    "rials": "Toman",
     "adding": "Add",
     "addToCart": "Add to Cart",
     "loading": "Adding to Cart...",
@@ -116,7 +116,7 @@
     "YourResultSearch": "Your search results",
     "NotFountProducts": "No products found!",
     "NameWebsite": "Nab Noghl",
-    "Rial": "Rial",
+    "rial": "Toman",
     "Price": "Price",
     "Count": "Quantity",
     "HaveNotPrice": "No price available",

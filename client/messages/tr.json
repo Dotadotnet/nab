@@ -35,7 +35,7 @@
     "PopularProducts": "En Çok Satanlar",
     "ReadFromUs": "Bizden oku",
     "title": "Nab'den Nuga ve Helva",
-    "rial": "Riyal",
+    "rial": "toman",
     "buy": "Al",
     "seeMore": "Daha Fazla Gör",
     "circle": "Lezzet Çemberi"
@@ -61,7 +61,7 @@
     "PlaceholderSearch": "🔎 Herhangi bir ürünün başlığını veya anahtar kelimesini yazın..."
   },
   "product": {
-    "rials": "Riyal",
+    "rials": "toman",
     "adding": "Ekle",
     "addToCart": "Sepete Ekle",
     "loading": "Sepete Ekleniyor...",
@@ -114,7 +114,7 @@
     "YourResultSearch": "Arama sonuçlarınız",
     "NotFountProducts": "Ürün bulunamadı!",
     "NameWebsite": "Saf Noghl ve Halva",
-    "Rial": "Rial",
+    "Toman": "Toman",
     "Price": "Fiyat",
     "Count": "Adet",
     "HaveNotPrice": "Fiyat mevcut değil",
