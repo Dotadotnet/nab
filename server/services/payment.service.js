@@ -54,9 +54,6 @@ exports.createPayment = async (req, res) => {
         .json({ acknowledgement: false, description: "سبد خرید پیدا نشد" });
     }
 
-    console.log("🛒 Cart loaded:", cart._id);
-    console.log("🛒 Cart items:", cart.items.length);
-
     // 💰 محاسبه مبلغ
     let totalAmount = 0;
     for (const item of cart.items) {
@@ -67,7 +64,7 @@ exports.createPayment = async (req, res) => {
     }
     console.log("🧮 Total calculated amount:", totalAmount);
 
-    const amount = totalAmount;
+    const amount = totalAmount*10;
     const orderId = Date.now();
     const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/callback`;
 
@@ -108,8 +105,6 @@ exports.createPayment = async (req, res) => {
     // 🗝 پیدا کردن سشن واقعی
     const sessionData = await Session.findOne({ sessionId: req.sessionID });
     const sessionArray = sessionData ? [sessionData._id] : [];
-    console.log("sessionID", req.sessionID);
-    console.log("sessionData", sessionData);
     let user = await User.findOne({ phone: normalizedPhone });
     if (!user) {
       console.log("👤 User not found  شدی. Creating new user...");
@@ -119,8 +114,6 @@ exports.createPayment = async (req, res) => {
         name: fullName
       });
     }
-    console.log("fullName",fullName)
-    console.log("user",user)
     user.cart.push(cart._id);
     user.sessions.push(sessionData._id);
     // 📍 ذخیره آدرس
