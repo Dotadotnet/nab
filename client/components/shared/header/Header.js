@@ -97,8 +97,8 @@ const Navbar = () => {
                 <Image
                   src={"/logo.png"}
                   alt="logo"
-                  width={400}
-                  height={400}
+                  width={200}
+                  height={200}
                   className="h-16 w-16 object-contain md:block cursor-pointer"
                   onClick={() => window.open("/", "_self")}
                 />
