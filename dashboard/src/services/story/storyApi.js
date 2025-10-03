@@ -1,8 +1,8 @@
 
 
-import { kuarmoniaApi } from "../kuarmonia";
+const { nabApi } = require("../nab");
 
-const storyApi = kuarmoniaApi.injectEndpoints({
+const storyApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     addStory: builder.mutation({
       query: (story) => ({
