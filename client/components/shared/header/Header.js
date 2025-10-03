@@ -130,8 +130,9 @@ const Navbar = () => {
             `}</style>
           </div>
 
-          <nav className="fixed top-20 mx-4  left-0 flex flex-row justify-between right-0 shadow-lg lg:grid lg:grid-cols-12 items-center z-50 px-4 py-1  bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
-            <div className=" col-span-2 flex-row-reverse gap-x-2 relative h-fit">
+          <nav className="fixed top-20 left-0 right-0 z-50">
+            <div className="mx-4 flex flex-row justify-between shadow-lg lg:grid lg:grid-cols-12 items-center px-4 py-1 bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
+              <div className=" col-span-2 flex-row-reverse gap-x-2 relative h-fit">
               <div className="md:hidden block col-span-0">
                 <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} />
               </div>
@@ -142,8 +143,8 @@ const Navbar = () => {
                 <ThemeToggle />
                 <LanguageSwitcher />
               </div>
-            </div>
-            <div className="col-span-8 rounded-primary hidden md:flex justify-center">
+              </div>
+              <div className="col-span-8 rounded-primary hidden md:flex justify-center">
               <div className="flex flex-row justify-center gap-x-2 overflow-x-auto">
                 <div className="flex flex-row justify-center gap-x-2 border border-gray-300 p-1 rounded-secondary bg-white dark:bg-slate-800 overflow-x-auto scrollbar-hide">
                   {niches.map((niche, index) => {
@@ -167,8 +168,8 @@ const Navbar = () => {
                   })}
                 </div>
               </div>
-            </div>
-            <div className="flex col-span-2 justify-between flex-row gap-x-1  items-center relative">
+              </div>
+              <div className="flex col-span-2 justify-between flex-row gap-x-1  items-center relative">
               <div></div>
               <div className="flex justify-center items-center">
                 <h2 className="text-2xl md:inline-block mx-2 hidden font-nozha">{a("NameWebsite")}</h2>
@@ -180,6 +181,7 @@ const Navbar = () => {
                   className="h-16 w-16 object-contain md:block cursor-pointer"
                   onClick={() => window.open("/", "_self")}
                 />
+              </div>
               </div>
             </div>
           </nav>

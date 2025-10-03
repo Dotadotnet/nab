@@ -25,7 +25,7 @@ export default function ProductsSlider({ products, locale }) {
     console.log("products",products)
   return (
     <Swiper
-      slidesPerView={1.2}
+      slidesPerView={1.05}
       spaceBetween={10}
       modules={[Pagination]}
       pagination={{ clickable: true }}

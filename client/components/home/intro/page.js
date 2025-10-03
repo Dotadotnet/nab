@@ -1,6 +1,7 @@
 import React from "react";
 import ProductCard from "@/components/shared/skeletonLoading/ProductCard";
 import ProductsSlider from "./ProductsSlider";
+import KeyFeaturesSlider from "./KeyFeaturesSlider";
 import {
   FiChevronDown as ChevronDown,
   FiChevronUp as ChevronUp,
@@ -55,7 +56,7 @@ export default async function HomeIntroSection({params}) {
         keywords="حلوا, شیرینی سنتی, حلوا ارده, سوهان, گز اصفهان, شیرینی ایرانی, حلواپزی ناب"
       />
 
-        <div className="max-w-7xl mx-auto">
+        <div className="md:max-w-7xl max-w-screen mx-auto">
 
    
               <div className="flex px-8 items-center gap-4">
@@ -73,25 +74,8 @@ export default async function HomeIntroSection({params}) {
             >
               <div className="p-6 space-y-8">
                 {/* Key Features */}
-                <div
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
-                  role="region"
-                  aria-label="ویژگی‌های کلیدی"
-                >
-                  {keyFeatures.map((feature, index) => (
-                    <div
-                      key={index}
-                      className={`bg-gradient-to-br from-${feature.color}-50 to-${feature.color}-100 p-4 rounded-xl text-center`}
-                    >
-                      <div className="text-2xl mb-2">{feature.icon}</div>
-                      <h3 className={`font-semibold text-${feature.color}-800`}>
-                        {feature.title}
-                      </h3>
-                      <p className={`text-sm text-${feature.color}-600`}>
-                        {feature.description}
-                      </p>
-                    </div>
-                  ))}
+                <div role="region" aria-label="ویژگی‌های کلیدی" className="mb-8">
+                  <KeyFeaturesSlider features={keyFeatures} />
                 </div>
 
                 {/* Main Content */}
@@ -132,7 +116,7 @@ export default async function HomeIntroSection({params}) {
 
                   {/* New Arrivals (replaces Product Categories) */}
                   <div
-                    className=" gap-6"
+                    className=" gap-6 overflow-hidden px-4"
                     role="region"
                     aria-label="محصولات جدید"
                   >
