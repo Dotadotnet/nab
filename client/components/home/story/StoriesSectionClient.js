@@ -107,7 +107,7 @@ export default function StoriesSectionClient({ banners }) {
                 onClick={() => openStories(banner)}
                 className="flex flex-col items-center cursor-pointer group"
               >
-                <div className="relative w-16 h-16 group">
+                <div className="relative w-20 h-20 group">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
                       className={`w-full h-full rounded-full bg-gradient-to-tr ${randomGradient} transition-transform duration-500 group-hover:scale-[1.04]`}
@@ -128,7 +128,7 @@ export default function StoriesSectionClient({ banners }) {
                   </div>
                 </div>
 
-                <span className="text-sm font-medium text-gray-900 font-bold dark:text-white mt-2 max-w-20 truncate text-center">
+                <span className="text-sm font-medium text-gray-900  dark:text-white mt-2 max-w-20 truncate text-center">
                   {getTranslation(banner.translations, "title", banner.creator.name)}
                 </span>
               </div>

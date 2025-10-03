@@ -24,7 +24,7 @@ console.log("api",api)
   return (
     <>
       {banners.length === 0 ? (
-        <section className="pt-24 overflow-auto max-w-7xl mx-auto px-4">
+        <section className="pt-40 overflow-auto md:max-w-7xl max-w-screen mx-auto px-4">
           <StoriesSkeleton />
         </section>
       ) : (
