@@ -29,7 +29,9 @@ import AddProduct from "./pages/products/add";
 import UpdateProduct from "./pages/products/update/index";
 import Settings from "./pages/settings";
 import FeaturedProduct from "./pages/settings/featuredProduct/index";
-
+import Banners from "./pages/banners";
+import Stories from "./pages/stories";
+import AddStory from "./pages/stories/add";
 
 function App() {
   const location = useLocation();
@@ -68,6 +70,9 @@ function App() {
           <Route exact path="/products/add" element={<AddProduct />} />
           <Route exact path="/products/update/:product_id" element={<UpdateProduct />} />
           <Route path="/posts/info/:id" element={<PostInfo />} />
+          <Route exact path="/stories/add" element={<AddStory />} />
+          <Route exact path="/stories" element={<Stories />} />
+          <Route exact path="/banners" element={<Banners />} />
         </Routes>
       </Auth>
     </Providers>

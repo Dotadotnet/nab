@@ -71,7 +71,8 @@ app.use("/api/gallery", require("./routes/gallery.route"));
 app.use("/api/featuredProduct", require("./routes/featuredProduct.route"));
 app.use("/api/order", require("./routes/order.route"));
 app.use("/api/address", require("./routes/address.route"));
-
+app.use("/api/story", require("./routes/story.route"));
+app.use("/api/promoBanner", require("./routes/promoBanner.route"));
 
 
 app.use(error);

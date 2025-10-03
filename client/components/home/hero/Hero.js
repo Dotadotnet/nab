@@ -7,7 +7,7 @@ const Hero = ({params}) => {
 
 
   return (
-    <section className=" mt-24">
+    <section className=" mt-36">
       <Container className=" px-1 lg:px-primary gap-y-4">
         <Banner1 params={params} />
         <KeyServices />

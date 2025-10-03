@@ -20,6 +20,8 @@ import Cart from "@/components/icons/Cart";
 import Payment from "@/components/icons/Payment";
 import Order from "@/components/icons/Order";
 import Address from "@/components/icons/Address";
+import Story from "@/components/icons/Story";
+import Banner from "@/components/icons/Banner";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   const location = useLocation();
@@ -99,7 +101,15 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
         { title: "کشور خبر", icon: Country, path: "/news-countries" },
         { title: "نوع خبر", icon: PSale, path: "/news-types" }
       ]
-    }
+    },
+    {
+      title: "بنرها",
+      icon: Banner,
+      subItems: [
+        { title: " بنر معرفی", icon: Banner, path: "/banners" },
+        { title: "استوری", icon: Story, path: "/stories" },
+      ],
+    },
   ];
 
   return (
