@@ -22,7 +22,6 @@ const colors = [
 const pickColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 export default function ProductsSlider({ products, locale }) {
-    console.log("products",products)
   return (
     <Swiper
       slidesPerView={1.05}

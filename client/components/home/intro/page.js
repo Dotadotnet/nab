@@ -46,7 +46,7 @@ export default async function HomeIntroSection({params}) {
     "cyan",
     "red"
   ];
-  const pickColor = () => colors[Math.floor(Math.random() * colors.length)];
+
 
   return (
     <>

@@ -11,11 +11,13 @@ import Gallery from "@/components/home/gallery/Gallery";
 import NewArrivals from "@/components/home/newArrivals/page";
 import NewsLetter from "@/components/home/news-letter/NewsLetter";
 import HomeIntroSection from "@/components/home/intro/page";
+import StoriesSectionServer from "@/components/home/story/page";
 
 export default async function Home({ params }) {
   return (
     <>
       <Main>
+      <StoriesSectionServer params={params} />
         <Hero params={params} />
         <NewArrivals params={params} />
         <Banner2 params={params} />
