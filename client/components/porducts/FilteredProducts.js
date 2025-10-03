@@ -30,8 +30,20 @@ const FilteredProducts = () => {
   const category = searchParams.get("category");
   const price = searchParams.get("price");
 
+  // Build query string properly from filter state
   useEffect(() => {
-    addFilter(new URLSearchParams(filter).toString());
+    const params = new URLSearchParams();
+    if (filter?.category) params.set("category", filter.category);
+    if (filter?.store) params.set("store", filter.store);
+    if (filter?.priceRange) {
+      if (filter.priceRange.min != null) params.set("minPrice", String(filter.priceRange.min));
+      if (filter.priceRange.max != null) params.set("maxPrice", String(filter.priceRange.max));
+    }
+    if (filter?.dateRange) {
+      if (filter.dateRange.startDate) params.set("startDate", filter.dateRange.startDate);
+      if (filter.dateRange.endDate) params.set("endDate", filter.dateRange.endDate);
+    }
+    addFilter(params.toString());
   }, [filter, addFilter]);
 
   useEffect(() => {
@@ -54,7 +66,14 @@ const FilteredProducts = () => {
     }
 
     if (category) dispatch(setCategory(category));
-    if (price) dispatch(setPrice(price));
+    if (price) {
+      const [minStr, maxStr] = String(price).split("-");
+      const min = Number(minStr);
+      const max = Number(maxStr);
+      if (!Number.isNaN(min) && !Number.isNaN(max)) {
+        dispatch(setPriceRange({ min, max }));
+      }
+    }
 
   }, [
     productsError,

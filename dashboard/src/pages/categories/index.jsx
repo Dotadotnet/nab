@@ -29,11 +29,14 @@ const ListCategory = () => {
     removeCategory,
     { isLoading: isRemoving, data: deleteCategory, error: removeError }
   ] = useDeleteCategoryMutation();
-  console.log(searchTerm);
   useEffect(() => {
     if (isLoading) {
       toast.loading("در حال دریافت دسته بندی...", { id: "category-loading" });
     }
+
+      if (data && !isLoading) {
+      toast.success("دسته بندی با موفقیت دریافت شد", { id: "category-loading" });
+      }
 
 
     if (error?.data) {

@@ -10,6 +10,7 @@ import Blog from "@/components/home/blogs/page";
 import Gallery from "@/components/home/gallery/Gallery";
 import NewArrivals from "@/components/home/newArrivals/page";
 import NewsLetter from "@/components/home/news-letter/NewsLetter";
+import HomeIntroSection from "@/components/home/intro/page";
 
 export default async function Home({ params }) {
   return (
@@ -21,8 +22,8 @@ export default async function Home({ params }) {
         {/* <Trending params={params} /> */}
         <ExpertChoice params={params} />
         <Post params={params} />
-        <Gallery />
         <NewsLetter />
+        <HomeIntroSection params={params} />
       </Main>
     </>
   );

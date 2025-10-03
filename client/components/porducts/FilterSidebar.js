@@ -49,7 +49,7 @@ const FilterSidebar = () => {
   const category = searchParams.get("category");
 
   const categories = categoriesData?.data || [];
-
+console.log("categories",categories)
   useEffect(() => {
 
 

@@ -14,14 +14,53 @@ export default function Chat({ chatState, setChatState }) {
     const info = class_language.getInfo();
     useEffect(() => {
 
-        Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
-            locale: lang
-        });
-        Crisp.setColorTheme("red");
+		Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
+			locale: lang
+		});
+		Crisp.setColorTheme("red");
 
-        setTimeout(() => {
+		// Bind Crisp lifecycle events to drive UI state instead of DOM polling
+		const hideCrispButtonById = () => {
+			const btn = document.getElementById('crisp-chatbox-button');
+			if (btn) {
+				btn.style.setProperty('display', 'none', 'important');
+			}
+		};
+		const onSessionLoaded = () => {
+			if (chatState === "loading" && !loaded) {
+				loaded = true;
+				setChatState("close");
+			}
+			hideCrispButtonById();
+		};
+		const onChatOpened = () => setChatState("open");
+		const onChatClosed = () => setChatState("close");
+		try {
+			window.$crisp?.push(["on", "session:loaded", onSessionLoaded]);
+			window.$crisp?.push(["on", "chat:opened", onChatOpened]);
+			window.$crisp?.push(["on", "chat:closed", onChatClosed]);
+		} catch (_) {}
+
+		// Inject CSS to hide only the Crisp launcher icon, not the chatbox
+		const style = document.createElement('style');
+		style.setAttribute('data-crisp-launcher-hide', 'true');
+		style.innerHTML = `.crisp-client span.cc-157aw{display:none !important}`;
+		document.head.appendChild(style);
+
+		// Add a fallback to leave loading state even if Crisp events fail
+		const loadingFallback = setTimeout(() => {
+			if (chatState === "loading" && !loaded) {
+				loaded = true;
+				setChatState("close");
+			}
+		}, 5000);
+
+		let pollTimeout;
+		let interval;
+		pollTimeout = setTimeout(() => {
             let chat_button = document.querySelector("span.cc-157aw");
-            let function_edite = () => {
+			let function_edite = () => {
+				hideCrispButtonById();
                 let button_close = document.querySelector("span.cc-9nfaa.cc-17cww");
                 if (button_close) {
                     button_close.addEventListener("click", () => {
@@ -92,16 +131,39 @@ export default function Chat({ chatState, setChatState }) {
                 document.querySelector('section.loader-div').remove()
             }
 
-            let interval = setInterval(() => {
+			interval = setInterval(() => {
                 function_edite();
-            }, 300);
-        }, 500)
+			}, 300);
+			// Safety stop after 10s to avoid endless polling if Crisp DOM changes
+			setTimeout(() => {
+				if (interval) clearInterval(interval);
+			}, 10000);
+		}, 500)
 
+		return () => {
+			try {
+				window.$crisp?.push(["off", "session:loaded", onSessionLoaded]);
+				window.$crisp?.push(["off", "chat:opened", onChatOpened]);
+				window.$crisp?.push(["off", "chat:closed", onChatClosed]);
+			} catch (_) {}
+			if (pollTimeout) clearTimeout(pollTimeout);
+			if (interval) clearInterval(interval);
+			clearTimeout(loadingFallback);
+			const s = document.querySelector('style[data-crisp-launcher-hide="true"]');
+			if (s) s.remove();
+		};
+	}, []);
 
-
-
-
-    }, []);
+	// Sync our state with Crisp actions so we never need Crisp's launcher
+	useEffect(() => {
+		try {
+			if (chatState === "open") {
+				window.$crisp?.push(["do", "chat:open"]);
+			} else if (chatState === "close") {
+				window.$crisp?.push(["do", "chat:close"]);
+			}
+		} catch (_) {}
+	}, [chatState]);
     return (
         <div className={"fixed hidden md:inline-block bottom-2 z-50 rtl:right-12 right-28"}>
             <CustomChat chatState={chatState} setChatState={setChatState} />

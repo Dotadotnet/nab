@@ -15,7 +15,7 @@ import Home from "@/components/icons/Home";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "../languageSwitch/page";
 import { useLocale, useTranslations } from "use-intl";
-import { PiPhone } from "react-icons/pi";
+import { PiPhone, PiEnvelopeSimple } from "react-icons/pi";
 import { Link } from "@/i18n/navigation";
 
 const Navbar = () => {
@@ -52,7 +52,85 @@ const Navbar = () => {
       <MobileNav isOpen={isOpen} setIsOpen={setIsOpen} />
       <header >
         <Container>
-          <nav className="fixed top-0 m-4  left-0 flex flex-row justify-between right-0 shadow-lg lg:grid lg:grid-cols-12 items-center z-50 px-4 py-1  bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
+          {/* Top Contact Bar */}
+          <div className="fixed top-0 left-0 right-0 z-[60]">
+            <div className="bg-gradient-to-r from-yellow-600 to-primary text-white">
+              <div className="flex items-center justify-between px-4 py-1 text-xs md:text-sm">
+                {/* Right side: Phones (swapped) */}
+                <div className="flex items-center gap-6">
+                  <a href="tel:04432769494" className="flex items-center gap-1 hover:opacity-90">
+                    <PiPhone className="text-base" />
+                    <span>04432769494</span>
+                  </a>
+                  <a href="tel:09144455602" className="flex items-center gap-1 hover:opacity-90">
+                    <PiPhone className="text-base" />
+                    <span>09144455602</span>
+                  </a>
+                </div>
+
+                {/* Left side: Email (swapped) */}
+                <a href="mailto:info@noghlenab.com" className="flex items-center gap-1 hover:opacity-90">
+                  <PiEnvelopeSimple className="text-base" />
+                  <span>info@noghlenab.com</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* News Ticker Bar */}
+          <div className="fixed top-7 left-0 right-0 z-[59]">
+            <div className="bg-gray-100 text-gray-800">
+              <div className="relative flex items-center justify-between px-4 py-2 text-sm overflow-hidden">
+                {/* Left: Live badge (swapped) */}
+                <div className="flex items-center gap-2 order-2 md:order-1">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  <span className="font-semibold text-gray-900">مهم</span>
+                </div>
+
+                {/* Right: Marquee headlines (swapped) */}
+                <div className="relative overflow-hidden flex-1 mx-1 order-1 md:order-2">
+                  <div className="whitespace-nowrap marquee px-8">
+                    {[
+                      "گزارش افزایش تقاضای جهانی برای شیرینی‌های سنتی ایرانی",
+                      "رشد صادرات صنعت شیرینی و شکلات ایران در سه‌ماهه اخیر",
+                      "تاکید وزارت بهداشت بر برچسب‌گذاری قند در محصولات شیرینی",
+                      "افتتاح نمایشگاه بین‌المللی شیرینی و نان در تهران",
+                      "روند صعودی قیمت مواد اولیه قنادی؛ شکر و روغن"
+                    ].map((h, i) => (
+                      <span key={`a-${i}`} className="mx-6">
+                        {h}
+                      </span>
+                    ))}
+                    {[
+                      "گزارش افزایش تقاضای جهانی برای شیرینی‌های سنتی ایرانی",
+                      "رشد صادرات صنعت شیرینی و شکلات ایران در سه‌ماهه اخیر",
+                      "تاکید وزارت بهداشت بر برچسب‌گذاری قند در محصولات شیرینی",
+                      "افتتاح نمایشگاه بین‌المللی شیرینی و نان در تهران",
+                      "روند صعودی قیمت مواد اولیه قنادی؛ شکر و روغن"
+                    ].map((h, i) => (
+                      <span key={`b-${i}`} className="mx-6">
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <style jsx>{`
+              @keyframes marquee {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+              }
+              .marquee {
+                animation: marquee 22s linear infinite;
+              }
+            `}</style>
+          </div>
+
+          <nav className="fixed top-20 mx-4  left-0 flex flex-row justify-between right-0 shadow-lg lg:grid lg:grid-cols-12 items-center z-50 px-4 py-1  bg-white dark:bg-slate-800 rounded-xl dark:text-gray-100">
             <div className=" col-span-2 flex-row-reverse gap-x-2 relative h-fit">
               <div className="md:hidden block col-span-0">
                 <MobileMenu isOpen={isOpen} setIsOpen={setIsOpen} />

@@ -6,9 +6,40 @@ import "./Right.css";
 import Spinner from "@/components/shared/Spinner";
 import Link from "next/link";
 
-export default function Right({ options }) {
+export default function Right({ options = [] }) {
   const h = useTranslations("HomePage");
   const locale = useLocale();
+
+  // بررسی وجود options
+  if (!options || options.length === 0) {
+    return (
+      <div className="col-span-2 md:h-full flex flex-col mt-1">
+        <div
+          className="w-full bg-primary md:mt-5 h-full rounded-xl relative flex flex-col justify-start gap-y-8"
+          style={{
+            backgroundImage: "url(/assets/home/banner/dots.svg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            overflow: "hidden",
+          }}
+        >
+          <div className="banner p-4">
+            <div className="content">
+   
+            </div>
+            {/* Skeleton Loading */}
+            <div className="animate-pulse flex flex-col items-center justify-center">
+              <div className="h-96 w-96 bg-gray-300 rounded-xl mb-4"></div>
+              <div className="h-6 w-48 bg-gray-300 rounded mb-2"></div>
+              <div className="h-4 w-64 bg-gray-300 rounded mb-2"></div>
+              <div className="h-4 w-32 bg-gray-300 rounded mb-4"></div>
+              <div className="h-10 w-32 bg-gray-300 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const [selected, setSelected] = useState(options[0]);
   const [isActive, setIsActive] = useState(false);
@@ -34,36 +65,21 @@ export default function Right({ options }) {
     selected?.product.translations?.find(
       (tr) => tr.translation?.language === locale
     )?.translation?.fields || {};
+
   return (
-    <div className="col-span-2  md:h-full  flex flex-col mt-1">
+    <div className="col-span-2 md:h-full flex flex-col mt-1">
       <div
         className="w-full bg-primary md:mt-5 h-full rounded-xl relative flex flex-col justify-start gap-y-8"
         style={{
           backgroundImage: "url(/assets/home/banner/dots.svg)",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       >
         <div className="banner p-4">
           <div className="content">
-            <h1 className="text-6xl absolute top-2 ltr:left-2 right-2 transform-fill md:text-4xl   font-bold text-white">
-              {h("title")}
-              <span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 16 16"
-                  className="rotate-45"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M8 2.748v11.047c3.452-2.368 5.365-4.542 6.286-6.357c.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
-                  />
-                </svg>
-              </span>
-            </h1>
+          
           </div>
 
           <div
@@ -72,18 +88,18 @@ export default function Right({ options }) {
           >
             <div className="food w-90 h-90">
               <Image
-                src={selected.thumbnail.url}
-                alt={title}
+                src={selected?.thumbnail.url}
+                alt={title || "Product"}
                 width={600}
                 height={600}
                 priority
                 className="object-cover w-full h-full rounded-xl"
               />
             </div>
-            <div className="description  h-90 w-90 p-2 text-white">
+            <div className="description h-90 w-90 p-2 text-white">
               <h3 className="text-xl font-bold">{title}</h3>
               <p className="text-sm">{description}</p>
-              <span className="price text-lg text-white">
+              <span className="text-lg text-white">
                 {selected.product.variations[0].price} {h("rial")}
               </span>
               <div className="flex flex-col">
