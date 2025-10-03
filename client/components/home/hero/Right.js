@@ -78,9 +78,36 @@ export default function Right({ options = [] }) {
         }}
       >
         <div className="banner p-4">
-          <div className="content">
-          
+        
+        <div className="selections mt-6">
+            <div className="circle flex justify-center items-center gap-2 flex-wrap">
+              {options.map((item, i) => (
+                <div
+                  key={i}
+                  style={{ "--i": i }}
+                  className="options w-16 h-16 cursor-pointer"
+                  onClick={() => handleOptionClick(item)}
+                >
+                  <Image
+                    src={item.carouselThumbnail.url}
+                    alt={
+                      item.translations?.find(
+                        (tr) => tr.language === locale && tr.translation
+                      )?.translation?.fields?.title || "Product"
+                    }
+                    width={300}
+                    height={300}
+                    sizes="(max-width: 768px) 100vw, 300px"
+                    className="rounded"
+                  />
+                </div>
+              ))}
+            </div>
+            <h2 className="text-center text-white mt-2 font-nozha">
+              {h("circle")}
+            </h2>
           </div>
+
 
           <div
             ref={imgBoxRef}
@@ -122,34 +149,8 @@ export default function Right({ options = [] }) {
           >
             {h("seeMore")}
           </button>
-
-          <div className="selections mt-6">
-            <div className="circle flex justify-center items-center gap-2 flex-wrap">
-              {options.map((item, i) => (
-                <div
-                  key={i}
-                  style={{ "--i": i }}
-                  className="options w-16 h-16 cursor-pointer"
-                  onClick={() => handleOptionClick(item)}
-                >
-                  <Image
-                    src={item.carouselThumbnail.url}
-                    alt={
-                      item.translations?.find(
-                        (tr) => tr.language === locale && tr.translation
-                      )?.translation?.fields?.title || "Product"
-                    }
-                    width={300}
-                    height={300}
-                    sizes="(max-width: 768px) 100vw, 300px"
-                    className="rounded"
-                  />
-                </div>
-              ))}
-            </div>
-            <h2 className="text-center text-white mt-2 font-nozha">
-              {h("circle")}
-            </h2>
+          <div className="content">
+          
           </div>
         </div>
       </div>

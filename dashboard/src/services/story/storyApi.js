@@ -9,7 +9,7 @@ const storyApi = nabApi.injectEndpoints({
         url: "/story/add-story",
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Beaherer ${localStorage.getItem("accessToken")}`,
         },
         body: story,
       }),
