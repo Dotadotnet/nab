@@ -77,10 +77,8 @@ exports.addPromoBanner = async (req, res) => {
 };
 
 exports.getbanners = async (req, res) => {
-  console.log("awdawdawd");
   const { page = 1, limit = 5, search = "" } = req.query;
   const skip = (page - 1) * limit;
-console.log(req.locale);
   try {
     let matchedIds = [];
 
@@ -102,7 +100,6 @@ console.log(req.locale);
     const banners = await PromoBanner.find(query)
       .skip(skip)
       .limit(Number(limit))
-      .sort({ createdAt: -1 })
       .populate([
         {
           path: "translations.translation",
