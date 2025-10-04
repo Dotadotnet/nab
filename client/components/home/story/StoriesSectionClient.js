@@ -94,7 +94,7 @@ export default function StoriesSectionClient({ banners }) {
   }, [selectedBanner]);
 
   return (
-    <section className="pt-24 overflow-auto">
+    <section className="pt-40 overflow-auto">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex py-2 gap-6 overflow-x-auto scrollbar-hide flex-nowrap px-2 justify-center no-scrollbar">
           {banners.map((banner) => {
