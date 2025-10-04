@@ -77,9 +77,10 @@ exports.addPromoBanner = async (req, res) => {
 };
 
 exports.getbanners = async (req, res) => {
+  console.log("awdawdawd");
   const { page = 1, limit = 5, search = "" } = req.query;
   const skip = (page - 1) * limit;
-
+console.log(req.locale);
   try {
     let matchedIds = [];
 
@@ -116,13 +117,8 @@ exports.getbanners = async (req, res) => {
             },
             {
               path: "creator",
-              select: "avatar translations",
-              populate: {
-                path: "translations.translation",
-                match: { language: req.locale },
-                          select: "fields.name"
-
-              }
+              select: "avatar name",
+            
             }
           ]
         },
@@ -131,6 +127,7 @@ exports.getbanners = async (req, res) => {
           select: "name avatar"
         }
       ]);
+      console.log(banners);
 
     const total = await PromoBanner.countDocuments(query);
 

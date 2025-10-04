@@ -63,7 +63,7 @@ const NewsLetter = () => {
               )}
             </div>
           </div>
-          <div className="lg:col-span-7 col-span-12 bg-red-200 rounded relative p-8">
+          <div className="lg:col-span-7 col-span-12 bg-red-200 dark:bg-red-500 rounded relative p-8">
           
             <article className="flex flex-col gap-y-4 h-full">
               <h2 className="lg:text-4xl md:text-2xl text-xl z-40">
@@ -84,7 +84,10 @@ const NewsLetter = () => {
                       id="newsletter"
                       disabled={visible}
                       placeholder={t("placeholder")}
-                      className="w-full rounded border-1 border-primary text-sm z-50"
+                      className="w-full rounded border-1 border-primary !text-white 
+                      dark:text-white dark:!border-red-500
+                      !bg-red-600
+                      text-sm z-50 placeholder-white"
                     />
                     <Button
                       className="px-4 py-1 text-xs"

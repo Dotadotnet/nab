@@ -18,12 +18,12 @@ console.log("api",api)
   });
 
   const res = await response.json();
-  const banners = res.data;
+  const banners = res.data || [];
   const t = await getTranslations("HomePage", locale);
-
+console.log("banners",banners)
   return (
     <>
-      {banners.length === 0 ? (
+      {banners?.length === 0 ? (
         <section className="pt-40 overflow-auto md:max-w-7xl max-w-screen mx-auto px-4">
           <StoriesSkeleton />
         </section>
