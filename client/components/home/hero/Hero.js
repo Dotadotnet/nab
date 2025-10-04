@@ -8,7 +8,7 @@ const Hero = ({params}) => {
 
   return (
     <section className=" 0">
-      <Container className=" px-1 lg:px-primary gap-y-4">
+      <Container className=" px-1 lg:px-primary gap-y-4 -mt-8">
         <Banner1 params={params} />
         <KeyServices />
         <Category />

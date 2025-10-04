@@ -10,7 +10,6 @@ export default function Right({ options = [] }) {
   const h = useTranslations("HomePage");
   const locale = useLocale();
 
-  // بررسی وجود options
   if (!options || options.length === 0) {
     return (
       <div className="col-span-2 md:h-full flex flex-col mt-1">
@@ -24,10 +23,7 @@ export default function Right({ options = [] }) {
           }}
         >
           <div className="banner p-4">
-            <div className="content">
-   
-            </div>
-            {/* Skeleton Loading */}
+            <div className="content"></div>
             <div className="animate-pulse flex flex-col items-center justify-center">
               <div className="h-96 w-96 bg-gray-300 rounded-xl mb-4"></div>
               <div className="h-6 w-48 bg-gray-300 rounded mb-2"></div>
@@ -78,9 +74,10 @@ export default function Right({ options = [] }) {
         }}
       >
         <div className="banner p-4">
-        
-        <div className="selections mt-6">
-            <div className="circle flex justify-center items-center gap-2 flex-wrap">
+
+          {/* جابه‌جایی selections به بالا */}
+          <div className="selections mt-6">
+            <div className="circle flex -top-20 md:top-50 left-50 md:left-0 justify-center items-center gap-2 flex-wrap">
               {options.map((item, i) => (
                 <div
                   key={i}
@@ -103,16 +100,17 @@ export default function Right({ options = [] }) {
                 </div>
               ))}
             </div>
-            <h2 className="text-center text-white mt-2 font-nozha">
-              {h("circle")}
-            </h2>
+            <h2 className="text-center text-white mt-2 font-nozha">{h("circle")}</h2>
           </div>
 
-
           <div
-            ref={imgBoxRef}
-            className={`imgBox z-50 h-96 w-96 ${isActive ? "active" : ""}`}
-          >
+  ref={imgBoxRef}
+  className={`imgBox  
+    top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 
+    md:top-1/2 md:left-20 md:translate-x-0 md:-translate-y-1/2 
+    z-50 h-96 md:h-90 md:w-90 w-96 
+    ${isActive ? "active" : ""}`}
+>
             <div className="food w-90 h-90">
               <Image
                 src={selected?.thumbnail.url}
@@ -143,15 +141,15 @@ export default function Right({ options = [] }) {
           </div>
 
           <button
-            className="btn bg-white text-black px-4 py-2 rounded mt-4"
+            className="btn absolute md:left-20 md:bottom-8 left-1/2 bottom-8 -translate-x-1/2 md:translate-x-0 bg-white text-black px-4 py-2 rounded mt-4"
             ref={btnRef}
             onClick={toggleFlip}
           >
             {h("seeMore")}
           </button>
-          <div className="content">
-          
-          </div>
+
+          <div className="content"></div>
+
         </div>
       </div>
     </div>

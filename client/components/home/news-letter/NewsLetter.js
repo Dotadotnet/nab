@@ -66,13 +66,13 @@ const NewsLetter = () => {
           <div className="lg:col-span-7 col-span-12 bg-red-200 rounded relative p-8">
           
             <article className="flex flex-col gap-y-4 h-full">
-              <h2 className="lg:text-4xl md:text-2xl text-xl z-50">
+              <h2 className="lg:text-4xl md:text-2xl text-xl z-40">
                 {t("title")}
               </h2>
               <p className="text-sm">{t("description")}</p>
               <label
                 htmlFor="newsletter"
-                className="mt-auto flex flex-row gap-x-2 z-50"
+                className="mt-auto flex flex-row gap-x-2 z-40"
               >
                 {visible ? (
                   <span className="text-primary drop-shadow">{t("successMessage")}</span>
