@@ -13,7 +13,7 @@ const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 exports.addUnit = async (req, res) => {
   try {
     const { title, description, category, value } = req.body;
-
+console.log("title, description, category, value",title, description, category, value)
     const unit = new Unit({
       title: title,
       category: category,

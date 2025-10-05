@@ -67,7 +67,7 @@ const StepAddProduct = () => {
       "variations",
       JSON.stringify(
         data.variations.map((variation) => ({
-          unit: variation.unit,
+          unit: variation.unit.id,
           price: variation.price,
           lowStockThreshold: variation.lowStockThreshold,
           stock: variation.stock

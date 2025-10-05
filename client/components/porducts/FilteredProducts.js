@@ -85,7 +85,7 @@ const FilteredProducts = () => {
   ]);
 
   return (
-    <div className="lg:col-span-9 md:col-span-8 col-span-12 mt-24">
+    <div className="lg:col-span-9 md:col-span-8 col-span-12 mt-40">
       <div className="flex flex-col gap-y-8">
         <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 md:gap-x-6 gap-y-8">
           {productsLoading ||!productsLoading && products?.length === 0? (

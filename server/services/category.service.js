@@ -116,23 +116,60 @@ exports.getCategories = async (req, res) => {
   });
 };
 
-exports.getProductCategories = async (res) => {
-  const categories = await Category.find().populate({
-    path: "products",
-    match: { isDeleted: false, status: "active", publishStatus: "approved" },
-    select: "_id"
-  });
-  const filteredCategories = categories.filter(
-    (category) => category.products.length > 0
-  );
+exports.getProductCategories = async (req, res) => {
+  try {
+    const categories = await Category.find().populate([
+      {
+        path: "translations.translation",
+        match: { language: req.locale },
+        select: "text"
+      },
+      {
+        path: "products",
+        match: { isDeleted: false, status: "active", publishStatus: "approved" },
+        select: "_id title price unit"
+      },
+      {
+        path: "creator",
+        select: "name avatar"
+      }
+    ]);
 
-  res.status(200).json({
-    acknowledgement: true,
-    message: "Ok",
-    description: "دسته بندی ها با موفقیت دریافت شدند",
-    data: filteredCategories
-  });
+    console.log("All categories fetched:", categories.length);
+    categories.forEach((cat, i) => {
+      console.log(`Category ${i}:`, cat.title);
+      console.log("  Translations:", cat.translations.map(t => t.translation?.text));
+      console.log("  Products count:", cat.products.length);
+    });
+
+    // فقط دسته‌بندی‌هایی که حداقل یک محصول دارند
+    const filteredCategories = categories.filter(
+      (category) => category.products.length > 0
+    );
+
+    console.log("Filtered categories:", filteredCategories.length);
+    filteredCategories.forEach((cat, i) => {
+      console.log(`Filtered Category ${i}:`, cat.title);
+      console.log("  Products:", cat.products.map(p => p.title));
+    });
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "دسته بندی ها با موفقیت دریافت شدند",
+      data: filteredCategories
+    });
+
+  } catch (error) {
+    console.error("Error in getProductCategories:", error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت دسته‌بندی‌ها",
+      error: error.message
+    });
+  }
 };
+
 /* get a category */
 exports.getCategory = async (req, res) => {
   const category = await Category.findById(req.params.id);

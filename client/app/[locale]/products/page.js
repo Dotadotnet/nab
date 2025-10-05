@@ -13,14 +13,13 @@ const Products = ({params }) => {
 
   return (
     <Main>
-      <Container className="flex flex-col gap-y-12 py-8">
-        <section className="grid grid-cols-12 gap-8 pb-12 md:relative">
+
+        <div className="grid grid-cols-12 gap-8 pb-12 md:relative ">
           <FilterSidebar />
           <FilteredProducts />
-        </section>
+        </div>
         <ExpertChoice params={params} className="!px-0"  />
         <Banner3 className="!px-0" params={params} />
-      </Container>
     </Main>
   );
 };

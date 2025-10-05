@@ -168,6 +168,7 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
 productSchema.pre("save", async function (next) {
   if (!this.isNew || this.productId) {

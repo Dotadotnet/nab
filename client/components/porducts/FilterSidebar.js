@@ -15,9 +15,10 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { BiSolidStar } from "react-icons/bi";
-import { useTranslations } from "next-intl";
+import { useTranslations ,useLocale } from "next-intl";
 
 const FilterSidebar = () => {
+  const locale = useLocale()
   const f = useTranslations("FillterPage")
   const t = useTranslations("Tools")
   const [priceRange, setPriceRangeLocal] = useState({ min: 50, max: 5000 });
@@ -29,8 +30,9 @@ const FilterSidebar = () => {
     data: categoriesData,
     error: categoriesError,
     isLoading: categoriesLoading
-  } = useGetCategoriesQuery();
+  } = useGetCategoriesQuery(locale);
 
+console.log("categoriesData",categoriesData)
 
   const handlePriceRangeChange = (min, max) => {
     setPriceRangeLocal({ min, max });
@@ -62,14 +64,14 @@ console.log("categories",categories)
   }, [categoriesError,]);
 
   return (
-    <aside className="lg:col-span-3 md:col-span-4 mt-24 col-span-12">
+    <aside className="lg:col-span-3 md:col-span-4 mt-40 col-span-12">
       <section className="flex flex-col gap-y-4 md:sticky md:top-32">
         {/* reset */}
-        <div className="flex flex-row items-center justify-between border py-2 px-4 rounded">
+        <div className="flex flex-row items-center justify-between border py-2 px-4 rounded border-gray-100">
           <h2 className="text-lg">{f("ResetFillter")}</h2>
 
           <button
-            className="p-1 border rounded-secondary"
+            className="p-1 border rounded-secondary border-gray-100"
             onClick={() => {
               dispatch(clearFilter());
 
@@ -86,12 +88,12 @@ console.log("categories",categories)
               router.push("/products");
             }}
           >
-            <AiOutlineReload className="h-5 w-5" />
+            <AiOutlineReload className="h-5 w-5 " />
           </button>
         </div>
 
         {/* Choose Category */}
-        <div className="flex flex-col gap-y-4 border py-2 px-4 rounded-xl max-h-96 overflow-y-auto scrollbar-hide">
+        <div className="flex flex-col gap-y-4 border border-gray-100 py-2 px-4 rounded-xl max-h-96 overflow-y-auto scrollbar-hide">
           <h2 className="text-lg">{t("Category")} :</h2>
           <div className="flex flex-col gap-y-2.5">
             {categoriesLoading || categories?.length === 0 ? (
@@ -132,7 +134,7 @@ console.log("categories",categories)
           </div>
         </div>
         {/* choose price */}
-        <div className="flex flex-col gap-y-4 border py-2 px-4 rounded">
+        <div className="flex flex-col gap-y-4 border border-gray-100 py-2 px-4 rounded">
           <h2 className="text-lg">{f("PriceRange")} : </h2>
           <label htmlFor="price" className="flex flex-col gap-y-2">
             <input
@@ -154,7 +156,7 @@ console.log("categories",categories)
           </label>
         </div>
         {/* باید از بک اند بیاد */}
-      <div className="flex flex-col gap-y-4 border py-2 px-4 rounded-xl">
+      <div className="flex flex-col gap-y-4 border border-gray-100 py-2 px-4 rounded-xl">
           <h2 className="text-lg flex items-baseline gap-x-1">
             {f("SelectBySize")} <span className="!text-xs">( {t("ComingSoon") + " ... "} )</span>
           </h2>

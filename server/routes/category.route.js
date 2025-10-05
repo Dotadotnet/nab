@@ -28,7 +28,7 @@ router.post(
 
 // get all categories
 router.get("/get-categories",localeMiddleware, categoryController.getCategories);
-router.get("/get-categories-with-products", categoryController.getProductCategories);
+router.get("/get-categories-with-products",localeMiddleware, categoryController.getProductCategories);
 
 // get a category
 router.get("/get-category/:id", categoryController.getCategory);

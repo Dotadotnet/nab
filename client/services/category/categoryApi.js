@@ -8,9 +8,12 @@ const categoryApi = nabApi.injectEndpoints({
 
     // get all categories
     getCategories: builder.query({
-      query: () => ({
+      query: (locale) => ({
         url: "/category/get-categories-with-products",
         method: "GET",
+        headers: {
+          "Accept-Language": locale,
+        },
       }),
 
       providesTags: ["Category"],

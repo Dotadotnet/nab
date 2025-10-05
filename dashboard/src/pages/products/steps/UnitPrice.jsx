@@ -6,7 +6,7 @@ import NumberToPersianWord  from "number_to_persian_word";
 
 const UnitPrice = ({ control, index, remove, errors, units }) => {
   return (
-    <div className="flex flex-col gap-y-1 w-full border rounded p-4">
+  <div className="flex flex-col gap-y-1 w-full border rounded p-4">
       <div className="grid items-center grid-cols-12 gap-x-2">
         {/* انتخاب واحد */}
         <div className="col-span-7">
@@ -24,7 +24,6 @@ const UnitPrice = ({ control, index, remove, errors, units }) => {
                   description: unit.description,
                 }))}
                 placeholder="انتخاب واحد"
-                value={value}
                 onChange={onChange}
                 sendId={true} // تغییر به true
                 className="w-full"

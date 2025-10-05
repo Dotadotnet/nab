@@ -75,7 +75,7 @@ const AddUnit = ({ isOpen, onClose }) => {
       title: data.title,
       value: data.value,
       description: data.description,
-      category: data.category,
+      category: data.category.id,
     };
     console.log(formData);
 
@@ -173,7 +173,6 @@ const AddUnit = ({ isOpen, onClose }) => {
                             sendId={true}
                             className="w-full h-12"
                             handleSelect={field.onChange}
-                            value={field.value}
                           /> 
                         </label>
                       </div>
