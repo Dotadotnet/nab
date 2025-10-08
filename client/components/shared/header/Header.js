@@ -46,6 +46,30 @@ const Navbar = () => {
       href: "./about"
     }
   ];
+const items = [
+  { text: "📈 افزایش تقاضای جهانی برای شیرینی‌های سنتی ایرانی", icon: "🔥" },
+  { text: "⚡ رشد صادرات صنعت شیرینی و شکلات ایران در سه‌ماهه اخیر", icon: "⚡" },
+  { text: "ℹ️ تاکید وزارت بهداشت بر برچسب‌گذاری قند در محصولات شیرینی", icon: "ℹ️" },
+  { text: "🎆 افتتاح نمایشگاه بین‌المللی شیرینی و نان در تهران", icon: "🎆" },
+  { text: "💰 افزایش سرمایه‌گذاری خارجی در صنعت غذا و نوشیدنی ایران", icon: "💰" },
+  { text: "🥇 جایزه بهترین برند شیرینی ایرانی به شرکت نقل ناب اهدا شد", icon: "🏆" },
+  { text: "📦 تکنولوژی‌های جدید بسته‌بندی برای افزایش عمر محصولات", icon: "📦" },
+  { text: "🌱 تولید محصولات ارگانیک و طبیعی در صنعت شیرینی‌پزی", icon: "🌱" },
+  { text: "🚀 کنفرانس بین‌المللی نوآوری در صنعت قنادی و شکلات", icon: "🚀" },
+  { text: "🏪 بازگشایی مراکز عرضه تخصصی شیرینی و نقل در شهرهای بزرگ", icon: "🏪" },
+  { text: "🔬 راه‌اندازی سامانه نظارت بر کیفیت مواد غذایی", icon: "🔬" },
+  { text: "📊 رکوردشکنی صادرات نقل و خشکبار ایرانی به اروپا", icon: "📊" },
+  { text: "🏠 طرح حمایت از تولیدکنندگان محلی شیرینی و نقل", icon: "🏠" },
+  { text: "📉 کاهش تولید نیشکر در کشورهای عمده تولیدکننده", icon: "📉" },
+  { text: "🎓 آموزش مهارت‌های نوین برای قنادان جوان", icon: "🎓" },
+  { text: "💻 رشد فروش آنلاین محصولات قنادی تا ۲۵٪", icon: "💻" },
+  { text: "📢 رقابت بر سر کیفیت در بازار شیرینی و شکلات ایران", icon: "📢" },
+  { text: "🌏 توسعه صادرات به بازارهای جدید آسیایی", icon: "🌏" },
+  { text: "🏆 مسابقه بین‌المللی بهترین طعم‌های سنتی ایرانی", icon: "🥇" },
+  { text: "🤝 همکاری برندهای ایرانی با شرکت‌های بین‌المللی", icon: "🤝" },
+];
+
+  const duplicated = [...items, ...items];
 
   return (
     <>
@@ -80,52 +104,52 @@ const Navbar = () => {
           {/* News Ticker Bar */}
           <div className="fixed top-7 left-0 right-0 z-[59]">
             <div className="bg-gray-100 text-gray-800">
-              <div className="relative flex items-center justify-between px-4 py-2 text-sm overflow-hidden">
-                {/* Left: Live badge (swapped) */}
-                <div className="flex items-center gap-2 order-2 md:order-1">
+              <div className="relative flex items-center  py-2 text-sm overflow-hidden">
+                {/* Left: Live badge */}
+                <div className="flex items-center gap-2 flex-shrink-0 bg-gray-100 px-2">
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                   </span>
-                  <span className="font-semibold text-gray-900">مهم</span>
+                  <span className="text-gray-800 font-medium">مهم</span>
                 </div>
 
-                {/* Right: Marquee headlines (swapped) */}
-                <div className="relative overflow-hidden flex-1 mx-1 order-1 md:order-2">
-                  <div className="whitespace-nowrap marquee px-8">
-                    {[
-                      "گزارش افزایش تقاضای جهانی برای شیرینی‌های سنتی ایرانی",
-                      "رشد صادرات صنعت شیرینی و شکلات ایران در سه‌ماهه اخیر",
-                      "تاکید وزارت بهداشت بر برچسب‌گذاری قند در محصولات شیرینی",
-                      "افتتاح نمایشگاه بین‌المللی شیرینی و نان در تهران",
-                      "روند صعودی قیمت مواد اولیه قنادی؛ شکر و روغن"
-                    ].map((h, i) => (
-                      <span key={`a-${i}`} className="mx-6">
-                        {h}
-                      </span>
-                    ))}
-                    {[
-                      "گزارش افزایش تقاضای جهانی برای شیرینی‌های سنتی ایرانی",
-                      "رشد صادرات صنعت شیرینی و شکلات ایران در سه‌ماهه اخیر",
-                      "تاکید وزارت بهداشت بر برچسب‌گذاری قند در محصولات شیرینی",
-                      "افتتاح نمایشگاه بین‌المللی شیرینی و نان در تهران",
-                      "روند صعودی قیمت مواد اولیه قنادی؛ شکر و روغن"
-                    ].map((h, i) => (
-                      <span key={`b-${i}`} className="mx-6">
-                        {h}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                {/* Full width marquee headlines */}
+ <div className="w-full overflow-hidden">
+         <div className="marquee-content flex items-center animate-marquee-reverse">
+        {duplicated.map((item, i) => (
+          <span
+            key={i}
+            className="inline-block mx-8 whitespace-nowrap text-sm text-gray-800"
+          >
+            {item.text}
+          </span>
+        ))}
+      </div>
+    </div>
               </div>
             </div>
             <style jsx>{`
-              @keyframes marquee {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
+              .marquee-container {
+                width: 100%;
+                overflow: hidden;
+                position: relative;
               }
-              .marquee {
-                animation: marquee 22s linear infinite;
+              .marquee-content {
+                display: flex;
+                animation: marquee 25s linear infinite;
+                will-change: transform;
+              }
+              @keyframes marquee {
+                0% {
+                  transform: translateX(-100%);
+                }
+                100% {
+                  transform: translateX(100%);
+                }
+              }
+              .marquee-content:hover {
+                animation-play-state: paused;
               }
             `}</style>
           </div>

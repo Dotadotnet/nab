@@ -23,3 +23,34 @@
 	min-width: 795px;
 	max-width: 795px;
 }
+.marquee-content {
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  /* سرعت را اینجا تنظیم کنید — مقدار بر حسب ثانیه */
+  animation-name: marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* animation-duration را می‌توانید در-line یا اینجا قرار دهید */
+}
+
+/* هر تگِ آیتم نباید منبسط شود */
+.marquee-content > span {
+  flex: 0 0 auto;
+}
+
+/* انیمیشن: از ابتدا (کپی اول) تا منفی 50% از عرض خودش (یعنی یک کپی کامل) */
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee-reverse {
+  display: flex;
+  animation: marquee-reverse 25s linear infinite;
+  will-change: transform;
+}
