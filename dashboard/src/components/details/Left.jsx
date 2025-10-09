@@ -3,35 +3,34 @@ import Discount from "../icons/Discount";
 import SoldOut from "../icons/SoldOut";
 import Arrival from "../icons/Arrival";
 import DetailCard from "./DetailCard";
+import EditableImage from "../shared/EditableImage";
 
-const Left = ({ product }) => {
-  // State to manage the main image
+const Left = ({ product, onImageUpdate }) => {
   const [mainImage, setMainImage] = useState(product.thumbnail?.url);
 
   const hashTags = [...(product?.category?.tags || [])].filter(
     (tag) => tag !== undefined
   );
+  
   return (
     <section className="lg:col-span-6 md:col-span-6 col-span-12 flex flex-col gap-y-4">
       <div className="flex flex-col gap-y-4">
-        <img
+        <EditableImage
           src={mainImage}
           alt="Main product"
-          width={480}
-          height={200}
+          onUpdate={onImageUpdate}
+          type="thumbnail"
           className="rounded w-full h-full object-cover"
         />
         <div className="grid grid-cols-7 gap-4">
           {product?.gallery?.map((thumbnail, index) => (
-            <img
-              src={thumbnail?.url}
+            <EditableImage
               key={index}
+              src={thumbnail?.url}
               alt={thumbnail?.public_id}
-              className={
-                "rounded object-cover max-w-full w-full h-full cursor-pointer"
-              }
-              width={480}
-              height={200}
+              onUpdate={onImageUpdate}
+              type="gallery"
+              className="rounded object-cover max-w-full w-full h-full cursor-pointer"
               onClick={() => setMainImage(thumbnail?.url)}
             />
           ))}

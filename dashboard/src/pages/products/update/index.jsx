@@ -5,7 +5,12 @@ import {
   useUpdateProductApproveMutation,
   useUpdateProductRejectMutation,
   useUpdateProductReviewMutation,
-  useUpdateProductStatusMutation
+  useUpdateProductStatusMutation,
+  useUpdateProductFieldMutation,
+  useUpdateProductFeaturesMutation,
+  useUpdateProductImagesMutation,
+  useUpdateProductVariationMutation,
+  useAdjustVariationStockMutation
 } from "@/services/product/productApi";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -20,6 +25,10 @@ import StatusSwitch from "@/components/shared/button/StatusSwitch";
 import { QRCodeCanvas } from "qrcode.react";
 import Qrc from "@/components/icons/Qrc";
 import Modal from "@/components/shared/modal/Modal";
+import EditableField from "@/components/shared/EditableField";
+import EditableVariations from "@/components/shared/EditableVariations";
+import Edit from "@/components/icons/Edit";
+
 const Update = () => {
   const { product_id } = useParams();
   const admin = useSelector((state) => state?.auth?.admin);
@@ -31,7 +40,62 @@ const Update = () => {
     error: productError,
     isLoading: productLoading
   } = useGetProductQuery(id);
-  const product = useMemo(() => productData?.data || {}, [productData]);
+  // Helper function to get translated field or fallback to direct field
+  const getTranslatedField = (product, fieldName, locale = 'fa') => {
+    // First try to get from translations
+    const translation = product?.translations?.find(
+      (tr) => tr.translation?.language === locale
+    )?.translation?.fields;
+    
+    if (translation && translation[fieldName]) {
+      return translation[fieldName];
+    }
+    
+    // Fallback to direct field
+    return product?.[fieldName] || '';
+  };
+
+  const product = useMemo(() => {
+    const data = productData?.data || {};
+    
+    // Extract translated fields
+    const translatedTitle = getTranslatedField(data, 'title');
+    const translatedSummary = getTranslatedField(data, 'summary');
+    const translatedDescription = getTranslatedField(data, 'description');
+    const translatedFeatures = getTranslatedField(data, 'features');
+    
+    // Create enhanced product object with both direct and translated fields
+    const enhancedProduct = {
+      ...data,
+      // Use translated fields if available, otherwise use direct fields
+      title: translatedTitle || data.title,
+      summary: translatedSummary || data.summary,
+      description: translatedDescription || data.description,
+      features: translatedFeatures || data.features
+    };
+    
+    console.log('🔍 Product Data Received:', {
+      originalData: data,
+      translations: data.translations,
+      extractedFields: {
+        title: translatedTitle,
+        summary: translatedSummary,
+        description: translatedDescription,
+        features: translatedFeatures
+      },
+      enhancedProduct: enhancedProduct
+    });
+    
+    return enhancedProduct;
+  }, [productData]);
+  
+  // Field update mutations
+  const [updateProductField] = useUpdateProductFieldMutation();
+  const [updateProductFeatures] = useUpdateProductFeaturesMutation();
+  const [updateProductImages] = useUpdateProductImagesMutation();
+  const [updateProductVariation] = useUpdateProductVariationMutation();
+  const [adjustVariationStock] = useAdjustVariationStockMutation();
+  
   const [
     updateProductApprove,
     { isLoading: approveLoading, data: approveData, error: approveError }
@@ -52,6 +116,80 @@ const Update = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rejectMessage, setRejectMessage] = useState("");
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  
+  // Field update handler
+  const handleFieldUpdate = async (field, value) => {
+    try {
+      await updateProductField({
+        id: product_id,
+        field,
+        value
+      }).unwrap();
+      toast.success(`${getFieldDisplayName(field)} با موفقیت بروزرسانی شد`);
+    } catch (error) {
+      toast.error(`خطا در بروزرسانی ${getFieldDisplayName(field)}`);
+      throw error;
+    }
+  };
+  
+  // Features update handler
+  const handleFeaturesUpdate = async (features) => {
+    try {
+      await updateProductFeatures({
+        id: product_id,
+        features
+      }).unwrap();
+      toast.success("ویژگی‌های محصول با موفقیت بروزرسانی شد");
+    } catch (error) {
+      toast.error("خطا در بروزرسانی ویژگی‌ها");
+      throw error;
+    }
+  };
+  
+  // Images update handler
+  const handleImageUpdate = async (formData) => {
+    try {
+      await updateProductImages({
+        id: product_id,
+        formData
+      }).unwrap();
+      toast.success("تصاویر محصول با موفقیت بروزرسانی شد");
+    } catch (error) {
+      toast.error("خطا در بروزرسانی تصاویر");
+      throw error;
+    }
+  };
+  
+  // Variation update handler
+  const handleVariationUpdate = async (variationData) => {
+    try {
+      await updateProductVariation(variationData).unwrap();
+    } catch (error) {
+      toast.error("خطا در بروزرسانی تنوع");
+      throw error;
+    }
+  };
+  
+  // Stock adjustment handler
+  const handleStockAdjustment = async (stockData) => {
+    try {
+      await adjustVariationStock(stockData).unwrap();
+    } catch (error) {
+      toast.error("خطا در تغییر موجودی");
+      throw error;
+    }
+  };
+  
+  const getFieldDisplayName = (field) => {
+    const fieldNames = {
+      title: "عنوان",
+      summary: "خلاصه",
+      description: "توضیحات",
+      discountAmount: "مقدار تخفیف",
+      isFeatured: "ویژه"
+    };
+    return fieldNames[field] || field;
+  };
   useEffect(() => {
     if (productLoading) {
       toast.loading("در حال دریافت محصول...", { id: "productData" });
@@ -194,6 +332,126 @@ const Update = () => {
             </Modal>
           </div>
         </div>
+        
+        {/* Comprehensive Product Editing Section */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Edit className="w-5 h-5 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800">ویرایش محصول</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-700 border-b pb-2">اطلاعات پایه</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">عنوان محصول</label>
+                <EditableField
+                  value={product?.title}
+                  field="title"
+                  onUpdate={handleFieldUpdate}
+                  placeholder="عنوان محصول را وارد کنید"
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">خلاصه محصول</label>
+                <EditableField
+                  value={product?.summary}
+                  field="summary"
+                  onUpdate={handleFieldUpdate}
+                  multiline={true}
+                  placeholder="خلاصه محصول را وارد کنید"
+                  className="w-full"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">توضیحات محصول</label>
+                <EditableField
+                  value={product?.description}
+                  field="description"
+                  onUpdate={handleFieldUpdate}
+                  multiline={true}
+                  placeholder="توضیحات کامل محصول را وارد کنید"
+                  className="w-full"
+                />
+              </div>
+            </div>
+            
+            {/* Product Settings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-700 border-b pb-2">تنظیمات محصول</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">مقدار تخفیف (درصد)</label>
+                <EditableField
+                  value={product?.discountAmount}
+                  field="discountAmount"
+                  onUpdate={handleFieldUpdate}
+                  type="number"
+                  placeholder="0"
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-gray-700">محصول ویژه:</label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={product?.isFeatured || false}
+                    onChange={(e) => handleFieldUpdate('isFeatured', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">وضعیت محصول</label>
+                <div className="text-sm text-gray-600">
+                  وضعیت فعلی: <span className={`inline-block px-2 py-1 rounded text-xs ${product?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {product?.status === 'active' ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">وضعیت انتشار</label>
+                <div className="text-sm text-gray-600">
+                  وضعیت فعلی: <span className={`inline-block px-2 py-1 rounded text-xs ${
+                    product?.publishStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                    product?.publishStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {product?.publishStatus === 'approved' ? 'تایید شده' : 
+                     product?.publishStatus === 'pending' ? 'در انتظار تایید' : 'رد شده'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Product Variations Section */}
+        {product?.variations && product.variations.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div className="flex items-center gap-2 mb-6">
+              <Edit className="w-5 h-5 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">تنوع‌های محصول و موجودی</h2>
+            </div>
+            
+            <EditableVariations
+              variations={product.variations}
+              onUpdateVariation={handleVariationUpdate}
+              onAdjustStock={handleStockAdjustment}
+            />
+          </div>
+        )}
+        
         <div className="h-full w-full flex flex-col gap-y-20 ">
           <div className="grid grid-cols-12 gap-8">
             {productLoading || !product ? (
@@ -211,8 +469,15 @@ const Update = () => {
               </>
             ) : (
               <>
-                <Left product={product} />
-                <Right product={product} />
+                <Left 
+                  product={product} 
+                  onImageUpdate={handleImageUpdate}
+                />
+                <Right 
+                  product={product} 
+                  onFieldUpdate={handleFieldUpdate}
+                  onFeaturesUpdate={handleFeaturesUpdate}
+                />
               </>
             )}
           </div>

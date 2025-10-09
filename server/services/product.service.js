@@ -583,6 +583,367 @@ exports.updateStatusProduct = async (req, res) => {
   });
 };
 
+/* update individual field */
+exports.updateProductField = async (req, res) => {
+  try {
+    const { field, value } = req.body;
+    const productId = req.params.id; // This is the productId (number), not ObjectId
+    
+    // First find the product by productId to get the actual _id
+    const product = await Product.findOne({ productId: parseInt(productId, 10) });
+    if (!product) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "محصول پیدا نشد",
+        description: "محصولی با این آیدی پیدا نشد"
+      });
+    }
+    
+    const mongoId = product._id; // Use the actual MongoDB ObjectId
+    
+    // For translation fields, update the translation document
+    const translationFields = ['title', 'summary', 'description'];
+    const directFields = ['discountAmount', 'isFeatured'];
+    
+    if (translationFields.includes(field)) {
+      // Find the Persian translation (default language for dashboard)
+      const persianTranslation = product.translations?.find(
+        tr => tr.language === 'fa'
+      );
+      
+      if (persianTranslation) {
+        // Update the existing translation
+        await Translation.findByIdAndUpdate(
+          persianTranslation.translation,
+          {
+            $set: {
+              [`fields.${field}`]: value,
+              updatedAt: Date.now()
+            }
+          },
+          { new: true }
+        );
+      } else {
+        // Create new translation if it doesn't exist
+        const newTranslation = await Translation.create({
+          language: 'fa',
+          refModel: 'Product',
+          refId: mongoId, // Use MongoDB ObjectId
+          fields: {
+            [field]: value
+          }
+        });
+        
+        // Add the translation reference to the product
+        await Product.findByIdAndUpdate(mongoId, { // Use MongoDB ObjectId
+          $push: {
+            translations: {
+              translation: newTranslation._id,
+              language: 'fa'
+            }
+          }
+        });
+      }
+      
+      // Also update the direct field if it's title (for uniqueness constraint)
+      if (field === 'title') {
+        await Product.findByIdAndUpdate(mongoId, { // Use MongoDB ObjectId
+          $set: { title: value, updatedAt: Date.now() }
+        });
+      }
+      
+    } else if (directFields.includes(field)) {
+      // Update direct fields
+      const updateData = {
+        [field]: value,
+        updatedAt: Date.now()
+      };
+      
+      await Product.findByIdAndUpdate(
+        mongoId, // Use MongoDB ObjectId
+        { $set: updateData },
+        { new: true }
+      );
+    } else {
+      return res.status(400).json({
+        acknowledgement: false,
+        message: "فیلد غیرمجاز",
+        description: "فیلد مورد نظر قابل ویرایش نیست"
+      });
+    }
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: `${field} با موفقیت بروزرسانی شد`
+    });
+  } catch (error) {
+    console.error('Error updating product field:', error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطای سرور",
+      description: error.message
+    });
+  }
+};
+
+/* update product features */
+exports.updateProductFeatures = async (req, res) => {
+  try {
+    const { features } = req.body;
+    const productId = req.params.id; // This is the productId (number), not ObjectId
+
+    // First find the product by productId to get the actual _id
+    const product = await Product.findOne({ productId: parseInt(productId, 10) });
+    if (!product) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "محصول پیدا نشد",
+        description: "محصولی با این آیدی پیدا نشد"
+      });
+    }
+    
+    const mongoId = product._id; // Use the actual MongoDB ObjectId
+    
+    // Find the Persian translation (default language for dashboard)
+    const persianTranslation = product.translations?.find(
+      tr => tr.language === 'fa'
+    );
+    
+    if (persianTranslation) {
+      // Update the existing translation
+      await Translation.findByIdAndUpdate(
+        persianTranslation.translation,
+        {
+          $set: {
+            'fields.features': features,
+            updatedAt: Date.now()
+          }
+        },
+        { new: true }
+      );
+    } else {
+      // Create new translation if it doesn't exist
+      const newTranslation = await Translation.create({
+        language: 'fa',
+        refModel: 'Product',
+        refId: mongoId, // Use MongoDB ObjectId
+        fields: {
+          features: features
+        }
+      });
+      
+      // Add the translation reference to the product
+      await Product.findByIdAndUpdate(mongoId, { // Use MongoDB ObjectId
+        $push: {
+          translations: {
+            translation: newTranslation._id,
+            language: 'fa'
+          }
+        }
+      });
+    }
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "ویژگی‌های محصول با موفقیت بروزرسانی شد"
+    });
+  } catch (error) {
+    console.error('Error updating product features:', error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطای سرور",
+      description: error.message
+    });
+  }
+};
+
+/* update product images */
+exports.updateProductImages = async (req, res) => {
+  try {
+    const productId = req.params.id; // This is the productId (number), not ObjectId
+    
+    // First find the product by productId to get the actual _id
+    const product = await Product.findOne({ productId: parseInt(productId, 10) });
+    if (!product) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "محصول پیدا نشد",
+        description: "محصولی با این آیدی پیدا نشد"
+      });
+    }
+    
+    const mongoId = product._id; // Use the actual MongoDB ObjectId
+    const updateData = { updatedAt: Date.now() };
+
+    // Update thumbnail if provided
+    if (req.files && req.files.thumbnail && req.files.thumbnail.length > 0) {
+      if (product.thumbnail && product.thumbnail.public_id) {
+        await remove(product.thumbnail.public_id);
+      }
+      updateData.thumbnail = {
+        url: req.files.thumbnail[0].path,
+        public_id: req.files.thumbnail[0].filename
+      };
+    }
+
+    // Update gallery if provided
+    if (req.files && req.files.gallery && req.files.gallery.length > 0) {
+      if (product.gallery && product.gallery.length > 0) {
+        for (let i = 0; i < product.gallery.length; i++) {
+          await remove(product.gallery[i].public_id);
+        }
+      }
+      updateData.gallery = req.files.gallery.map((file) => ({
+        url: file.path,
+        public_id: file.filename
+      }));
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      mongoId, // Use MongoDB ObjectId
+      { $set: updateData },
+      { new: true }
+    );
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "تصاویر محصول با موفقیت بروزرسانی شد",
+      data: updatedProduct
+    });
+  } catch (error) {
+    console.error('Error updating product images:', error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطای سرور",
+      description: error.message
+    });
+  }
+};
+
+/* update product variation */
+exports.updateProductVariation = async (req, res) => {
+  try {
+    const { variationId, price, stock, lowStockThreshold } = req.body;
+    
+    if (!variationId) {
+      return res.status(400).json({
+        acknowledgement: false,
+        message: "شناسه وریاسیون الزامی است",
+        description: "لطفاً شناسه وریاسیون را وارد کنید"
+      });
+    }
+
+    const updateData = {
+      updatedAt: Date.now()
+    };
+    
+    if (price !== undefined) updateData.price = price;
+    if (stock !== undefined) updateData.stock = stock;
+    if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
+
+    const variation = await Variation.findByIdAndUpdate(
+      variationId,
+      { $set: updateData },
+      { new: true }
+    ).populate('unit', 'title value');
+
+    if (!variation) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "وریاسیون پیدا نشد",
+        description: "وریاسیونی با این آیدی پیدا نشد"
+      });
+    }
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "وریاسیون با موفقیت بروزرسانی شد",
+      data: variation
+    });
+  } catch (error) {
+    console.error('Error updating product variation:', error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطای سرور",
+      description: error.message
+    });
+  }
+};
+
+/* adjust stock quantity */
+exports.adjustVariationStock = async (req, res) => {
+  try {
+    const { variationId, adjustment, operation } = req.body; // operation: 'increase' or 'decrease'
+    
+    if (!variationId || adjustment === undefined || !operation) {
+      return res.status(400).json({
+        acknowledgement: false,
+        message: "پارامترهای الزامی کامل نیست",
+        description: "لطفاً شناسه وریاسیون، مقدار تغییر و نوع عملیات را وارد کنید"
+      });
+    }
+
+    const variation = await Variation.findById(variationId);
+    if (!variation) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "وریاسیون پیدا نشد",
+        description: "وریاسیونی با این آیدی پیدا نشد"
+      });
+    }
+
+    const currentStock = variation.stock;
+    let newStock;
+    
+    if (operation === 'increase') {
+      newStock = currentStock + adjustment;
+    } else if (operation === 'decrease') {
+      newStock = Math.max(0, currentStock - adjustment); // Prevent negative stock
+    } else {
+      return res.status(400).json({
+        acknowledgement: false,
+        message: "نوع عملیات نامعتبر",
+        description: "نوع عملیات باید 'increase' یا 'decrease' باشد"
+      });
+    }
+
+    const updatedVariation = await Variation.findByIdAndUpdate(
+      variationId,
+      { 
+        $set: { 
+          stock: newStock,
+          updatedAt: Date.now()
+        }
+      },
+      { new: true }
+    ).populate('unit', 'title value');
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: `موجودی با موفقیت ${operation === 'increase' ? 'افزایش' : 'کاهش'} یافت`,
+      data: {
+        variation: updatedVariation,
+        previousStock: currentStock,
+        newStock: newStock,
+        adjustment: adjustment,
+        operation: operation
+      }
+    });
+  } catch (error) {
+    console.error('Error adjusting variation stock:', error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطای سرور",
+      description: error.message
+    });
+  }
+};
+
 /* delete product */
 exports.deleteProduct = async (req, res) => {
   const product = await Product.findByIdAndUpdate(

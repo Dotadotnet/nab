@@ -86,6 +86,61 @@ exports.updateStatusProduct = async (req, res, next) => {
   }
 };
 
+/* update individual product field */
+exports.updateProductField = async (req, res, next) => {
+  try {
+    await productService.updateProductField(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+/* update product features */
+exports.updateProductFeatures = async (req, res, next) => {
+  try {
+    await productService.updateProductFeatures(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+/* update product images */
+exports.updateProductImages = async (req, res, next) => {
+  try {
+    await productService.updateProductImages(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+/* update product variation */
+exports.updateProductVariation = async (req, res, next) => {
+  try {
+    await productService.updateProductVariation(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+/* adjust variation stock */
+exports.adjustVariationStock = async (req, res, next) => {
+  try {
+    await productService.adjustVariationStock(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
 
 /* get a single product */
 exports.getProduct = async (req, res, next) => {

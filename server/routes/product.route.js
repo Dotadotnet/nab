@@ -75,6 +75,50 @@ router.patch(
   productController.updateStatusProduct
 );
 
+// update individual product field
+router.patch(
+  "/update-product-field/:id",
+  verify,
+  authorize("superAdmin", "admin"),
+  productController.updateProductField
+);
+
+// update product features
+router.patch(
+  "/update-product-features/:id",
+  verify,
+  authorize("superAdmin", "admin"),
+  productController.updateProductFeatures
+);
+
+// update product images
+router.patch(
+  "/update-product-images/:id",
+  verify,
+  authorize("superAdmin", "admin"),
+  upload("product").fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "gallery", maxCount: 10 }
+  ]),
+  productController.updateProductImages
+);
+
+// update product variation
+router.patch(
+  "/update-product-variation",
+  verify,
+  authorize("superAdmin", "admin"),
+  productController.updateProductVariation
+);
+
+// adjust variation stock
+router.patch(
+  "/adjust-variation-stock",
+  verify,
+  authorize("superAdmin", "admin"),
+  productController.adjustVariationStock
+);
+
 // get a single product
 router.get("/get-product/:id",localeMiddleware, productController.getProduct);
 

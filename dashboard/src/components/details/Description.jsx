@@ -1,6 +1,10 @@
 import React from "react";
 import DetailCard from "./DetailCard";
-const Description = ({ product }) => {
+import EditableField from "../shared/EditableField";
+import EditableFeatures from "../shared/EditableFeatures";
+
+const Description = ({ product, onFieldUpdate, onFeaturesUpdate }) => {
+
   return (
     <section className="flex flex-col gap-y-2.5">
       <div className="flex flex-row gap-x-2 items-center">
@@ -10,7 +14,14 @@ const Description = ({ product }) => {
         <hr className="w-full" />
       </div>
       <article className="flex flex-col gap-y-4">
-        <p className="text-sm">{product?.summary}</p>
+        <EditableField
+          value={product?.summary}
+          field="summary"
+          onUpdate={onFieldUpdate}
+          multiline={true}
+          placeholder="خلاصه محصول..."
+          className="text-sm"
+        />
         <button className="px-8 py-2 border border-black rounded-secondary bg-black hover:bg-black/90 text-white transition-colors drop-shadow w-fit flex flex-row gap-x-2 items-center">
           نظرات
         </button>
@@ -20,15 +31,10 @@ const Description = ({ product }) => {
           </span>
           <hr className="w-full" />
         </div>
-        <div className="flex flex-col gap-y-4">
-          {product?.features?.map((explanation, index) => (
-            <DetailCard
-              key={index}
-              title={explanation?.title}
-              content={explanation?.content}
-            />
-          ))}
-        </div>
+        <EditableFeatures
+          features={product?.features || []}
+          onUpdate={onFeaturesUpdate}
+        />
       </article>
     </section>
   );
