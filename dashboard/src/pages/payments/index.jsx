@@ -11,6 +11,7 @@ import SkeletonItem from "@/components/shared/skeleton/SkeletonItem";
 import Pagination from "@/components/shared/pagination/Pagination";
 import Search from "@/components/shared/search";
 import ControlPanel from "../ControlPanel";
+import PaymentStatistics from "../../partials/payments/PaymentStatistics";
 
 const ListPayment = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,6 +87,9 @@ const ListPayment = () => {
       <ControlPanel>
         <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
+        {/* Payment Statistics Component */}
+        <PaymentStatistics />
+
         <div className="mt-8 w-full grid grid-cols-12 text-slate-400 px-4">
           <div className="col-span-11 lg:col-span-2 text-sm">شماره پرداخت</div>
           <div className="col-span-8 lg:col-span-5 hidden lg:flex text-sm">
@@ -95,9 +99,8 @@ const ListPayment = () => {
             مبلغ کل (با تخفیف)
           </div>
           <div className="lg:col-span-1 hidden lg:flex text-sm">
-            مبلغ کل (بدون تخفیف)
+            مبلغ کل 
           </div>
-          <div className="col-span-1 md:block text-sm">عملیات</div>
         </div>
 
         {isLoading || (payments && payments.length === 0) ? (
@@ -114,7 +117,7 @@ const ListPayment = () => {
                 <div className="py-2 flex justify-center items-center gap-x-2 text-right">
                   <article className="flex-col flex gap-y-2">
                     <span className="line-clamp-1 text-base">
-                      {payment.fullName}{" "}
+                      {payment.customer?.name || payment.fullName || "بدون نام"}{" "}
                     </span>
                     <span className="text-xs flex">
                       {new Date(payment.createdAt).toLocaleDateString("fa-IR")}
@@ -159,7 +162,7 @@ const ListPayment = () => {
                 </span>
               </div>
 
-              <div className="lg:col-span-2 hidden gap-2 lg:flex justify-left items-center text-right">
+              <div className="lg:col-span-3 hidden gap-2 lg:flex justify-left items-center text-right">
                 <span className="text-sm lg:text-base">
                   {payment.totalAmountWithoutDiscount?.toLocaleString(
                     "fa-IR"
@@ -168,13 +171,13 @@ const ListPayment = () => {
                 </span>
               </div>
 
-              <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
+              {/* <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
                 <DeleteModal
                   message="آیا از حذف این پرداخت اطمینان دارید؟"
                   isLoading={isRemoving}
                   onDelete={() => removePayment(payment?._id)}
                 />
-              </div>
+              </div> */}
             </div>
           ))
         )}
@@ -221,10 +224,16 @@ const ListPayment = () => {
                   <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     کاربر
                   </h3>
-                  <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
-                    {selectedPayment.fullName ||
-                      `شناسه: ${selectedPayment.guest}`}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
+                      {selectedPayment.customer?.name || selectedPayment.fullName || `شناسه: ${selectedPayment.guest || selectedPayment._id}`}
+                    </span>
+                    {selectedPayment.customer?.phone && (
+                      <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
+                        تلفن: {selectedPayment.customer.phone}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {selectedPayment.customerId && (
                   <div>
@@ -339,7 +348,7 @@ const ListPayment = () => {
                   </div>
                   <div>
                     <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
-                      قیمت کل (بدون تخفیف)
+                      قیمت کل 
                     </h3>
                     <span className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm">
                       {selectedPayment.totalAmountWithoutDiscount?.toLocaleString(
@@ -350,7 +359,7 @@ const ListPayment = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-4">
+              {/* <div className="flex justify-end gap-4">
                 <DeleteModal
                   message="آیا از حذف این پرداخت اطمینان دارید؟"
                   isLoading={isRemoving}
@@ -359,7 +368,7 @@ const ListPayment = () => {
                     closeModal();
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           )}
         </Modal>

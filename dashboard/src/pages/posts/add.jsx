@@ -27,17 +27,17 @@ function Add() {
   } = useForm({
     mode: "onChange",
   });
-  const user = useSelector((state) => state?.auth);
+  const admin = useSelector((state) => state?.auth);
 
   const publishDate =
     watch("publishDate") || new Date().toISOString().split("T")[0];
   const defaultValues = useMemo(() => {
     return {
-      name: user?.user.name,
-      avatar: user?.user.avatar,
-      id: user?.user._id,
+      name: admin?.admin.name,
+      avatar: admin?.admin.avatar,
+      id: admin?.admin._id,
     };
-  }, [user]);
+  }, [admin]);
 
   return (
     <section className="w-screen relative  h-screen bg-slate-200 dark:bg-slate-800 overflow-hidden flex justify-center items-center p-4 ">

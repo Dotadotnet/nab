@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   useGetOrdersQuery,
-  useDeleteOrderMutation
+  useDeleteOrderMutation,
+  useUpdateOrderStatusToShippedMutation
 } from "@/services/order/orderApi";
 import DeleteModal from "@/components/shared/modal/DeleteModal";
 import Modal from "@/components/shared/modal/Modal";
@@ -16,6 +17,7 @@ import AddButton from "@/components/shared/button/AddButton";
 const ListOrder = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [trackingCode, setTrackingCode] = useState("");
   const itemsPerPage = 5;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -29,11 +31,16 @@ const ListOrder = () => {
 
   const orders = useMemo(() => data?.data || [], [data]);
   const totalPages = data ? Math.ceil(data.total / itemsPerPage) : 1;
-
+console.log("orders", orders)
   const [
     removeOrder,
     { isLoading: isRemoving, data: deleteOrder, error: removeError }
   ] = useDeleteOrderMutation();
+
+  const [
+    updateOrderStatus,
+    { isLoading: isUpdating, data: updateData, error: updateError }
+  ] = useUpdateOrderStatusToShippedMutation();
 
   useEffect(() => {
     if (isLoading) {
@@ -60,14 +67,40 @@ const ListOrder = () => {
     if (deleteOrder && !isRemoving) {
       toast.success("سفارش با موفقیت حذف شد.", { id: "order-remove" });
     }
-  }, [data, error, isLoading, isRemoving, removeError, deleteOrder]);
+    // Handle update status effects
+    if (isUpdating) {
+      toast.loading("در حال به‌روزرسانی وضعیت...", { id: "order-update" });
+    }
+    if (updateData && !isUpdating) {
+      toast.dismiss("order-update");
+      toast.success(updateData?.description, { id: "order-update" });
+      // Close modal and refresh data
+      setSelectedOrder(null);
+      refetch();
+    }
+    if (updateError?.data) {
+      toast.error(updateError?.data?.message, { id: "order-update" });
+    }
+  }, [data, error, isLoading, isRemoving, removeError, deleteOrder, isUpdating, updateData, updateError, refetch]);
 
   const handleOrderClick = (order) => {
     setSelectedOrder(order);
+    // Pre-fill tracking code if it exists
+    setTrackingCode(order.trackingCode || "");
   };
 
   const closeModal = () => {
     setSelectedOrder(null);
+    setTrackingCode("");
+  };
+
+  const handleMarkAsShipped = async () => {
+    if (!selectedOrder) return;
+    
+    await updateOrderStatus({
+      id: selectedOrder._id,
+      body: { trackingCode }
+    });
   };
 
   const orderStatusMap = {
@@ -123,10 +156,10 @@ const ListOrder = () => {
               <div className="lg:col-span-5 col-span-8 gap-2 lg:flex justify-left items-center text-right">
                 <article className="flex-col flex gap-y-2">
                   <span className="font-medium text-sm lg:text-base text-emerald-800 dark:text-emerald-200">
-                    {order.customer?.name || "بدون نام"}
+                    {order.customer?.name || order.customer?.phone || "بدون اطلاعات مشتری"}
                   </span>
                   <span className="text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-800 rounded-full px-2 py-0.5">
-                    شناسه مشتری: {order.customer?._id || "نامشخص"}
+                    شناسه مشتری: {order.customer?._id?.slice(0, 8) || "نامشخص"}
                   </span>
                 </article>
               </div>
@@ -146,11 +179,8 @@ const ListOrder = () => {
               </div>
 
               <div className="col-span-2 md:col-span-1 gap-2 text-center flex justify-center items-center">
-                <DeleteModal
-                  message="آیا از حذف این سفارش اطمینان دارید؟"
-                  isLoading={isRemoving}
-                  onDelete={() => removeOrder(order?._id)}
-                />
+                {/* Remove delete button and replace with status indicator */}
+                <StatusIndicator isActive={order.orderStatus === "delivered"} />
               </div>
             </div>
           ))
@@ -190,9 +220,16 @@ const ListOrder = () => {
                   <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     مشتری
                   </h3>
-                  <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
-                    {selectedOrder.customer?.name || `شناسه: ${selectedOrder.customer?._id || "نامشخص"}`}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
+                      {selectedOrder.customer?.name || selectedOrder.customer?.phone || `شناسه: ${selectedOrder.customer?._id?.slice(0, 8) || "نامشخص"}`}
+                    </span>
+                    {selectedOrder.customer?.phone && selectedOrder.customer?.name && (
+                      <span className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 px-3 py-1 rounded-lg text-sm">
+                        تلفن: {selectedOrder.customer.phone}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {selectedOrder.trackingCode && (
@@ -245,8 +282,16 @@ const ListOrder = () => {
                       آدرس
                     </h3>
                     <span className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm">
-                      {selectedOrder.address?.street || "نامشخص"}
+                      {selectedOrder.address?.address || "نامشخص"}
                     </span>
+                    <span className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm mt-1 block">
+                      {selectedOrder.address?.city}, {selectedOrder.address?.province}
+                    </span>
+                    {selectedOrder.address?.postalCode && (
+                      <span className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm mt-1 block">
+                        کد پستی: {selectedOrder.address.postalCode}
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -281,16 +326,42 @@ const ListOrder = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex justify-end gap-4">
-                <DeleteModal
-                  message="آیا از حذف این سفارش اطمینان دارید؟"
-                  isLoading={isRemoving}
-                  onDelete={() => {
-                    removeOrder(selectedOrder?._id);
-                    closeModal();
-                  }}
-                />
-              </div>
+              
+              {/* Mark as shipped section */}
+              {selectedOrder.orderStatus !== "delivered" && (
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
+                    ارسال سفارش
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    <label className="text-sm text-gray-700 dark:text-gray-300">
+                      کد رهگیری پستی:
+                      <input
+                        type="text"
+                        value={trackingCode}
+                        onChange={(e) => setTrackingCode(e.target.value)}
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder="کد رهگیری پستی را وارد کنید"
+                      />
+                    </label>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={handleMarkAsShipped}
+                        disabled={isUpdating}
+                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50"
+                      >
+                        {isUpdating ? "در حال ارسال..." : "علامت‌گذاری به عنوان ارسال شده"}
+                      </button>
+                      <button
+                        onClick={closeModal}
+                        className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 dark:text-gray-100 rounded-md"
+                      >
+                        انصراف
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Modal>

@@ -27,10 +27,10 @@ const addressApi = nabApi.injectEndpoints({
       providesTags: ["Address"],
     }),
 
-    // Get paginated addresss (admin or listing)
+    // Get paginated addresses (admin or listing)
     getAddresses: build.query({
       query: ({ page = 1, limit = 5, search = "" } = {}) => ({
-        url: `/address/get-addresss?page=${page}&limit=${limit}&search=${search}`,
+        url: `/address/get-addresses?page=${page}&limit=${limit}&search=${search}`,
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

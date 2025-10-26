@@ -199,15 +199,50 @@ exports.signUpWithGoogle = async (req, res) => {
 
 
 /* get all users */
-exports.getUsers = async (res) => {
-  const users = await User.find();
-
-  res.status(200).json({
-    acknowledgement: true,
-    message: "OK",
-    description: "دریافت موفق کاربران",
-    data: users
-  });
+exports.getUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const role = req.query.role;
+    
+    // Build query
+    let query = {};
+    if (role && role !== 'all') {
+      query.role = role;
+    }
+    
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    // Get users with pagination
+    const users = await User.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+      
+    // Get total count for pagination
+    const total = await User.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+    
+    res.status(200).json({
+      acknowledgement: true,
+      message: "OK",
+      description: "دریافت موفق کاربران",
+      data: {
+        users,
+        total,
+        page,
+        totalPages
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      acknowledgement: false,
+      message: "Error",
+      description: "خطا در دریافت کاربران",
+      error: error.message
+    });
+  }
 };
 
 /* get single user */
@@ -217,7 +252,7 @@ exports.getUser = async (req, res) => {
   res.status(200).json({
     acknowledgement: true,
     message: "OK",
-    description: `اطلاعات کاربر${user.name}' با موفقیت دریافت شد`,
+    description: `اطلاعات کاربر${user.name || user.phone}' با موفقیت دریافت شد`,
     data: user
   });
 };
@@ -475,3 +510,5 @@ exports.deleteUser = async (req, res) => {
     description: ` کاربر${user.name}'s با موفقیت حذف شد`
   });
 };
+
+

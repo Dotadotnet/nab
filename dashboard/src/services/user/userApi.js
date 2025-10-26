@@ -1,17 +1,27 @@
-
 import { nabApi } from "../nab";
 
 const userApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     // get all users
     getUsers: builder.query({
-      query: () => ({
-        url: "/user/all-users",
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }),
+      query: (params = {}) => {
+        const { page = 1, limit = 10, role = 'all' } = params;
+        const urlParams = new URLSearchParams();
+        urlParams.append('page', page);
+        urlParams.append('limit', limit);
+        
+        if (role !== 'all') {
+          urlParams.append('role', role);
+        }
+        
+        return {
+          url: `/user/all-users?${urlParams.toString()}`,
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        };
+      },
 
       providesTags: ["User"],
     }),
@@ -70,8 +80,6 @@ const userApi = nabApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
-
-    
   }),
 });
 

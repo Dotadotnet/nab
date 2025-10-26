@@ -19,7 +19,9 @@ const DeleteUser = ({ id }) => {
     isLoading: fetching,
     data: fetchData,
     error: fetchError
-  } = useGetUserQuery(id);
+  } = useGetUserQuery(id, {
+    skip: !isOpen // Skip the query until modal is opened
+  });
   const user = useMemo(() => fetchData?.data || {}, [fetchData]);
   const [
     deleteUser,
@@ -63,7 +65,6 @@ const DeleteUser = ({ id }) => {
         disabled={deleting ? true : undefined} // اصلاح شده
         className="delete-button"
         onClick={() => {
-          dispatch(setUser(user));
           setIsOpen(true);
         }}
       >

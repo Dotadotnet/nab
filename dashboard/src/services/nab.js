@@ -15,6 +15,7 @@ export const nabApi = createApi({
   }),
   tagTypes: [
     "User",
+    "Admin",
     "Product",
     "Brand",
     "Category",

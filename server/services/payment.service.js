@@ -2,9 +2,9 @@ const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
 const Purchase = require("../models/purchase.model");
 const User = require("../models/user.model");
+const Order = require("../models/order.model");
 const axios = require("axios");
 const Session = require("../models/session.model");
-const Order = require("../models/order.model");
 const Address = require("../models/address.model");
 const { sendSms } = require("../utils/smsService");
 
@@ -64,7 +64,7 @@ exports.createPayment = async (req, res) => {
     }
     console.log("🧮 Total calculated amount:", totalAmount);
 
-    const amount = totalAmount*10;
+    const amount = totalAmount * 10;
     const orderId = Date.now();
     const callBackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/callback`;
 
@@ -116,6 +116,9 @@ exports.createPayment = async (req, res) => {
     }
     user.cart.push(cart._id);
     user.sessions.push(sessionData._id);
+    cart.user = user._id;
+    await cart.save();
+
     // 📍 ذخیره آدرس
     const address = await Address.create({
       user: user._id,
@@ -151,7 +154,7 @@ exports.createPayment = async (req, res) => {
     📌 شناسه سبد خرید: ${cart.cartId}
     💰 مبلغ سفارش: ${totalAmount.toLocaleString("fa-IR")} تومان
     👤 مشتری: ${user.phone}-${user.name}`;
-console.log("shopOwnerPhones",shopOwnerPhones)
+    console.log("shopOwnerPhones", shopOwnerPhones)
     await Promise.all(
       shopOwnerPhones.map((phone) => sendSms(phone, purchaseMessage))
     );
@@ -199,9 +202,8 @@ exports.verifyMellatPayment = async (req, res) => {
         { paymentId: SaleOrderId },
         { paymentStatus: "failed", shippingStatus: "failed", ResCode: ResCode }
       );
-      const failedMessage = `پرداخت سفارش ${
-        failedPurchase?._id || SaleOrderId
-      } با خطا مواجه شد.`;
+      const failedMessage = `پرداخت سفارش ${failedPurchase?._id || SaleOrderId
+        } با خطا مواجه شد.`;
       await Promise.all(
         shopOwnerPhones.map((phone) => sendSms(phone, failedMessage))
       );
@@ -243,10 +245,11 @@ exports.verifyMellatPayment = async (req, res) => {
           `${clientBaseUrl}/payment/failure?reason=خرید یافت نشد`
         );
       }
-      await Cart.findOneAndUpdate(
-        { user: updatedPurchase.customer._id, paymentStatus: "pending" },
+      await Cart.findByIdAndUpdate(
+        updatedPurchase.cart, 
         { paymentStatus: "paid" }
       );
+
 
       const order = await Order.create({
         customer: updatedPurchase.customer._id,
@@ -257,7 +260,7 @@ exports.verifyMellatPayment = async (req, res) => {
           price: item.price
         })),
         totalAmount: updatedPurchase.totalAmount,
-        orderStatus: "awaiting_address",
+        orderStatus: defaultAddress && defaultAddress.isComplete ? "final_review" : "awaiting_address",
         paymentRefId: SaleReferenceId
       });
 
@@ -343,6 +346,7 @@ exports.completeOrder = async (req, res) => {
 
     order.userNote = userNote;
     order.address = existingAddress._id;
+    order.orderStatus = "final_review";
     await order.save();
 
     res.status(200).json({
@@ -445,3 +449,265 @@ exports.getAllPayments = async (req, res) => {
     });
   }
 };
+
+// New function to get payment statistics
+exports.getPaymentStatistics = async (req, res) => {
+  try {
+    // Get count of payments by status
+    const statusCounts = await Purchase.aggregate([
+      { $match: { isDeleted: false } },
+      {
+        $group: {
+          _id: "$paymentStatus",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Format status counts
+    const statusStats = {
+      paid: 0,
+      pending: 0,
+      failed: 0,
+      expired: 0,
+      refunded: 0,
+      canceled: 0
+    };
+
+    statusCounts.forEach(item => {
+      statusStats[item._id] = item.count;
+    });
+
+    // Get highest and lowest successful payment amounts with customer info
+    const successfulPayments = await Purchase.find({ 
+      paymentStatus: "paid", 
+      isDeleted: false 
+    }).populate({
+      path: "customer",
+      select: "name phone email"
+    }).select("totalAmount customer paymentStatus createdAt");
+
+    let highestPayment = null;
+    let lowestPayment = null;
+    let totalSuccessfulPayments = 0;
+
+    if (successfulPayments.length > 0) {
+      // Sort by totalAmount to find highest and lowest
+      successfulPayments.sort((a, b) => b.totalAmount - a.totalAmount);
+      highestPayment = successfulPayments[0];
+      lowestPayment = successfulPayments[successfulPayments.length - 1];
+      totalSuccessfulPayments = successfulPayments.length;
+    }
+
+    // Get monthly payment statistics
+    const monthlyStats = await Purchase.aggregate([
+      { $match: { paymentStatus: "paid", isDeleted: false } },
+      {
+        $project: {
+          month: { $month: "$createdAt" },
+          year: { $year: "$createdAt" },
+          totalAmount: 1
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: "$year",
+            month: "$month"
+          },
+          count: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" }
+        }
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1
+        }
+      }
+    ]);
+
+    // Format monthly stats for easier consumption and convert amounts to Tomans
+    const formattedMonthlyStats = monthlyStats.map(stat => ({
+      year: stat._id.year,
+      month: stat._id.month,
+      count: stat.count,
+      totalAmount: stat.totalAmount / 10 // Convert from Rials to Tomans
+    }));
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "آمار پرداخت‌ها با موفقیت دریافت شد",
+      data: {
+        statusStats,
+        highestPayment,
+        lowestPayment,
+        totalSuccessfulPayments,
+        monthlyStats: formattedMonthlyStats
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت آمار پرداخت‌ها",
+      error: error.message
+    });
+  }
+};
+
+// Function to get sales count by product
+exports.getSalesCountByProduct = async (req, res) => {
+  try {
+    const salesData = await Purchase.aggregate([
+      { $match: { paymentStatus: "paid", isDeleted: false } },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.product",
+          count: { $sum: "$products.quantity" },
+          totalAmount: { $sum: { $multiply: ["$products.variation.price", "$products.quantity"] } }
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productInfo"
+        }
+      },
+      {
+        $unwind: "$productInfo"
+      },
+      {
+        $project: {
+          _id: 1,
+          productName: "$productInfo.title",
+          count: 1,
+          totalAmount: { $divide: ["$totalAmount", 10] } // Convert from Rials to Tomans
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: 10
+      }
+    ]);
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "آمار فروش بر اساس محصول با موفقیت دریافت شد",
+      data: salesData
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت آمار فروش بر اساس محصول",
+      error: error.message
+    });
+  }
+};
+
+// Function to get detailed payment information by ID
+exports.getPaymentDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const payment = await Purchase.findById(id)
+      .populate([
+        {
+          path: "customer",
+          select: "name phone email userId"
+        },
+        {
+          path: "products.product",
+          select: "title thumbnail discountAmount"
+        },
+        {
+          path: "products.variation",
+          select: "price unit",
+          populate: {
+            path: "unit",
+            select: "value",
+            populate: {
+              path: "translations.translation",
+              match: { language: req.locale },
+              select: "fields.title language"
+            }
+          }
+        }
+      ]);
+
+    if (!payment) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "خطا",
+        description: "پرداخت یافت نشد"
+      });
+    }
+
+    // Find associated order to get address information
+    const order = await Order.findOne({ purchase: payment._id })
+      .populate({
+        path: "address",
+        select: "province city address postalCode plateNumber"
+      });
+
+    // Calculate totals
+    let totalAmountWithDiscount = 0;
+    let totalAmountWithoutDiscount = 0;
+
+    for (const item of payment.products) {
+      const price = item.variation?.price || 0;
+      const discountPercent = item.product?.discountAmount || 0;
+      const discountAmount = (price * discountPercent) / 100;
+
+      totalAmountWithDiscount += Math.max(price - discountAmount, 0) * item.quantity;
+      totalAmountWithoutDiscount += price * item.quantity;
+    }
+
+    const paymentWithTotals = {
+      ...payment._doc,
+      totalAmountWithDiscount,
+      totalAmountWithoutDiscount,
+      address: order?.address || null
+    };
+
+    res.status(200).json({
+      acknowledgement: true,
+      message: "Ok",
+      description: "اطلاعات پرداخت با موفقیت دریافت شد",
+      data: paymentWithTotals
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      acknowledgement: false,
+      message: "خطا در دریافت اطلاعات پرداخت",
+      error: error.message
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

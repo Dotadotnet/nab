@@ -1,17 +1,27 @@
-
 import { nabApi } from "../nab";
 
 const adminApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     // get all admins
     getAdmins: builder.query({
-      query: () => ({
-        url: "/admin/all-admins",
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }),
+      query: (params = {}) => {
+        const { page = 1, limit = 10, role = 'all' } = params;
+        const urlParams = new URLSearchParams();
+        urlParams.append('page', page);
+        urlParams.append('limit', limit);
+        
+        if (role !== 'all') {
+          urlParams.append('role', role);
+        }
+        
+        return {
+          url: `/admin/all-admins?${urlParams.toString()}`,
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        };
+      },
 
       providesTags: ["Admin"],
     }),
@@ -70,8 +80,6 @@ const adminApi = nabApi.injectEndpoints({
       invalidatesTags: ["Admin"],
     }),
 
-
-    
   }),
 });
 

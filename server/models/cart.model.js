@@ -66,6 +66,34 @@ cartSchema.pre("save", async function (next) {
     next(error);
   }
 });
+
+// Method to expire pending carts older than a specified time (default 24 hours)
+cartSchema.statics.expirePendingCarts = async function (maxAgeHours = 24) {
+  const cutoffTime = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
+  
+  const result = await this.updateMany(
+    {
+      paymentStatus: "pending",
+      createdAt: { $lt: cutoffTime }
+    },
+    {
+      paymentStatus: "expired"
+    }
+  );
+  
+  return result;
+};
+
+// Method to find and return expired carts
+cartSchema.statics.getExpiredCarts = async function (maxAgeHours = 24) {
+  const cutoffTime = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
+  
+  return await this.find({
+    paymentStatus: "pending",
+    createdAt: { $lt: cutoffTime }
+  });
+};
+
 /* create cart schema */
 const Cart = mongoose.model("Cart", cartSchema);
 

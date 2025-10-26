@@ -18,7 +18,12 @@ router.get(
   orderController.getAllOrders
 );
 
-
+router.patch(
+  "/update-order-status-to-shipped/:id",
+  verify,
+  authorize("admin", "superAdmin"),
+  orderController.updateOrderStatusToShipped
+);
 
 /* export router */
 module.exports = router;

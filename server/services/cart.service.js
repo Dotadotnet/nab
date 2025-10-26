@@ -4,9 +4,7 @@ const Session = require("../models/session.model");
 const User = require("../models/user.model");
 const { sendSms } = require("../utils/smsService");
 
-const shopOwnerPhones = process.env.SHOP_OWNER_PHONE.split(",").map((p) =>
-  p.trim()
-);
+
 exports.addToCart = async (req, res) => {
   try {
     console.log("📥 Request body:", req.body);

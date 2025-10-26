@@ -1,5 +1,3 @@
-
-
 /* internal imports */
 const adminService = require("../services/admin.service");
 
@@ -50,7 +48,7 @@ exports.persistLogin = async (req, res, next) => {
 /* get all admins */
 exports.getAdmins = async (req, res, next) => {
   try {
-    await adminService.getAdmins(res);
+    await adminService.getAdmins(req, res);
   } catch (error) {
     next(error);
   } finally {

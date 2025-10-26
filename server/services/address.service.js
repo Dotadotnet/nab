@@ -1,7 +1,5 @@
 const Address = require("../models/address.model");
 
-
-
 exports.getAllAddresses = async (req, res) => {
   try {
     const { page = 1, limit = 5, search = "" } = req.query;
@@ -14,61 +12,20 @@ exports.getAllAddresses = async (req, res) => {
         ...query,
         $or: [
           { _id: search },
-          { customerId: { $regex: search, $options: "i" } } 
+          { province: { $regex: search, $options: "i" } },
+          { city: { $regex: search, $options: "i" } }
         ]
       };
     }
 
-    const addresss = await Address.find(query)
+    const addresses = await Address.find(query)
       .skip(Number(skip))
       .limit(Number(limit))
       .sort({ createdAt: -1 })
-      .populate([
-        {
-          path: "customer",
-          select: "name email phone "
-        },
-        {
-          path: "products.product",
-          select: "thumbnail discountAmount title",
-          
-        },
-        {
-          path: "products.variation",
-          select: "price unit",
-          populate: {
-            path: "unit",
-            select: "value",
-            populate: {
-              path: "translations.translation",
-              match: { language: req.locale },
-              select: "fields.title language"
-            }
-          }
-        }
-      ]);
-
-    // محاسبه مجموع قیمت‌ها
-    const addresssWithTotals = addresss.map((address) => {
-      let totalAmountWithDiscount = 0;
-      let totalAmountWithoutDiscount = 0;
-
-      for (const item of address.products) {
-        const price = item.variation?.price || 0;
-        const discountPercent = item.product?.discountAmount || 0;
-        const discountAmount = (price * discountPercent) / 100;
-
-        totalAmountWithDiscount +=
-          Math.max(price - discountAmount, 0) * item.quantity;
-        totalAmountWithoutDiscount += price * item.quantity;
-      }
-
-      return {
-        ...address._doc,
-        totalAmountWithDiscount,
-        totalAmountWithoutDiscount
-      };
-    });
+      .populate({
+        path: "user",
+        select: "name email phone userId"
+      });
 
     const total = await Address.countDocuments(query);
 
@@ -76,7 +33,7 @@ exports.getAllAddresses = async (req, res) => {
       acknowledgement: true,
       message: "Ok",
       description: "آدرسها با موفقیت دریافت شدند",
-      data: addresssWithTotals,
+      data: addresses,
       total
     });
   } catch (error) {
@@ -88,3 +45,5 @@ exports.getAllAddresses = async (req, res) => {
     });
   }
 };
+
+

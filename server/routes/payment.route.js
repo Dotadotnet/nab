@@ -1,5 +1,3 @@
-
-
 /* external import */
 const express = require("express");
 
@@ -27,12 +25,31 @@ router.post(
 
 router.get("/get-all-payments", paymentController.getAllPayments);
 
+router.get(
+  "/get-payment-statistics",
+  verify,
+  authorize("admin", "superAdmin"),
+  paymentController.getPaymentStatistics
+);
+
+router.get(
+  "/get-sales-count-by-product",
+  verify,
+  authorize("admin", "superAdmin"),
+  paymentController.getSalesCountByProduct
+);
+
+router.get(
+  "/get-payment-details/:id",
+  verify,
+  authorize("admin", "superAdmin"),
+  paymentController.getPaymentDetails
+);
+
 router.post(
   "/completeOrder/:orderId",
   paymentController.completeOrder 
 );
-
-
 
 /* export router */
 module.exports = router;

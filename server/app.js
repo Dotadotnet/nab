@@ -73,7 +73,9 @@ app.use("/api/order", require("./routes/order.route"));
 app.use("/api/address", require("./routes/address.route"));
 app.use("/api/story", require("./routes/story.route"));
 app.use("/api/banner", require("./routes/promoBanner.route"));
-
+app.use("/api/news", require("./routes/news.route"));
+app.use("/api/newsType", require("./routes/newsType.route"));
+app.use("/api/newsCountry", require("./routes/newsCountry.route"));
 
 app.use(error);
 

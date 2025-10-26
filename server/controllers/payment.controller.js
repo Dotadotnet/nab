@@ -1,5 +1,3 @@
-
-
 /* internal import */
 const paymentService = require("../services/payment.service");
 
@@ -35,10 +33,42 @@ exports.completeOrder  = async (req, res, next) => {
   }
 };
 
-
 exports.getAllPayments = async (req, res, next) => {
   try {
     await paymentService.getAllPayments(req,res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+// New controller for payment statistics
+exports.getPaymentStatistics = async (req, res, next) => {
+  try {
+    await paymentService.getPaymentStatistics(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+// New controller for sales count by product
+exports.getSalesCountByProduct = async (req, res, next) => {
+  try {
+    await paymentService.getSalesCountByProduct(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+// New controller for payment details
+exports.getPaymentDetails = async (req, res, next) => {
+  try {
+    await paymentService.getPaymentDetails(req, res);
   } catch (error) {
     next(error);
   } finally {

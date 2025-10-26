@@ -12,13 +12,11 @@ const addressController = require("../controllers/address.controller");
 const router = express.Router();
 
 router.get(
-  "/get-addresss",
+  "/get-addresses",
   verify,
   authorize("admin", "superAdmin"),
   addressController.getAllAddresses
 );
-
-
 
 /* export router */
 module.exports = router;

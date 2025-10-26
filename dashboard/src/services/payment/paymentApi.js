@@ -14,6 +14,42 @@ const paymentApi = nabApi.injectEndpoints({
       providesTags: ["Payment"],
     }),
 
+    // Get payment statistics
+    getPaymentStatistics: build.query({
+      query: () => ({
+        url: `/payment/get-payment-statistics`,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["Payment"],
+    }),
+
+    // Get sales count by product
+    getSalesCountByProduct: build.query({
+      query: () => ({
+        url: `/payment/get-sales-count-by-product`,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["Payment"],
+    }),
+
+    // Get payment details by ID
+    getPaymentDetails: build.query({
+      query: (id) => ({
+        url: `/payment/get-payment-details/${id}`,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["Payment"],
+    }),
+
     // Update payment status by ID
     updatePaymentStatus: build.mutation({
       query: ({ id, body }) => ({
@@ -43,6 +79,9 @@ const paymentApi = nabApi.injectEndpoints({
 
 export const {
   useGetPaymentsQuery,
+  useGetPaymentStatisticsQuery,
+  useGetSalesCountByProductQuery,
+  useGetPaymentDetailsQuery,
   useUpdatePaymentStatusMutation,
   useDeletePaymentMutation,
 } = paymentApi;

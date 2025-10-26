@@ -1,5 +1,3 @@
-
-
 /* internal imports */
 const userService = require("../services/user.service");
 
@@ -42,7 +40,7 @@ exports.persistLogin = async (req, res, next) => {
 /* get all users */
 exports.getUsers = async (req, res, next) => {
   try {
-    await userService.getUsers(res);
+    await userService.getUsers(req, res);
   } catch (error) {
     next(error);
   } finally {

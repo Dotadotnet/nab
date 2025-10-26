@@ -170,15 +170,50 @@ exports.persistLogin = async (req, res) => {
   }
 };
 
-exports.getAdmins = async (res) => {
-  const admins = await Admin.find();
-
-  res.status(200).json({
-    acknowledgement: true,
-    message: "OK",
-    description: "دریافت موفق کاربران",
-    data: admins
-  });
+exports.getAdmins = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const role = req.query.role;
+    
+    // Build query
+    let query = {};
+    if (role && role !== 'all') {
+      query.role = role;
+    }
+    
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    // Get admins with pagination
+    const admins = await Admin.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+      
+    // Get total count for pagination
+    const total = await Admin.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+    
+    res.status(200).json({
+      acknowledgement: true,
+      message: "OK",
+      description: "دریافت موفق مدیران",
+      data: {
+        admins,
+        total,
+        page,
+        totalPages
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      acknowledgement: false,
+      message: "Error",
+      description: "خطا در دریافت مدیران",
+      error: error.message
+    });
+  }
 };
 
 exports.getAdmin = async (req, res) => {
@@ -399,3 +434,5 @@ exports.deleteAdmin = async (req, res) => {
     description: ` کاربر${admin.name}'s با موفقیت حذف شد`
   });
 };
+
+

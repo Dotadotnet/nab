@@ -3,7 +3,7 @@ const express = require("express");
 
 /* middleware imports */
 const upload = require("../middleware/upload.middleware");
-const verifyUser = require("../middleware/verifyUser.middleware");
+const verifyAdmin = require("../middleware/verifyAdmin.middleware");
 
 /* internal import */
 const userController = require("../controllers/user.controller");
@@ -31,12 +31,12 @@ router.post(
 );
 
 // login persistance
-router.get("/me", verifyUser,  userController.persistLogin);
+router.get("/me", verifyAdmin,  userController.persistLogin);
 
 // get all users
 router.get(
   "/all-users",
-  verifyUser,
+  verifyAdmin,
   authorize("superAdmin"),
   userController.getUsers
 );
@@ -44,7 +44,7 @@ router.get(
 // get single user
 router.get(
   "/get-user/:id",
-  verifyUser,
+  verifyAdmin,
   authorize("superAdmin"),
   userController.getUser
 );
@@ -52,7 +52,7 @@ router.get(
 // update user information
 router.patch(
   "/update-information",
-  verifyUser,
+  verifyAdmin,
   authorize("superAdmin", "admin"),
   upload("avatar").single("avatar"),
   userController.updateUser
@@ -60,7 +60,7 @@ router.patch(
 
 router.patch(
   "/update-user/:id",
-  verifyUser,
+  verifyAdmin,
   authorize("superAdmin", "admin"),
   upload("avatar").single("avatar"),
   userController.updateUserInfo
@@ -69,7 +69,7 @@ router.patch(
 // delete user information
 router.delete(
   "/delete-user/:id",
-  verifyUser,
+  verifyAdmin,
   authorize("superAdmin", "admin"),
   userController.deleteUser
 );

@@ -50,6 +50,19 @@ const orderApi = nabApi.injectEndpoints({
       }),
       invalidatesTags: ["Order", "Admin"],
     }),
+
+    // Update order status to shipped
+    updateOrderStatusToShipped: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/order/update-order-status-to-shipped/${id}`,
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body,
+      }),
+      invalidatesTags: ["Order", "Admin"],
+    }),
   }),
 });
 
@@ -58,4 +71,5 @@ export const {
   useGetFromOrderQuery,
   useGetOrdersQuery,
   useDeleteOrderMutation,
+  useUpdateOrderStatusToShippedMutation,
 } = orderApi;
