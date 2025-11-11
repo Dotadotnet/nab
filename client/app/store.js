@@ -11,7 +11,7 @@ import favoriteSlice from "@/features/favorite/favoriteSlice";
 import cartSlice from "@/features/cart/cartSlice";
 import purchaseSlice from "@/features/purchase/purchaseSlice";
 import filterSlice from "@/features/filter/filterSlice";
-import postReducer  from "@/features/post/postSlice";
+import postReducer  from "@/features/mags/magSlice";
 
 export const store = configureStore({
   reducer: {

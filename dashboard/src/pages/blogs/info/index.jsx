@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import ControlPanel from "../../ControlPanel";
 import { useNavigate } from 'react-router-dom';
 import {
-  useDeletePostMutation,
-  useGetPostQuery,
-  useUpdatePostMutation
-} from "@/services/post/postApi";
+  useDeleteBlogMutation,
+  useGetBlogQuery,
+  useUpdateBlogMutation
+} from "@/services/blog/blogApi";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import SkeletonText from "@/components/shared/skeleton/SkeletonText";
@@ -47,7 +47,7 @@ const Info = () => {
     isLoading: fetching,
     data: fetchData,
     error: fetchError
-  } = useGetPostQuery(id);
+  } = useGetBlogQuery(id);
 
   const categoryOptions = categories?.map((category) => ({
     id: category._id,
@@ -55,14 +55,14 @@ const Info = () => {
     description: category.description
   }));
   const [
-    deletepost,
+    deleteblog,
     { isLoading: deleting, data: deleteData, error: deleteError }
-  ] = useDeletePostMutation();
+  ] = useDeleteBlogMutation();
 
   const [
-    updatepost,
+    updateblog,
     { isLoading: updating, data: updateData, error: updateError }
-  ] = useUpdatePostMutation();
+  ] = useUpdateBlogMutation();
 
   const dispatch = useDispatch();
 
@@ -121,7 +121,7 @@ const Info = () => {
     if (galleryPreview) {
       formData.append("featuredImage", galleryPreview[0]);
     }
-    updatepost({
+    updateblog({
       id: id,
       data: formData
     })
@@ -145,12 +145,12 @@ const Info = () => {
   useEffect(() => {
     if (fetching) {
       toast.loading("در حال بروزرسانی اطلاعات...", {
-        id: "fetchpost"
+        id: "fetchblog"
       });
     }
 
     if (fetchData) {
-      toast.success(fetchData?.message, { id: "fetchpost" });
+      toast.success(fetchData?.message, { id: "fetchblog" });
       if (
         (user?.role === "superAdmin" &&
           fetchData?.data?.publishStatus === "pending") ||
@@ -164,15 +164,15 @@ const Info = () => {
     }
 
     if (fetchError?.data) {
-      toast.error(fetchError?.data?.message, { id: "fetchPost" });
+      toast.error(fetchError?.data?.message, { id: "fetchBlog" });
     }
 
     if (deleting) {
-      toast.loading("در حال حذف پست...", { id: "deletePost" });
+      toast.loading("در حال حذف پست...", { id: "deleteBlog" });
     }
 
     if (deleteData) {
-      toast.success(deleteData?.message, { id: "deletePost" });
+      toast.success(deleteData?.message, { id: "deleteBlog" });
       setIsModalOpen(false);
       window.open("/", "_self");
     }
@@ -194,7 +194,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "approved");
-    updatepost({
+    updateblog({
       id,
       data: formData
     })
@@ -212,7 +212,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "rejected");
-    updatepost({
+    updateblog({
       id,
       data: formData
     })
@@ -230,7 +230,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "pending");
-    updatepost({
+    updateblog({
       id,
       data: formData
     })
@@ -245,12 +245,12 @@ const Info = () => {
   };
 
   const handleDelete = () => {
-    deletepost(id)
+    deleteblog(id)
       .unwrap()
       .then((response) => {
         toast.success("پست با موفقیت حذف شد");
         setIsDeleteModalOpen(false);
-        window.open("/dashboard/posts", "_self"); 
+        window.open("/dashboard/blogs", "_self"); 
       })
       .catch((error) => {
         toast.error("خطا در حذف پست.");
@@ -267,7 +267,7 @@ const Info = () => {
             <div className="flex items-center justify-between ">
               <div>
                 <a
-                  onClick={() => router.push("/dashboard/posts")}
+                  onClick={() => router.push("/dashboard/blogs")}
                   className="flex cursor-pointer items-center dark:text-slate-300 text-slate-700 transition-all hover:text-slate-700 dark:hover:text-slate-800"
                 >
                   <Back />

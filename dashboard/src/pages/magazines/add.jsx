@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from "react";
-import AddPost from "./steps/AddMagjsx";
+import AddMagazine from "./steps/AddMagazine";
 import ThemeToggle from "@/components/ThemeToggle";
 import CustomProgressBar from "./steps/CustomProgressBar";
-import PostCard from "@/components/shared/card/PostCard";
-import PostContent from "@/components/shared/content/PostContent";
+import MagazineCard from "@/components/shared/card/MagazineCard";
+import MagazineContent from "@/components/shared/content/MagazineContent";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 
@@ -15,7 +15,7 @@ function Add() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [editorData, setEditorData] = useState("");
   const [gallery, setGallery] = useState(null);
-  const totalSteps = 5;
+  const totalSteps = 6; // Updated to 6 steps
   const {
     register,
     formState: { errors },
@@ -48,7 +48,7 @@ function Add() {
         <CustomProgressBar currentStep={currentStep} totalSteps={totalSteps} />
         <div className="grid grid-cols-1  md:grid-cols-3 gap-4">
           <div className="w-full flex justify-center bg-white h-[550px] relative justify-center dark:bg-gray-900 z-50 flex flex-col gap-y-4  p-4 rounded-primary shadow-lg">
-            <AddPost
+            <AddMagazine
               currentStep={currentStep}
               totalSteps={totalSteps}
               publishDate={publishDate}
@@ -74,17 +74,17 @@ function Add() {
             </div>
           </div>
           <div className="w-full">
-            <PostCard
+            <MagazineCard
               title={watch("title")}
-              description={watch("description")}
+              summary={watch("summary")}
               thumbnailPreview={thumbnailPreview}
               publishDate={publishDate}
               author={defaultValues?.name}
               avatar={defaultValues?.avatar?.url}
             />
           </div>
-          <div className="w-full min-h-[300px] max-h-[550px] overflow-y-auto">
-            <PostContent
+          <div className="w-full bg-white min-h-[300px] max-h-[550px] overflow-y-auto">
+            <MagazineContent
               title={watch("title")}
               content={watch("content")}
               selectedTags={selectedTags}

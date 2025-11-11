@@ -26,7 +26,7 @@ export const nabApi = createApi({
     "Review",
     "Tag",
     "Unit",
-    "Post",
+    "Magazine",
     "Blog",
     "Gallery",
     "FeaturedProduct",

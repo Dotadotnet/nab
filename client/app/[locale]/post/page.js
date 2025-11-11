@@ -1,12 +1,12 @@
 "use client";
 
-import PostHeader from "@/components/details/post/PostHeader";
-import PostContent from "@/components/details/post/PostContent";
-import PostMedia from "@/components/details/post/PostMedia";
-import PostComments from "@/components/details/post/PostComments";
+import MagazineHeader from "@/components/details/magazine/MagazineHeader";
+import MagazineContent from "@/components/details/magazine/MagazineContent";
+import MagazineMedia from "@/components/details/magazine/MagazineMedia";
+import MagazineComments from "@/components/details/magazine/MagazineComments";
 import Container from "@/components/shared/Container";
 import Main from "@/components/shared/layouts/Main";
-import { useGetPostQuery } from "@/services/post/postApi";
+import { useGetMagazineQuery } from "@/services/magazine/magazineApi";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo } from "react";
 import { toast } from "react-hot-toast";
@@ -14,18 +14,18 @@ import HighlightText from "@/components/shared/highlightText/HighlightText";
 
 const Detail = () => {
   const searchParams = useSearchParams();
-  const id = searchParams.get("post_id");
+  const id = searchParams.get("magazine_id");
   const {
-    data: postData,
-    error: postError,
-    isLoading: postLoading
-  } = useGetPostQuery(id);
-  const post = useMemo(() => postData?.data || {}, [postData]);
+    data: magazineData,
+    error: magazineError,
+    isLoading: magazineLoading
+  } = useGetMagazineQuery(id);
+  const magazine = useMemo(() => magazineData?.data || {}, [magazineData]);
   useEffect(() => {
-    if (postError) {
-      toast.error(postError?.data?.description, { id: "postData" });
+    if (magazineError) {
+      toast.error(magazineError?.data?.description, { id: "magazineData" });
     }
-  }, [postError]);
+  }, [magazineError]);
   return (
     <Main>
       <Container>
@@ -39,19 +39,19 @@ const Detail = () => {
             </div>
           </div>
           <div className="relative md:col-span-7 order-1 md:order-2 bg-white -24 dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-lg">
-            <PostHeader
-              isLoading={postLoading}
-              creator={post?.creator}
-              publishDate={post?.publishDate}
+            <MagazineHeader
+              isLoading={magazineLoading}
+              creator={magazine?.creator}
+              publishDate={magazine?.publishDate}
             />
-            <PostMedia isLoading={postLoading} galleryPreview={post?.gallery} />
-            <PostContent
-              content={post?.content}
-              isLoading={postLoading}
-              title={post?.title}
-              selectedTags={post?.Tags}
+            <MagazineMedia isLoading={magazineLoading} galleryPreview={magazine?.gallery} />
+            <MagazineContent
+              content={magazine?.content}
+              isLoading={magazineLoading}
+              title={magazine?.title}
+              selectedTags={magazine?.Tags}
             />
-            <PostComments comments={post?.comments} />
+            <MagazineComments comments={magazine?.comments} />
           </div>
           <did className="md:col-span-3 order-3 md:order-3 ">
           <div>

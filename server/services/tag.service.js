@@ -1,13 +1,9 @@
 /* internal import */
 const Tag = require("../models/tag.model");
-const User = require("../models/user.model");
 const Translation = require("../models/translation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
 const Product = require("../models/product.model");
-const Blog = require("../models/blog.model");
-const Post = require("../models/post.model");
-
 
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
@@ -113,10 +109,9 @@ exports.getItem = async (req, res) => {
   const tag = await Tag.find({ title : name });
   const id =  tag[0]._id;
   const Products = await Product.find();
-  const Posts = await Post.find();
   const Blogs = await Blog.find();
 
-  const items = [].concat(Products, Posts, Blogs);
+  const items = [].concat(Products,  Blogs);
   const result = [];
 
   items.forEach(item => {

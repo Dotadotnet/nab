@@ -5,7 +5,7 @@ import ExpertChoice from "@/components/home/ExpertChoice";
 import NicheExplorer from "@/components/home/NicheExplorer";
 import Trending from "@/components/home/Trending";
 import Main from "@/components/shared/layouts/Main";
-import Post from "@/components/home/posts/Post";
+import Post from "@/components/home/mag/page";
 import Blog from "@/components/home/blogs/page";
 import Gallery from "@/components/home/gallery/Gallery";
 import NewArrivals from "@/components/home/newArrivals/page";

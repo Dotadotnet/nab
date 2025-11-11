@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import ControlPanel from "../../ControlPanel";
 import { useNavigate } from 'react-router-dom';
 import {
-  useDeleteBlogMutation,
-  useGetBlogQuery,
-  useUpdateBlogMutation
-} from "@/services/blog/blogApi";
+  useDeleteMagazineMutation,
+  useGetMagazineQuery,
+  useUpdateMagazineMutation
+} from "@/services/magazine/magazineApi";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import SkeletonText from "@/components/shared/skeleton/SkeletonText";
@@ -53,7 +53,7 @@ const Info = () => {
     isLoading: fetching,
     data: fetchData,
     error: fetchError
-  } = useGetBlogQuery(id);
+  } = useGetMagazineQuery(id);
 
   const categoryOptions = categories?.map((category) => ({
     id: category._id,
@@ -61,14 +61,14 @@ const Info = () => {
     description: category.description
   }));
   const [
-    deleteblog,
+    deletemagazine,
     { isLoading: deleting, data: deleteData, error: deleteError }
-  ] = useDeleteBlogMutation();
+  ] = useDeleteMagazineMutation();
 
   const [
-    updateblog,
+    updatemagazine,
     { isLoading: updating, data: updateData, error: updateError }
-  ] = useUpdateBlogMutation();
+  ] = useUpdateMagazineMutation();
 
   const dispatch = useDispatch();
 
@@ -127,7 +127,7 @@ const Info = () => {
     if (galleryPreview) {
       formData.append("featuredImage", galleryPreview[0]);
     }
-    updateblog({
+    updatemagazine({
       id: id,
       data: formData
     })
@@ -151,12 +151,12 @@ const Info = () => {
   useEffect(() => {
     if (fetching) {
       toast.loading("در حال بروزرسانی اطلاعات...", {
-        id: "fetchblog"
+        id: "fetchmagazine"
       });
     }
 
     if (fetchData) {
-      toast.success(fetchData?.message, { id: "fetchblog" });
+      toast.success(fetchData?.message, { id: "fetchmagazine" });
       if (
         (user?.role === "superAdmin" &&
           fetchData?.data?.publishStatus === "pending") ||
@@ -170,15 +170,15 @@ const Info = () => {
     }
 
     if (fetchError?.data) {
-      toast.error(fetchError?.data?.message, { id: "fetchBlog" });
+      toast.error(fetchError?.data?.message, { id: "fetchMagazine" });
     }
 
     if (deleting) {
-      toast.loading("در حال حذف پست...", { id: "deleteBlog" });
+      toast.loading("در حال حذف مجله...", { id: "deleteMagazine" });
     }
 
     if (deleteData) {
-      toast.success(deleteData?.message, { id: "deleteBlog" });
+      toast.success(deleteData?.message, { id: "deleteMagazine" });
       setIsModalOpen(false);
       window.open("/", "_self");
     }
@@ -200,7 +200,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "approved");
-    updateblog({
+    updatemagazine({
       id,
       data: formData
     })
@@ -218,7 +218,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "rejected");
-    updateblog({
+    updatemagazine({
       id,
       data: formData
     })
@@ -236,7 +236,7 @@ const Info = () => {
     const formData = new FormData();
 
     formData.append("publishStatus", "pending");
-    updateblog({
+    updatemagazine({
       id,
       data: formData
     })
@@ -251,15 +251,15 @@ const Info = () => {
   };
 
   const handleDelete = () => {
-    deleteblog(id)
+    deletemagazine(id)
       .unwrap()
       .then((response) => {
-        toast.success("پست با موفقیت حذف شد");
+        toast.success("مجله با موفقیت حذف شد");
         setIsDeleteModalOpen(false);
-        window.open("/dashboard/blogs", "_self"); 
+        window.open("/dashboard/posts", "_self"); 
       })
       .catch((error) => {
-        toast.error("خطا در حذف پست.");
+        toast.error("خطا در حذف مجله.");
         setIsDeleteModalOpen(false);
       });
   };
@@ -273,7 +273,7 @@ const Info = () => {
             <div className="flex items-center justify-between ">
               <div>
                 <a
-                  onClick={() => router.push("/dashboard/blogs")}
+                  onClick={() => router.push("/dashboard/posts")}
                   className="flex cursor-pointer items-center dark:text-slate-300 text-slate-700 transition-all hover:text-slate-700 dark:hover:text-slate-800"
                 >
                   <Back />

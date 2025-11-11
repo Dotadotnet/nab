@@ -10,9 +10,9 @@ import SignUp from "./pages/auth/signup/index";
 import Users from "./pages/users/index";
 import { Toaster } from "react-hot-toast";
 import Tags from "./pages/tags";
-import Posts from "./pages/posts";
-import PostInfo from "./pages/posts/info/index";
-import AddPost from "./pages/posts/add";
+import Magazines from "./pages/magazines";
+import MagazineInfo from "./pages/magazines/info/index";
+import AddMagazine from "./pages/magazines/add";
 import Blogs from "./pages/blogs";
 import BlogInfo from "./pages/blogs/info/index";
 import AddBlog from "./pages/blogs/add";
@@ -54,10 +54,10 @@ function App() {
           <Route exact path="/tags" element={<Tags />} />
           <Route exact path="/categories" element={<Categories />} />
           <Route exact path="/units" element={<Units />} />
-          <Route exact path="/posts" element={<Posts />} />
+          <Route exact path="/magazines" element={<Magazines />} />
           <Route exact path="/settings" element={<Settings />} />
           <Route exact path="/settings/featuredProduct" element={<FeaturedProduct />} />
-          <Route exact path="/posts/add" element={<AddPost />} />
+          <Route exact path="/magazines/add" element={<AddMagazine />} />
           <Route exact path="/blogs" element={<Blogs />} />
           <Route exact path="/blogs/add" element={<AddBlog />} />
           <Route exact path="/galleries" element={<Galleries />} />
@@ -69,7 +69,7 @@ function App() {
           <Route exact path="/carts" element={<Carts />} />
           <Route exact path="/products/add" element={<AddProduct />} />
           <Route exact path="/products/update/:product_id" element={<UpdateProduct />} />
-          <Route path="/posts/info/:id" element={<PostInfo />} />
+          <Route path="/magazines/info/:id" element={<MagazineInfo />} />
           <Route exact path="/stories/add" element={<AddStory />} />
           <Route exact path="/stories" element={<Stories />} />
           <Route exact path="/banners" element={<Banners />} />

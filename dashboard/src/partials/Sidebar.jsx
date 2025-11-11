@@ -84,7 +84,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
     { title: " دسته بندی", icon: Category, path: "/categories" },
     { title: "َشبکه های اجتماعی", icon: Social, path: "/socialLinks" },
     { title: "تگها", icon: Tag, path: "/tags" },
-    { title: "پست ها ", icon: Post, path: "/posts" },
+    { title: "مجله ها ", icon: Post, path: "/magazines" },
     { title: "محصولات", icon: Product, path: "/products" },
     { title: "سبد های خرید", icon: Cart, path: "/carts" },
     { title: "پرداخت ها", icon: Payment, path: "/payments" },

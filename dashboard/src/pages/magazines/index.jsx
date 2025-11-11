@@ -2,8 +2,8 @@ import ControlPanel from "../ControlPanel";
 import React, { useState, useEffect, useMemo } from "react";
 import AddButton from "@/components/shared/button/AddButton";
 import {
-  useGetBlogsQuery
-} from "@/services/blog/blogApi";
+  useGetMagazinesQuery
+} from "@/services/magazine/magazineApi";
 import { toast } from "react-hot-toast";
 import Metrics from "@/components/shared/tools/Metrics";
 import StatusIndicator from "@/components/shared/tools/StatusIndicator";
@@ -13,13 +13,13 @@ import { useNavigate } from 'react-router-dom';
 
 import { useSelector } from "react-redux";
 
-const Blogs = () => {
+const Magazines = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const user = useSelector((state) => state?.auth);
-  const { data, isLoading, error, refetch } = useGetBlogsQuery({
+  const { data, isLoading, error, refetch } = useGetMagazinesQuery({
     page: currentPage,
     limit: itemsPerPage,
     status: statusFilter === "all" ? undefined : statusFilter,
@@ -32,15 +32,15 @@ const Blogs = () => {
 
   useEffect(() => {
     if (isLoading) {
-      toast.loading("در حال دریافت پست ها...", { id: "fetch-blog" });
+      toast.loading("در حال دریافت مجلات...", { id: "fetch-magazine" });
     }
 
     if (data) {
-      toast.success(data?.message, { id: "fetch-blog" });
+      toast.success(data?.message, { id: "fetch-magazine" });
     }
 
     if (error?.data) {
-      toast.error(error?.data?.message, { id: "fetch-blog" });
+      toast.error(error?.data?.message, { id: "fetch-magazine" });
     }
   }, [data, error, isLoading]);
 
@@ -48,7 +48,7 @@ const Blogs = () => {
   return (
     <>
       <ControlPanel>
-        {/* نمایش داده‌های بلاگ‌ها */}
+        {/* نمایش داده‌های مجلات‌ها */}
         <AddButton link="./add" />
 
        
@@ -61,17 +61,17 @@ const Blogs = () => {
           </>
         ) : (
           data?.data?.length > 0 &&
-          data?.data?.map((blog) => (
+          data?.data?.map((magazine) => (
             <div
-              key={blog._id}
+              key={magazine._id}
               className="mt-4 grid grid-cols-12 rounded-xl cursor-pointer border border-gray-200 gap-2 dark:border-white/10 dark:bg-slate-800 bg-white px-2  transition-all dark:hover:border-slate-700 hover:border-slate-100 hover:bg-green-100 dark:hover:bg-slate-700 dark:text-white"
-              onClick={() => navigate(`/dashboard/blogs/info/${blog._id}`)}
+              onClick={() => navigate(`/dashboard/magazines/info/${magazine._id}`)}
               >
               <div className=" col-span-11 lg:col-span-3 text-center flex items-center">
-                <StatusIndicator isActive={blog.status === "active"} />
+                <StatusIndicator isActive={magazine.status === "active"} />
                 <div className=" py-2 flex flex-row gap-x-2 hover:text-white transition-colors rounded-full cursor-pointer  items-center">
                    <img
-                   src={blog?.thumbnail?.url || "/placeholder.png"}
+                   src={magazine?.thumbnail?.url || "/placeholder.png"}
                    height={100}
                    width={100}
                    className="h-[60px] w-[60px] rounded-full object-cover"
@@ -81,14 +81,14 @@ const Blogs = () => {
                   <article className="flex-col flex gap-y-2  ">
                     <span className="line-clamp-1 text-base ">
                       <span className="hidden lg:flex">
-                        {blog?.authorId?.name}
+                        {magazine?.authorId?.name}
                       </span>
                       <span className="flex lg:hidden text-right text-sm">
-                        {blog.title}
+                        {magazine.title}
                       </span>
                     </span>
                     <span className="text-xs hidden lg:flex">
-                      {new Date(blog.createdAt).toLocaleDateString("fa-IR")}
+                      {new Date(magazine.createdAt).toLocaleDateString("fa-IR")}
                     </span>
                     <span className="text-xs flex lg:hidden">
                       <Metrics
@@ -105,15 +105,15 @@ const Blogs = () => {
               </div>
 
               <div className=" hidden lg:col-span-6 lg:flex text-center lg:first-letter:flex items-center">
-                <p className="text-gray-500 dark:text-gray-300">{blog.title}</p>
+                <p className="text-gray-500 dark:text-gray-300">{magazine.title}</p>
               </div>
 
               <div className="hidden lg:col-span-2 gap-2 text-center lg:flex justify-center  items-center ">
                 <Metrics
-                  likeCount={blog.likeCount}
-                  dislikeCount={blog.dislikeCount}
-                  views={blog.views}
-                  rating={blog.rating}
+                  likeCount={magazine.likeCount}
+                  dislikeCount={magazine.dislikeCount}
+                  views={magazine.views}
+                  rating={magazine.rating}
                   iconSize={18}
                 />
               </div>
@@ -126,4 +126,4 @@ const Blogs = () => {
   );
 };
 
-export default Blogs;
+export default Magazines;
