@@ -1,9 +1,9 @@
 "use client";
 
-import MagazineHeader from "@/components/details/magazine/MagazineHeader";
-import MagazineContent from "@/components/details/magazine/MagazineContent";
-import MagazineMedia from "@/components/details/magazine/MagazineMedia";
-import MagazineComments from "@/components/details/magazine/MagazineComments";
+import MagazineHeader from "@/components/shared/details/magazine/MagazineHeader";
+import MagazineContent from "@/components/shared/details/magazine/MagazineContent";
+import MagazineMedia from "@/components/shared/details/magazine/MagazineMedia";
+import MagazineComments from "@/components/shared/details/magazine/MagazineComments";
 import Container from "@/components/shared/Container";
 import Main from "@/components/shared/layouts/Main";
 import { useGetMagazineQuery } from "@/services/magazine/magazineApi";
