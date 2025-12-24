@@ -199,6 +199,63 @@ export default function About({ params }) {
               </p>
             </div>
 
+            {/* New Content Section 1 - Awards */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-6 rounded-xl border-r-4 border-amber-500 dark:border-amber-400">
+              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-4">
+                تولیدکننده نمونه استان
+              </h3>
+              <div className="flex flex-col md:flex-row items-center gap-6 mt-4">
+                <div className="flex-1">
+                  <p className="text-base text-justify text-gray-700 dark:text-gray-300">
+                    تولیدی "نقل و حلوای ناب" با تولید محصولات باکیفیت و اصیل در زمینه نقل و حلوا، موفق به کسب عنوان "تولیدکننده نمونه استان آذربایجان غربی" گردیده است. این مجموعه با استفاده از بهترین مواد اولیه و به کارگیری روشهای سنتی و نوآورانه در تولید، توانسته است جایگاه ویژهای در بازار استان پیدا کند. محصولات ما با طعمهای منحصر به فرد و خواص بینظیر خود در میان مردم استان و سایر نقاط کشور شناخته شده و محبوبیت فراوانی پیدا کردهاند. کسب این عنوان افتخارآمیز نتیجه تلاشهای مستمر در جهت رعایت استانداردهای بالا، کیفیت عالی محصولات و رضایت مشتریان میباشد.
+                  </p>
+                </div>
+                <div className="flex-1 flex flex-col md:flex-row gap-4">
+                  <div className="min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                    <img 
+                      src="/assets/home/about/1.png"
+                      alt="تصویر مرتبط با کسب جوایز"
+                      className="w-full h-full object-cover"
+                      width={300}
+                      height={200}
+                    />
+                  </div>
+                  <div className="min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                    <img 
+                      src="/assets/home/about/2.jpg"
+                      alt="تصویر مرتبط با کسب جوایز"
+                      className="w-full h-full object-cover"
+                      width={300}
+                      height={200}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* New Content Section 2 - Management */}
+            <div className="bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 p-6 rounded-xl border-r-4 border-sky-500 dark:border-sky-400">
+              <h3 className="text-2xl font-bold text-sky-800 dark:text-sky-200 mb-4">
+                مدیریت تولیدی
+              </h3>
+              <div className="flex flex-col md:flex-row items-center gap-6 mt-4">
+                <div className="flex-1">
+                  <p className="text-base text-justify text-gray-700 dark:text-gray-300">
+                    مدیریت این تولیدی با هدایت جناب آقای آقاوردیزاده، که با تلاش و پشتکار خود این مجموعه را به عنوان تولیدکننده نمونه استان آذربایجان غربی معرفی کرده است، انجام میشود. ایشان با داشتن تجربه و تخصص در صنعت تولید نقل و حلوا، توانستهاند این مجموعه را به موفقیتهای چشمگیری برسانند و جایگاه آن را در صنعت ارتقا دهند.
+                  </p>
+                </div>
+                <div className="flex-1 min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                  <img 
+                    src="/assets/home/about/3.jpg"
+                    alt="تصویر مرتبط با مدیریت تولیدی"
+                    className="w-full h-full object-cover"
+                    width={300}
+                    height={250}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Call to Action */}
             <div className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 p-6 rounded-xl border-r-4 border-rose-500 dark:border-rose-400">
               <h2 className="text-2xl font-bold text-rose-800 dark:text-rose-200 mb-4">آماده تجربه طعم اصیل؟</h2>

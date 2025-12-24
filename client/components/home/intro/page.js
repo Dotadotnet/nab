@@ -19,7 +19,8 @@ import {
   aboutContent,
   productCategories,
   additionalCategories,
-  conclusion
+  conclusion,
+  nabContent
 } from "./Data";
 
 export default async function HomeIntroSection({params}) {
@@ -85,7 +86,7 @@ export default async function HomeIntroSection({params}) {
                     <h3 className="text-2xl font-bold text-indigo-800 mb-4">
                       {aboutContent.introduction.title}
                     </h3>
-                    <p className="text-base">
+                    <p className="text-base text-justify">
                       {aboutContent.introduction.content}
                     </p>
                   </div>
@@ -95,7 +96,7 @@ export default async function HomeIntroSection({params}) {
                     <h3 className="text-2xl font-bold text-green-800 mb-4">
                       {aboutContent.features.title}
                     </h3>
-                    <p className="text-base">{aboutContent.features.content}</p>
+                    <p className="text-base text-justify">{aboutContent.features.content}</p>
                   </div>
 
                   {/* Fast Delivery Section */}
@@ -103,7 +104,7 @@ export default async function HomeIntroSection({params}) {
                     <h3 className="text-2xl font-bold text-blue-800 mb-4">
                       {aboutContent.delivery.title}
                     </h3>
-                    <p className="text-base">{aboutContent.delivery.content}</p>
+                    <p className="text-base text-justify">{aboutContent.delivery.content}</p>
                   </div>
 
                   {/* Special Offers Section */}
@@ -111,7 +112,62 @@ export default async function HomeIntroSection({params}) {
                     <h3 className="text-2xl font-bold text-purple-800 mb-4">
                       {aboutContent.offers.title}
                     </h3>
-                    <p className="text-base">{aboutContent.offers.content}</p>
+                    <p className="text-base text-justify">{aboutContent.offers.content}</p>
+                  </div>
+
+                  {/* New Content Section 1 - Awards */}
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border-r-4 border-amber-500">
+                    <h3 className="text-2xl font-bold text-amber-800 mb-4">
+                      {nabContent.awards.title}
+                    </h3>
+                    <div className="flex flex-col md:flex-row items-center gap-6 mt-4">
+                      <div className="flex-1">
+                        <p className="text-base text-justify">{nabContent.awards.content}</p>
+                      </div>
+                      <div className="flex-1 flex flex-col md:flex-row gap-4">
+                        <div className="min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                          <img 
+                            src={nabContent.awards.image}
+                            alt="تصویر مرتبط با کسب جوایز"
+                            className="w-full h-full object-cover"
+                            width={300}
+                            height={400}
+                          />
+                        </div>
+                        <div className="min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                          <img 
+                            src={nabContent.awards.image2}
+                            alt="تصویر مرتبط با کسب جوایز"
+                            className="w-full h-full object-cover"
+                            width={300}
+                            height={400}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+   
+
+                  {/* New Content Section 3 - Management */}
+                  <div className="bg-gradient-to-r from-sky-50 to-blue-50 p-6 rounded-xl border-r-4 border-sky-500">
+                    <h3 className="text-2xl font-bold text-sky-800 mb-4">
+                      {nabContent.management.title}
+                    </h3>
+                    <div className="flex flex-col md:flex-row items-center gap-6 mt-4">
+                      <div className="flex-1">
+                        <p className="text-base text-justify">{nabContent.management.content}</p>
+                      </div>
+                      <div className="flex-1 min-w-[300px] h-96 rounded-xl overflow-hidden ">
+                        <img 
+                          src={nabContent.management.image}
+                          alt="تصویر مرتبط با مدیریت تولیدی"
+                          className="w-full h-full object-cover"
+                          width={300}
+                          height={250}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* New Arrivals (replaces Product Categories) */}
