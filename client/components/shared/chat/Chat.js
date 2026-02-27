@@ -1,37 +1,32 @@
 // pages/_app.js
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Crisp } from "crisp-sdk-web";
 
 import { useLocale, useTranslations } from "next-intl";
 import CustomChat from "./CustomChat";
 import language from "@/app/language";
-var loaded = false;
+
 export default function Chat({ chatState, setChatState }) {
     const lang = useLocale();
-    const t = useTranslations("CrispChat")
+    const t = useTranslations("CrispChat");
     const class_language = new language(lang);
     const info = class_language.getInfo();
-    useEffect(() => {
+    const loadedRef = useRef(false);
 
+    useEffect(() => {
 		Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
 			locale: lang
 		});
 		Crisp.setColorTheme("red");
+		Crisp.chat.hide();
 
-		// Bind Crisp lifecycle events to drive UI state instead of DOM polling
-		const hideCrispButtonById = () => {
-			const btn = document.getElementById('crisp-chatbox-button');
-			if (btn) {
-				btn.style.setProperty('display', 'none', 'important');
-			}
-		};
 		const onSessionLoaded = () => {
-			if (chatState === "loading" && !loaded) {
-				loaded = true;
+			if (!loadedRef.current) {
+				loadedRef.current = true;
 				setChatState("close");
 			}
-			hideCrispButtonById();
+			Crisp.chat.hide();
 		};
 		const onChatOpened = () => setChatState("open");
 		const onChatClosed = () => setChatState("close");
@@ -41,31 +36,25 @@ export default function Chat({ chatState, setChatState }) {
 			window.$crisp?.push(["on", "chat:closed", onChatClosed]);
 		} catch (_) {}
 
-		// Inject CSS to hide only the Crisp launcher icon, not the chatbox
-		const style = document.createElement('style');
-		style.setAttribute('data-crisp-launcher-hide', 'true');
-		style.innerHTML = `.crisp-client span.cc-157aw{display:none !important}`;
-		document.head.appendChild(style);
-
-		// Add a fallback to leave loading state even if Crisp events fail
+		// Leave loading state even if Crisp events fail.
 		const loadingFallback = setTimeout(() => {
-			if (chatState === "loading" && !loaded) {
-				loaded = true;
+			if (!loadedRef.current) {
+				loadedRef.current = true;
 				setChatState("close");
+				Crisp.chat.hide();
 			}
 		}, 5000);
 
 		let pollTimeout;
 		let interval;
 		pollTimeout = setTimeout(() => {
-            let chat_button = document.querySelector("span.cc-157aw");
 			let function_edite = () => {
-				hideCrispButtonById();
                 let button_close = document.querySelector("span.cc-9nfaa.cc-17cww");
-                if (button_close) {
+                if (button_close && !button_close.dataset.customChatBound) {
+                    button_close.dataset.customChatBound = "true";
                     button_close.addEventListener("click", () => {
-                        setChatState("close")
-                    })
+                        setChatState("close");
+                    });
                 }
 
                 let default_massage = document.querySelector('span.cc-10y2t span.cc-dvx9d');
@@ -97,29 +86,26 @@ export default function Chat({ chatState, setChatState }) {
                 if (option_button) {
                     option_button.remove();
                 }
-                let width_doc = document.body.clientWidth;
-                let chat = document.querySelector('a.cc-1m2mf');
-                let ping_div_chat = document.querySelector('div.ping-div-chat');
                 if (document.querySelector("div.cc-1no03")) {                    
                     if (screen.width > 480) {
-                        document.querySelector("div.cc-1no03").style.cssText = "width: 320px !important; bottom: 117px !important;"
+                        document.querySelector("div.cc-1no03").style.cssText = "width: 320px !important; bottom: 117px !important;";
                     } else {
-                        document.querySelector("div.cc-1no03").style.cssText = "width: 100% !important; bottom: 0px !important;"
+                        document.querySelector("div.cc-1no03").style.cssText = "width: 100% !important; bottom: 0px !important;";
                     }
                 }
                 if (document.querySelector("div.cc-rfbfu") && screen.width > 480)
-                    document.querySelector("div.cc-rfbfu").style.cssText += "height: 400px !important;"
+                    document.querySelector("div.cc-rfbfu").style.cssText += "height: 400px !important;";
 
 
                 if (document.querySelector("span.cc-157aw.cc-1kgzy")) {
-                    document.querySelector("span.cc-157aw.cc-1kgzy").style.cssText = "display : none !important;"
-                    if (chatState == "loading" && !loaded) {
-                        loaded = true;
+                    document.querySelector("span.cc-157aw.cc-1kgzy").style.cssText = "display : none !important;";
+                    if (!loadedRef.current) {
+                        loadedRef.current = true;
 
                         if (document.querySelector("div.cc-1no03") && document.querySelector("div.cc-1no03").dataset.visible == "true") {
-                            setChatState("open")
+                            setChatState("open");
                         } else {
-                            setChatState("close")
+                            setChatState("close");
                         }
                     }
                 }
@@ -149,18 +135,18 @@ export default function Chat({ chatState, setChatState }) {
 			if (pollTimeout) clearTimeout(pollTimeout);
 			if (interval) clearInterval(interval);
 			clearTimeout(loadingFallback);
-			const s = document.querySelector('style[data-crisp-launcher-hide="true"]');
-			if (s) s.remove();
 		};
-	}, []);
+	}, [lang, setChatState, t]);
 
 	// Sync our state with Crisp actions so we never need Crisp's launcher
 	useEffect(() => {
 		try {
 			if (chatState === "open") {
+				Crisp.chat.show();
 				window.$crisp?.push(["do", "chat:open"]);
 			} else if (chatState === "close") {
 				window.$crisp?.push(["do", "chat:close"]);
+				Crisp.chat.hide();
 			}
 		} catch (_) {}
 	}, [chatState]);
