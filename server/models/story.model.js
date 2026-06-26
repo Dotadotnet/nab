@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const Counter = require("./counter");
 const baseSchema = require("./baseSchema.model");
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const storySchema = new mongoose.Schema(
   {
@@ -17,12 +18,12 @@ const storySchema = new mongoose.Schema(
       {
         translation: {
           type: ObjectId,
-          ref: "Translation",
+          ref: "StoryTranslation",
           required: true
         },
         language: {
           type: String,
-          enum: ["fa", "en", "tr"],
+          enum: SUPPORTED_LANGUAGES,
           required: true
         }
       }

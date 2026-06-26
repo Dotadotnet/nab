@@ -2,9 +2,26 @@
 import React from "react";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 
-const TitleStep = ({ register, errors, prevStep, nextStep }) => {
+const TitleStep = ({ categories = [], register, errors, prevStep, nextStep }) => {
   return (
     <>
+      <label htmlFor="parent" className="flex flex-col gap-y-1">
+        <span className="text-sm">دسته والد</span>
+        <select
+          className="p-2 rounded border"
+          id="parent"
+          name="parent"
+          {...register("parent")}
+        >
+          <option value="">بدون والد</option>
+          {categories.map((category) => (
+            <option key={category._id} value={category._id}>
+              {category.title}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <label htmlFor="title" className="flex flex-col gap-y-1">
         <span className="text-sm">* عنوان </span>
         <input

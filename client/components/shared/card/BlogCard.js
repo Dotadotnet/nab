@@ -6,20 +6,22 @@ import { PiBookmarkSimpleDuotone } from "react-icons/pi";
 import { AiFillStar } from "react-icons/ai";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import Cake from "@/components/icons/category/Cake";
 import Halva1 from "@/components/icons/category/Halva1";
 import Noghl1 from "@/components/icons/category/Noghl1";
 const BlogCard = ({ blog, isLoading }) => {
   const router = useRouter();
+  const locale = useLocale();
 
   return (
     <div
       key={blog?._id}
       onClick={() =>
         router.push(
-          `/blog?blog_id=${blog?._id}&blog_title=${blog?.title
-            .replace(/ /g, "-")
-            .toLowerCase()}`
+          `/${locale}/blog/${blog?._id}/${blog?.slug || blog?.title
+            ?.replace(/ /g, "-")
+            .toLowerCase() || "blog"}`
         )
       }
       className="relative flex w-full max-w-[26rem] flex-col rounded-xl bg-white dark:bg-darkCard  border dark:border-gray-800   bg-clip-border shadow-lg h-[550px] hover:border-primary cursor-pointer dark:hover:border-blue-500"

@@ -4,7 +4,7 @@
 const express = require("express");
 
 /* middleware imports */
-const upload = require("../middleware/upload.middleware");
+const upload = require("../middleware/arvanUpload.middleware");
 
 /* internal import */
 const tagController = require("../controllers/tag.controller");
@@ -22,6 +22,7 @@ router.post(
   "/add-tag",
   verify,
   authorize("superAdmin", "admin"),
+  upload('tag').single("thumbnail"),
   tagController.addTag
 );
 
@@ -39,7 +40,7 @@ router.patch(
   "/update-tag/:id",
   verify,
   authorize("superAdmin", "admin"),
-  upload('tag').single("logo"),
+  upload('tag').single("thumbnail"),
   tagController.updateTag
 );
 

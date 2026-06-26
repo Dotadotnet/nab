@@ -27,8 +27,23 @@ const sessionApi = nabApi.injectEndpoints({
       }),
 
       providesTags: ["Session"]
+    }),
+
+    // track session activity
+    trackSession: builder.mutation({
+      query: (body) => ({
+        url: "/session/track",
+        method: "POST",
+        body,
+        credentials: "include"
+      }),
+      invalidatesTags: ["Session"]
     })
   })
 });
 
-export const { useCreateSessionMutation, usePersistSessionQuery } = sessionApi;
+export const {
+  useCreateSessionMutation,
+  usePersistSessionQuery,
+  useTrackSessionMutation
+} = sessionApi;

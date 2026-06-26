@@ -1,48 +1,53 @@
-import React, { useMemo, useEffect, useCallback } from "react";
+import React, { useMemo, useEffect } from "react";
 import StatusSwitch from "@/components/shared/button/StatusSwitch";
 import { toast } from "react-hot-toast";
 import { useGetTagsQuery } from "@/services/tag/tagApi";
 import Tag from "@/components/icons/Tag";
 import MultiSelect from "@/components/shared/dropDown/MultiSelect";
 import Plus from "@/components/icons/Plus";
+import { Link } from "react-router-dom";
+
+function getTagTranslation(tag) {
+  const translation =
+    tag?.translations?.find((item) => item?.translation && item.language === "fa")
+      ?.translation ||
+    tag?.translations?.find((item) => item?.translation)?.translation ||
+    {};
+
+  return translation.fields || translation;
+}
 
 const ProductStatus = ({
   register,
-  errors,
   selectedOptions,
-  setSelectedOptions,
-  setIsAddModalOpen // کنترل مودال افزودن تگ
+  setSelectedOptions
 }) => {
-  // دریافت لیست تگ‌ها از API
   const {
     isLoading: fetchingTags,
     data: fetchTagsData,
-    error: fetchTagsError,
-    refetch: refetchTags
+    error: fetchTagsError
   } = useGetTagsQuery({
     page: 1,
-    limit: Infinity,
+    limit: 1000,
     status: "all",
     search: ""
   });
 
-  // تبدیل داده‌های دریافتی به فرمت مناسب برای MultiSelect
   const tags = useMemo(
     () =>
-      fetchTagsData?.data?.map((tag) => ({
-        id: tag._id,
-        value: tag.title,
-        label: tag.title,
-        description: tag.description
-      })) || [],
+      fetchTagsData?.data?.map((tag) => {
+        const translation = getTagTranslation(tag);
+        const title = translation?.title || tag.title || "-";
+
+        return {
+          id: tag._id,
+          value: title,
+          label: title,
+          description: translation?.description || tag.description || ""
+        };
+      }) || [],
     [fetchTagsData]
   );
-
-
-
-  const handleOptionsChange = (newSelectedOptions) => {
-    setSelectedOptions(newSelectedOptions);
-  };
 
   useEffect(() => {
     if (fetchingTags) {
@@ -62,21 +67,21 @@ const ProductStatus = ({
           <MultiSelect
             items={tags}
             selectedItems={selectedOptions}
-            handleSelect={handleOptionsChange}
+            handleSelect={setSelectedOptions}
             className="w-full"
             name="tags"
             icon={<Tag size={24} />}
           />
         </label>
         <div className="mt-7 flex justify-start">
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
+          <Link
+            to="/tags/add"
             className="p-4 bg-green-400 dark:bg-blue-600 text-white rounded hover:bg-green-600 dark:hover:bg-blue-400 transition-colors"
             aria-label="افزودن تگ جدید"
+            title="افزودن تگ جدید"
           >
             <Plus />
-          </button>
+          </Link>
         </div>
       </div>
       <StatusSwitch

@@ -1,7 +1,7 @@
 const Category = require("../models/category.model");
 const User = require("../models/user.model");
 const remove = require("../utils/remove.util");
-const Translation = require("../models/translation.model");
+const CategoryTranslation = require("../models/categoryTranslation.model");
 const { generateSlug } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
 
@@ -9,7 +9,7 @@ const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
 /* add new category */
 exports.addCategory = async (req, res) => {
-  const { title, description, icon, tags, keynotes } = req.body;
+  const { title, description, icon, tags, keynotes, parent } = req.body;
   try {
     const thumbnail = req.uploadedFiles["thumbnail"]
       ? {
@@ -22,6 +22,7 @@ exports.addCategory = async (req, res) => {
       title: title,
       thumbnail,
       creator: req.admin._id,
+      parent: parent || null,
       icon: icon
     });
 
@@ -44,7 +45,8 @@ exports.addCategory = async (req, res) => {
           keynotes: parseKeynotes
         },
         {
-          stringFields: ["title", "description", "canonicalUrl"],
+          stringFields: ["title", "description"],
+          copyFields: ["canonicalUrl"],
           lowercaseFields: ["slug"],
 
           arrayStringFields: ["keynotes", "tags"]
@@ -53,12 +55,16 @@ exports.addCategory = async (req, res) => {
       const translationDocs = Object.entries(translations).map(
         ([lang, { fields }]) => ({
           language: lang,
-          refModel: "Category",
-          refId: result._id,
-          fields
+          category: result._id,
+          title: fields.title,
+          description: fields.description,
+          slug: fields.slug,
+          canonicalUrl: fields.canonicalUrl,
+          tags: fields.tags,
+          keynotes: fields.keynotes
         })
       );
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await CategoryTranslation.insertMany(
         translationDocs
       );
 
@@ -98,7 +104,7 @@ exports.addCategory = async (req, res) => {
 };
 /* get all categories */
 exports.getCategories = async (req, res) => {
-  const categories = await Category.find().populate([
+  const categories = await Category.find({ isDeleted: false }).populate([
     {
       path: "translations.translation",
       match: { language: req.locale }
@@ -106,6 +112,10 @@ exports.getCategories = async (req, res) => {
     {
       path: "creator",
       select: "name avatar"
+    },
+    {
+      path: "parent",
+      select: "title categoryId"
     }
   ]);
   res.status(200).json({
@@ -118,7 +128,7 @@ exports.getCategories = async (req, res) => {
 
 exports.getProductCategories = async (req, res) => {
   try {
-    const categories = await Category.find().populate([
+    const categories = await Category.find({ isDeleted: false }).populate([
       {
         path: "translations.translation",
         match: { language: req.locale },
@@ -132,6 +142,10 @@ exports.getProductCategories = async (req, res) => {
       {
         path: "creator",
         select: "name avatar"
+      },
+      {
+        path: "parent",
+        select: "title categoryId"
       }
     ]);
 
@@ -172,7 +186,7 @@ exports.getProductCategories = async (req, res) => {
 
 /* get a category */
 exports.getCategory = async (req, res) => {
-  const category = await Category.findById(req.params.id);
+  const category = await Category.findById(req.params.id).populate("parent", "title categoryId");
   res.status(200).json({
     acknowledgement: true,
     message: "Ok",
@@ -196,6 +210,7 @@ exports.updateCategory = async (req, res) => {
 
   updatedCategory.keynotes = JSON.parse(req.body.keynotes);
   updatedCategory.tags = JSON.parse(req.body.tags);
+  updatedCategory.parent = req.body.parent || null;
 
   await Category.findByIdAndUpdate(req.params.id, updatedCategory);
 

@@ -1,7 +1,11 @@
 const FeaturedProduct = require("../models/featuredProduct.model");
 const remove = require("../utils/remove.util");
-const Translation = require("../models/translation.model");
+const FeaturedProductTranslation = require("../models/featuredProductTranslation.model");
 const translateFields = require("../utils/translateFields");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 /* add new featuredProduct */
 exports.addFeaturedProduct = async (req, res) => {
@@ -41,22 +45,16 @@ exports.addFeaturedProduct = async (req, res) => {
           stringFields: ["title", "description"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "FeaturedProduct",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "featuredProduct",
+        result._id
       );
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await FeaturedProductTranslation.insertMany(
         translationDocs
       );
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
       await FeaturedProduct.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
       });
@@ -97,7 +95,7 @@ exports.getFeaturedProducts = async (req, res) => {
         {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title fields.description language"
+          select: "title description language"
         },
         {
           path: "product",
@@ -106,7 +104,7 @@ exports.getFeaturedProducts = async (req, res) => {
             {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.slug language"
+              select: "slug language"
             },
             {
               path: "variations",
@@ -189,7 +187,7 @@ exports.deleteFeaturedProduct = async (req, res, next) => {
     const translationIds = featuredProduct.translations.map(
       (item) => item.translation
     );
-    await Translation.deleteMany({ _id: { $in: translationIds } });
+    await FeaturedProductTranslation.deleteMany({ _id: { $in: translationIds } });
     await FeaturedProduct.findByIdAndDelete(req.params.id);
     await remove("featuredProduct", featuredProduct.thumbnail.public_id);
 

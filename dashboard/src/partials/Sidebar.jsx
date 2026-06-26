@@ -81,7 +81,16 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
       ]
     },
     { title: "کاربران", icon: User, path: "/users" },
+    { title: "نشست‌ها", icon: User, path: "/sessions" },
     { title: " دسته بندی", icon: Category, path: "/categories" },
+    {
+      title: "فیلترها",
+      icon: Category,
+      subItems: [
+        { title: "تعریف فیلترها", path: "/filter-definitions" },
+        { title: "فیلترهای دسته", path: "/category-filters" }
+      ]
+    },
     { title: "َشبکه های اجتماعی", icon: Social, path: "/socialLinks" },
     { title: "تگها", icon: Tag, path: "/tags" },
     { title: "مجله ها ", icon: Post, path: "/magazines" },

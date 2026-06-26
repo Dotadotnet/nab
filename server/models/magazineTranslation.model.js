@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const magazineTranslationSchema = new mongoose.Schema(
   {
@@ -12,7 +13,7 @@ const magazineTranslationSchema = new mongoose.Schema(
     language: {
       type: String,
       required: true,
-      enum: ["fa", "en", "tr", "ar"],
+      enum: SUPPORTED_LANGUAGES,
     },
     title: {
       type: String,

@@ -1,298 +1,255 @@
+import ChevronRight from "@/components/icons/ChevronRight";
 import Minus from "@/components/icons/Minus";
 import Plus from "@/components/icons/Plus";
-import Button from "@/components/shared/button/Button";
- import MultiSelect from "@/components/shared/dropDown/MultiSelect";
-import { useGetTagQuery, useUpdateTagMutation } from "@/services/tag/tagApi";
-import { toast } from "react-hot-toast";
-import Modal from "@/components/shared/modal/Modal";
-import { useState, useEffect } from "react";
-import Robot from "@/components/icons/Robot";
-import Edit from "@/components/icons/Edit";
-import { useDispatch } from "react-redux";
-import { setTag } from "@/features/tag/tagSlice";
-import { useForm } from "react-hook-form";
+import NavigationButton from "@/components/shared/button/NavigationButton";
+import SendButton from "@/components/shared/button/SendButton";
 import StatusSwitch from "@/components/shared/button/StatusSwitch";
+import ThemeToggle from "@/components/ThemeToggle";
+import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
+import { useGetTagQuery, useUpdateTagMutation } from "@/services/tag/tagApi";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import StepIndicator from "../categories/steps/StepIndicator";
 
-const UpdateTag = ({ id }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState([]);
+const totalSteps = 3;
+
+const UpdateTag = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [keynotes, setKeynotes] = useState([""]);
-  const dispatch = useDispatch();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState({});
+  const [invalidSteps, setInvalidSteps] = useState({});
+
+  const { data: fetchData, isLoading: fetching, error: fetchError } = useGetTagQuery(id);
+  const [updateTag, { isLoading: isUpdating, data: updateData, error: updateError }] =
+    useUpdateTagMutation();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    reset,
+    trigger,
+    watch
+  } = useForm({ mode: "onChange" });
 
-  const {
-    isLoading: fetching,
-    data: fetchData,
-    error: fetchError,
-  } = useGetTagQuery(id, { skip: !isOpen });
-  const [
-    updateTag,
-    { isLoading: isUpdateing, data: updateData, error: updateError },
-  ] = useUpdateTagMutation();
+  const tag = fetchData?.data;
+  const watchedFields = watch();
+  const hasValidKeynotes = useMemo(
+    () => keynotes.some((keynote) => keynote.trim().length > 0),
+    [keynotes]
+  );
 
   useEffect(() => {
-    if (isUpdateing) {
-      toast.loading("در حال به‌روزرسانی ...", {
-        id: "fetchTag",
-      });
-    }
-    console.log(fetchData);
-    if (fetchData) {
-      toast.success(fetchData?.message, { id: "fetchTag" });
-    }
+    if (!tag) return;
+    reset({
+      title: tag.title || "",
+      description: tag.description || "",
+      status: tag.status === "active"
+    });
+    setKeynotes(tag.keynotes?.length ? tag.keynotes : [""]);
+    setThumbnailPreview(tag.thumbnail?.url || null);
+  }, [reset, tag]);
 
-    if (fetchError?.data) {
-      toast.error(fetchError?.data?.message, { id: "fetchTag" });
-    }
-
+  useEffect(() => {
+    if (fetching) toast.loading("در حال دریافت تگ...", { id: "fetchTag" });
+    if (fetchData) toast.dismiss("fetchTag");
+    if (fetchError?.data) toast.error(fetchError.data.description || fetchError.data.message, { id: "fetchTag" });
+    if (isUpdating) toast.loading("در حال ویرایش تگ...", { id: "updateTag" });
     if (updateData) {
-      toast.success(updateData?.message, { id: "updateTag" });
-      setIsOpen(false);
+      toast.success(updateData?.description || updateData?.message, { id: "updateTag" });
+      navigate("/tags");
     }
-
     if (updateError?.data) {
-      toast.error(updateError?.data?.message, { id: "updateTag" });
+      toast.error(updateError.data.description || updateError.data.message, { id: "updateTag" });
     }
-  }, [fetching, fetchData, fetchError, isUpdateing, updateData, updateError]);
+  }, [fetchData, fetchError, fetching, isUpdating, navigate, updateData, updateError]);
 
   useEffect(() => {
-    if (fetchData) {
-      dispatch(setTag(fetchData?.data));
-      setSelectedOptions(fetchData?.data?.robots || []);
-      setKeynotes(fetchData?.data?.keynotes || [""]);
+    setCompletedSteps((prev) => ({
+      ...prev,
+      1: Boolean(watchedFields.title && watchedFields.description),
+      2: Boolean(thumbnail || thumbnailPreview),
+      3: hasValidKeynotes
+    }));
+  }, [hasValidKeynotes, thumbnail, thumbnailPreview, watchedFields.description, watchedFields.title]);
+
+  const nextStep = async () => {
+    if (currentStep === 1) {
+      const valid = await trigger(["title", "description"]);
+      if (!valid) {
+        toast.error("لطفاً عنوان و توضیحات تگ را کامل کنید");
+        setInvalidSteps((prev) => ({ ...prev, 1: true }));
+        return;
+      }
     }
-  }, [fetchData, dispatch]);
+    setCompletedSteps((prev) => ({ ...prev, [currentStep]: true }));
+    setInvalidSteps((prev) => ({ ...prev, [currentStep]: false }));
+    setCurrentStep((step) => Math.min(step + 1, totalSteps));
+  };
 
-  const handleUpdateUser = (data) => {
+  const prevStep = () => setCurrentStep((step) => Math.max(step - 1, 1));
+  const handleStepClick = (step) => step <= currentStep && setCurrentStep(step);
+  const handleAddKeynote = () => setKeynotes((prev) => [...prev, ""]);
+  const handleRemoveKeynote = (index) =>
+    setKeynotes((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+  const handleKeynoteChange = (index, value) =>
+    setKeynotes((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+
+  const onSubmit = (data) => {
+    const cleanKeynotes = keynotes.map((keynote) => keynote.trim()).filter(Boolean);
+    if (!cleanKeynotes.length) {
+      toast.error("لطفاً حداقل یک کلمه کلیدی وارد کنید");
+      setInvalidSteps((prev) => ({ ...prev, 3: true }));
+      return;
+    }
+
     const formData = new FormData();
-
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("keynotes", JSON.stringify(keynotes));
-    formData.append(
-      "robots",
-      JSON.stringify(selectedOptions.map((option) => option.value))
+    formData.append("keynotes", JSON.stringify(cleanKeynotes));
+    formData.append("status", data.status ? "active" : "inactive");
+    if (thumbnail) formData.append("thumbnail", thumbnail);
+    updateTag({ id, body: formData });
+  };
+
+  const renderStep = () => {
+    if (currentStep === 1) {
+      return (
+        <>
+          <label className="w-full flex flex-col gap-y-1" htmlFor="title">
+            <span className="text-sm">عنوان*</span>
+            <input
+              className="p-2 rounded border"
+              id="title"
+              type="text"
+              {...register("title", {
+                required: "عنوان الزامی است",
+                minLength: { value: 3, message: "عنوان باید حداقل ۳ کاراکتر باشد" },
+                maxLength: { value: 100, message: "عنوان نمی‌تواند بیش از ۱۰۰ کاراکتر باشد" }
+              })}
+            />
+            {errors.title && <span className="text-red-500 text-xs">{errors.title.message}</span>}
+          </label>
+          <label className="w-full flex flex-col gap-y-1" htmlFor="description">
+            <span className="text-sm">توضیحات*</span>
+            <textarea
+              className="p-2 rounded border"
+              id="description"
+              rows="4"
+              {...register("description", {
+                required: "توضیحات الزامی است",
+                minLength: { value: 10, message: "توضیحات باید حداقل ۱۰ کاراکتر باشد" },
+                maxLength: { value: 1600, message: "توضیحات نمی‌تواند بیش از ۱۶۰۰ کاراکتر باشد" }
+              })}
+            />
+            {errors.description && (
+              <span className="text-red-500 text-xs">{errors.description.message}</span>
+            )}
+          </label>
+          <StatusSwitch defaultChecked={tag?.status === "active"} id="status" label="وضعیت" register={register} />
+          <div className="flex justify-end mt-8">
+            <NavigationButton direction="next" onClick={nextStep} />
+          </div>
+        </>
+      );
+    }
+
+    if (currentStep === 2) {
+      return (
+        <>
+          <div className="flex flex-col items-center gap-y-4">
+            <div className="profile-container shine-effect rounded-full flex justify-center">
+              {thumbnailPreview ? (
+                <img alt="tag" className="h-[100px] w-[100px] profile-pic rounded-full object-cover" src={thumbnailPreview} />
+              ) : (
+                <SkeletonImage />
+              )}
+            </div>
+            <label className="flex flex-col items-center gap-y-2 text-center">
+              تصویر تگ
+              <ThumbnailUpload
+                register={register("thumbnail")}
+                setThumbnail={setThumbnail}
+                setThumbnailPreview={setThumbnailPreview}
+                title="برای تغییر تصویر، فایل جدید انتخاب کنید"
+              />
+            </label>
+          </div>
+          <div className="flex justify-between mt-8">
+            <NavigationButton direction="next" onClick={nextStep} />
+            <NavigationButton direction="prev" onClick={prevStep} />
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <label className="w-full flex flex-col gap-y-4">
+          <p className="text-sm flex flex-row justify-between items-center">
+            کلمات کلیدی*
+            <button className="p-0.5 border rounded-secondary bg-green-500 text-white" onClick={handleAddKeynote} type="button">
+              <Plus />
+            </button>
+          </p>
+          {keynotes.map((keynote, index) => (
+            <p className="flex flex-row gap-x-2 items-center" key={index}>
+              <input
+                className="flex-1 p-2 rounded border"
+                onChange={(event) => handleKeynoteChange(index, event.target.value)}
+                placeholder="کلمه کلیدی را یادداشت کنید"
+                type="text"
+                value={keynote}
+              />
+              {index !== 0 && (
+                <button className="p-0.5 border rounded-secondary bg-red-500 text-white" onClick={() => handleRemoveKeynote(index)} type="button">
+                  <Minus />
+                </button>
+              )}
+            </p>
+          ))}
+        </label>
+        <div className="flex justify-between mt-8">
+          <SendButton isLoading={isUpdating} />
+          <NavigationButton direction="prev" onClick={prevStep} />
+        </div>
+      </>
     );
-    const status = data.status ? "active" : "inactive";
-    formData.append("status", status);
-
-    updateTag({ id: id, body: formData });
-  };
-
-  const robotOptions = [
-    {
-      id: 1,
-      value: "index",
-      label: "Index",
-      description: "اجازه می‌دهد موتورهای جستجو صفحه را ایندکس کنند",
-    },
-    {
-      id: 2,
-      value: "noindex",
-      label: "Noindex",
-      description: "از ایندکس کردن صفحه توسط موتورهای جستجو جلوگیری می‌کند",
-    },
-    {
-      id: 3,
-      value: "follow",
-      label: "Follow",
-      description:
-        "اجازه می‌دهد موتورهای جستجو لینک‌های موجود در صفحه را دنبال کنند",
-    },
-    {
-      id: 4,
-      value: "nofollow",
-      label: "Nofollow",
-      description:
-        "از دنبال کردن لینک‌های موجود در صفحه توسط موتورهای جستجو جلوگیری می‌کند",
-    },
-  ];
-
-  const handleOptionsChange = (newSelectedOptions) => {
-    setSelectedOptions(newSelectedOptions);
-  };
-
-  const handleAddKeynote = () => {
-    setKeynotes([...keynotes, ""]);
-  };
-
-  const handleRemoveKeynote = (index) => {
-    const updatedKeynotes = [...keynotes];
-    updatedKeynotes.splice(index, 1);
-    setKeynotes(updatedKeynotes);
-  };
-
-  const handleKeynoteChange = (index, value) => {
-    const updatedKeynotes = [...keynotes];
-    updatedKeynotes[index] = value;
-    setKeynotes(updatedKeynotes);
   };
 
   return (
-    <>
-      <span
-        type="button"
-        disabled={fetching ? true : undefined}
-        className="edit-button"
-        onClick={() => {
-          setIsOpen(true);
-        }}
-      >
-        <Edit className="w-5 h-5" />
-      </span>
-
-      {isOpen && (
-        <Modal
-          isOpen={isOpen}
-          action=""
-          onClose={() => setIsOpen(false)}
-          className="lg:w-1/3 md:w-1/2 w-full z-50 p-4 rounded-md overflow-y-hidden"
-        >
-          <form
-            action=""
-            className="text-sm w-full h-full flex flex-col gap-y-4 mb-3 p-4 overflow-y-auto"
-            onSubmit={handleSubmit(handleUpdateUser)}
-          >
-            <div className="flex gap-4 flex-col">
-              <div className="w-full flex flex-col gap-y-4 p-4 border rounded">
-                {/* title */}
-                <label htmlFor="title" className="w-full flex flex-col gap-y-1">
-                  <span className="text-sm">عنوان*</span>
-                  <input
-                    type="text"
-                    id="title"
-                    maxLength="100"
-                    defaultValue={fetchData?.data?.title}
-                    {...register("title", {
-                      required: "عنوان الزامی است!",
-                      minLength: {
-                        value: 3,
-                        message: "عنوان باید حداقل ۳ کاراکتر باشد!",
-                      },
-                      maxLength: {
-                        value: 100,
-                        message: "عنوان نمی‌تواند بیش از ۱۰۰ کاراکتر باشد!",
-                      },
-                      pattern: {
-                        value: /^[آ-یA-Za-z0-9\s]+$/,
-                        message:
-                          "عنوان فقط باید شامل حروف فارسی، انگلیسی و عدد باشد!",
-                      },
-                    })}
-                  />
-                  {errors.title && (
-                    <span className="text-red-500 text-xs">
-                      {errors.title.message}
-                    </span>
-                  )}
-                </label>
-
-                {/* description */}
-                <label
-                  htmlFor="description"
-                  className="w-full flex flex-col gap-y-1"
-                >
-                  <span className="text-sm">توضیحات*</span>
-                  <textarea
-                    id="description"
-                    rows="4"
-                    maxLength="500"
-                    defaultValue={fetchData?.data?.description}
-                    {...register("description", {
-                      required: "توضیحات الزامی است!",
-                      minLength: {
-                        value: 10,
-                        message: "توضیحات باید حداقل ۱۰ کاراکتر باشد!",
-                      },
-                      maxLength: {
-                        value: 500,
-                        message: "توضیحات نمی‌تواند بیش از ۵۰۰ کاراکتر باشد!",
-                      },
-                    })}
-                  />
-                  {errors.description && (
-                    <span className="text-red-500 text-xs">
-                      {errors.description.message}
-                    </span>
-                  )}
-                </label>
-              </div>
-              {/* keynotes */}
-              <div className="w-full flex flex-col gap-y-4 p-4 border rounded">
-                <label
-                  htmlFor="keynotes"
-                  className="w-full flex flex-col gap-y-4"
-                >
-                  <p className="text-sm flex flex-row justify-between items-center">
-                    کلمات کلیدی*
-                    <button
-                      type="button"
-                      className="p-0.5 border rounded-secondary bg-green-500 text-white"
-                      onClick={handleAddKeynote}
-                    >
-                      <Plus />
-                    </button>
-                  </p>
-
-                  {keynotes.map((keynote, index) => (
-                    <p
-                      key={index}
-                      className="flex flex-row gap-x-2 items-center"
-                    >
-                      <input
-                        type="text"
-                        name="keynote"
-                        placeholder="کلمه کلیدی را یادداشت کنید"
-                        className="flex-1"
-                        value={keynote}
-                        onChange={(event) =>
-                          handleKeynoteChange(index, event.target.value)
-                        }
-                        required
-                      />
-                      {index !== 0 && (
-                        <button
-                          type="button"
-                          className="p-0.5 border rounded-secondary bg-red-500 text-white"
-                          onClick={() => handleRemoveKeynote(index)}
-                        >
-                          <Minus />
-                        </button>
-                      )}
-                    </p>
-                  ))}
-                </label>
-              </div>
-              {/* انتخاب ربات‌ها */}
-              ربات‌ها*
-               <MultiSelect
-                items={robotOptions}
-                selectedItems={selectedOptions}
-                handleSelect={handleOptionsChange}
-                className="w-full"
-                name="robots"
-                icon={<Robot size={24} />}
-              /> *
-              <div className="flex flex-col gap-y-2 w-full ">
-                <StatusSwitch
-                  label="وضعیت"
-                  id="status"
-                  register={register}
-                  defaultChecked={fetchData?.data?.status === "active" ? true : false} 
-                />
-              </div>
-              <Button type="submit" className="py-2 mt-4 mb-4 bg-black">
-                ویرایش کردن
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-    </>
+    <section className="w-screen relative h-screen overflow-hidden flex justify-center items-center p-4">
+      <div className="wave"></div>
+      <div className="wave wave2"></div>
+      <div className="wave wave3"></div>
+      <div className="max-w-md w-full bg-white justify-center dark:bg-gray-900 z-50 flex flex-col gap-y-4 p-8 rounded-primary shadow-lg">
+        <form className="w-full flex flex-col gap-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <StepIndicator
+            completedSteps={completedSteps}
+            currentStep={currentStep}
+            invalidSteps={invalidSteps}
+            onStepClick={handleStepClick}
+            totalSteps={totalSteps}
+          />
+          {renderStep()}
+        </form>
+        <ThemeToggle />
+      </div>
+      <NavLink className="fixed bottom-4 right-4 group items-center reject-button rounded-full !bg-red-800/20 shadow-lg !p-4 text-slate-300 transition-all hover:text-slate-100 z-50" to="/tags">
+        <ChevronRight />
+      </NavLink>
+    </section>
   );
 };
 

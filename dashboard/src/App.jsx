@@ -10,6 +10,8 @@ import SignUp from "./pages/auth/signup/index";
 import Users from "./pages/users/index";
 import { Toaster } from "react-hot-toast";
 import Tags from "./pages/tags";
+import AddTag from "./pages/tags/add";
+import UpdateTag from "./pages/tags/UpdateTag";
 import Magazines from "./pages/magazines";
 import MagazineInfo from "./pages/magazines/info/index";
 import AddMagazine from "./pages/magazines/add";
@@ -32,6 +34,10 @@ import FeaturedProduct from "./pages/settings/featuredProduct/index";
 import Banners from "./pages/banners";
 import Stories from "./pages/stories";
 import AddStory from "./pages/stories/add";
+import CategoryFilters from "./pages/categoryFilters";
+import CategoryFilterForm from "./pages/categoryFilters/CategoryFilterForm";
+import FilterDefinitions from "./pages/filterDefinitions";
+import Sessions from "./pages/sessions";
 
 function App() {
   const location = useLocation();
@@ -51,8 +57,15 @@ function App() {
           <Route exact path="/signin" element={<SignIn />} />
           <Route exact path="/signup" element={<SignUp />} />
           <Route exact path="/users" element={<Users />} />
+          <Route exact path="/sessions" element={<Sessions />} />
           <Route exact path="/tags" element={<Tags />} />
+          <Route exact path="/tags/add" element={<AddTag />} />
+          <Route exact path="/tags/update/:id" element={<UpdateTag />} />
           <Route exact path="/categories" element={<Categories />} />
+          <Route exact path="/filter-definitions" element={<FilterDefinitions />} />
+          <Route exact path="/category-filters" element={<CategoryFilters />} />
+          <Route exact path="/category-filters/add" element={<CategoryFilterForm />} />
+          <Route exact path="/category-filters/edit/:id" element={<CategoryFilterForm mode="edit" />} />
           <Route exact path="/units" element={<Units />} />
           <Route exact path="/magazines" element={<Magazines />} />
           <Route exact path="/settings" element={<Settings />} />

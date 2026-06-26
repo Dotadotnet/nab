@@ -1,5 +1,10 @@
 const { translate } = require("google-translate-api-x");
 const cheerio = require("cheerio");
+const {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+  normalizeLanguage
+} = require("./languages");
 
 const MAX_CHUNK_SIZE = 4500;
 
@@ -53,29 +58,33 @@ const translateFields = async (
     arrayStringFields = [],
     arrayObjectFields = [],
     longTextFields = [],
-    lowercaseFields = [], // دسته جدید برای فیلدهای lowercase
+    lowercaseFields = [],
+    copyFields = [],
   },
-  languages = ["en", "tr","ar"]
+  languages = SUPPORTED_LANGUAGES.filter((lang) => lang !== DEFAULT_LANGUAGE)
 ) => {
   const translations = {};
-  translations["fa"] = { fields: {} };
+  const targetLanguages = [...new Set(languages.map(normalizeLanguage))]
+    .filter((lang) => lang !== DEFAULT_LANGUAGE);
+
+  translations[DEFAULT_LANGUAGE] = { fields: {} };
 
   // پردازش فیلدهای مختلف برای زبان اصلی (fa)
   for (const field of stringFields) {
     if (typeof data[field] === "string") {
-      translations["fa"].fields[field] = data[field];
+      translations[DEFAULT_LANGUAGE].fields[field] = data[field];
     }
   }
 
   for (const field of arrayStringFields) {
     if (Array.isArray(data[field])) {
-      translations["fa"].fields[field] = [...data[field]];
+      translations[DEFAULT_LANGUAGE].fields[field] = [...data[field]];
     }
   }
 
   for (const field of arrayObjectFields) {
     if (Array.isArray(data[field])) {
-      translations["fa"].fields[field] = data[field].map((item) =>
+      translations[DEFAULT_LANGUAGE].fields[field] = data[field].map((item) =>
         item && typeof item === "object" ? { ...item } : item
       );
     }
@@ -83,18 +92,24 @@ const translateFields = async (
 
   for (const field of longTextFields) {
     if (typeof data[field] === "string") {
-      translations["fa"].fields[field] = data[field];
+      translations[DEFAULT_LANGUAGE].fields[field] = data[field];
     }
   }
 
   for (const field of lowercaseFields) {
     if (typeof data[field] === "string") {
-      translations["fa"].fields[field] = data[field];
+      translations[DEFAULT_LANGUAGE].fields[field] = data[field];
+    }
+  }
+
+  for (const field of copyFields) {
+    if (data[field] !== undefined) {
+      translations[DEFAULT_LANGUAGE].fields[field] = data[field];
     }
   }
 
   // ترجمه به سایر زبان‌ها
-  for (const lang of languages) {
+  for (const lang of targetLanguages) {
     translations[lang] = { fields: {} };
 
     // ترجمه رشته‌های ساده
@@ -178,6 +193,12 @@ const translateFields = async (
         } catch (err) {
           throw new Error(`خطا در ترجمه فیلد lowercase "${field}" به ${lang}: ${err.message}`);
         }
+      }
+    }
+
+    for (const field of copyFields) {
+      if (data[field] !== undefined) {
+        translations[lang].fields[field] = data[field];
       }
     }
   }

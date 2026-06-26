@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const baseSchema = require("./baseSchema.model");
 const Counter = require("./counter");
-const fetch = require("node-fetch");
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const tagSchema = new mongoose.Schema(
   {
@@ -18,12 +18,12 @@ const tagSchema = new mongoose.Schema(
       {
         translation: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Translation",
+          ref: "TagTranslation",
           required: true
         },
         language: {
           type: String,
-          enum: ["fa", "en", "tr", "ar"],
+          enum: SUPPORTED_LANGUAGES,
           required: true
         }
       }
@@ -35,17 +35,15 @@ const tagSchema = new mongoose.Schema(
       required: [true, "شناسه نویسنده الزامی است"]
     },
 
-    robots: {
-      type: [
-        {
-          id: Number,
-          value: String
-        }
-      ],
-      default: [
-        { id: 1, value: "index" },
-        { id: 2, value: "follow" }
-      ]
+    thumbnail: {
+      url: {
+        type: String,
+        default: "https://placehold.co/300x300.png"
+      },
+      public_id: {
+        type: String,
+        default: "N/A"
+      }
     },
     lang: {
       type: String

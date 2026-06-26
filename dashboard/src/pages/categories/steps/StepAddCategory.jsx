@@ -10,10 +10,12 @@ import TitleStep from "./TitleStep";
 import KeynotesStep from "./KeynotesStep";
 import TagsStep from "./TagsStep";
 import { useNavigate } from "react-router-dom";
+import { useGetCategoriesQuery } from "@/services/category/categoryApi";
 
 const StepAddCategory = () => {
   const [thumbnail, setThumbnail] = useState(null);
   const [addCategory, { isLoading, data, error }] = useAddCategoryMutation();
+  const { data: categoriesData } = useGetCategoriesQuery();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
@@ -44,6 +46,7 @@ const StepAddCategory = () => {
     formData.append("tags", JSON.stringify(tags));
     formData.append("title", data.title);
     formData.append("description", data.description);
+    if (data.parent) formData.append("parent", data.parent);
 
     addCategory(formData);
   };
@@ -135,6 +138,7 @@ const StepAddCategory = () => {
       case 2:
         return (
           <TitleStep
+            categories={categoriesData?.data || []}
             register={register}
             errors={errors}
             prevStep={prevStep}
@@ -168,6 +172,8 @@ const StepAddCategory = () => {
         return null;
     }
   };
+
+  
   const handleStepClick = async (step) => {
     if (step < currentStep) {
       setCurrentStep(step);

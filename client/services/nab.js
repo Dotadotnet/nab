@@ -19,7 +19,8 @@ export const nabApi = createApi({
     "Post",
     "Session",
     "Blog",
-    "Gallery"
+    "Gallery",
+    "CategoryFilter"
   ],
   endpoints: () => ({}),
 });

@@ -12,6 +12,26 @@ import Search from "@/components/shared/search";
 import ControlPanel from "../ControlPanel";
 import AddButton from "@/components/shared/button/AddButton";
 
+function getCategoryTranslation(category) {
+  return (
+    category?.translations?.find((item) => item?.translation)?.translation ||
+    category?.translations?.[0]?.translation ||
+    {}
+  );
+}
+
+function getCategoryTitle(category) {
+  return getCategoryTranslation(category)?.title || category?.title || "-";
+}
+
+function getCategoryDescription(category) {
+  return getCategoryTranslation(category)?.description || category?.description || "";
+}
+
+function getCategorySlug(category) {
+  return getCategoryTranslation(category)?.slug || category?.slug || "-";
+}
+
 const ListCategory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -89,8 +109,9 @@ const ListCategory = () => {
           <SkeletonItem repeat={5} />
         ) : (
           categories.map((category) => {
-            const { title, description } =
-              category?.translations[0].translation?.fields || {};
+            const title = getCategoryTitle(category);
+            const description = getCategoryDescription(category);
+            const slug = getCategorySlug(category);
             return (
               <div
                 key={category._id}
@@ -100,7 +121,11 @@ const ListCategory = () => {
                   <StatusIndicator isActive={category.status === "active"} />
                   <div className="py-2 flex justify-center items-center gap-x-2 text-right">
                     <img
-                      src={category?.creator?.avatar.url}
+                      src={
+                        category?.creator?.avatar?.url ||
+                        category?.thumbnail?.url ||
+                        "https://placehold.co/300x300.png"
+                      }
                       alt={``}
                       height={100}
                       width={100}
@@ -109,7 +134,7 @@ const ListCategory = () => {
                     <article className="flex-col flex gap-y-2  ">
                       <span className="line-clamp-1 text-base ">
                         <span className="hidden lg:flex ">
-                          {category?.creator?.name}
+                          {category?.creator?.name || "-"}
                         </span>
                         <span className=" lg:hidden ">{title}</span>
                       </span>
@@ -146,7 +171,7 @@ const ListCategory = () => {
 
                 <div className="hidden lg:col-span-2 col-span-5 gap-2 text-right lg:flex justify-left items-center">
                   <article className="flex-col flex gap-y-2">
-                    <span className="flex text-right">{category.slug}</span>
+                    <span className="flex text-right">{slug}</span>
                   </article>
                 </div>
 

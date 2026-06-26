@@ -2,7 +2,7 @@
 const express = require("express");
 
 /* middleware imports */
-const upload = require("../middleware/upload.middleware");
+const upload = require("../middleware/arvanUpload.middleware");
 const verifyAdmin = require("../middleware/verifyAdmin.middleware");
 
 /* internal import */

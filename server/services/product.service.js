@@ -5,13 +5,46 @@ const remove = require("../utils/remove.util");
 const Review = require("../models/review.model");
 const User = require("../models/user.model");
 const Variation = require("../models/variation.model");
-const Translation = require("../models/translation.model");
+const ProductTranslation = require("../models/productTranslation.model");
+const CampaignTranslation = require("../models/campaignTranslation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
 const Campaign = require("../models/campaign.model");
 const generateQRCodesForVariation = require("../utils/generateQRCodes");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
+
+function getProductFilterParams(query = {}) {
+  if (query.filters && typeof query.filters === "object") {
+    return query.filters;
+  }
+
+  return Object.entries(query).reduce((filters, [queryKey, value]) => {
+    const rangeMatch = queryKey.match(/^filters\[([^\]]+)\]\[(min|max)\]$/);
+    if (rangeMatch) {
+      const [, key, bound] = rangeMatch;
+      filters[key] = {
+        ...(filters[key] && typeof filters[key] === "object" && !Array.isArray(filters[key])
+          ? filters[key]
+          : {}),
+        [bound]: value
+      };
+      return filters;
+    }
+
+    const valueMatch = queryKey.match(/^filters\[([^\]]+)\]$/);
+    if (valueMatch) {
+      const [, key] = valueMatch;
+      filters[key] = value;
+    }
+
+    return filters;
+  }, {});
+}
 
 /* add new product */
 exports.addProduct = async (req, res) => {
@@ -48,22 +81,14 @@ exports.addProduct = async (req, res) => {
           stringFields: ["title"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "Campaign",
-          refId: resultCampaign._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "campaign",
+        resultCampaign._id
       );
-      const insertedTranslations = await Translation.insertMany(
-        translationDocs
-      );
+      const insertedTranslations = await CampaignTranslation.insertMany(translationDocs);
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
       await Campaign.findByIdAndUpdate(resultCampaign._id, {
         $set: { translations: translationInfos }
       });
@@ -122,10 +147,11 @@ exports.addProduct = async (req, res) => {
     const result = await product.save();
     const slug = await generateSlug(title);
     const canonicalUrl = `${defaultDomain}/product/${result.productId}/${slug}`;
+    const productCategory = await Category.findById(category).select("title");
     const { metaTitle, metaDescription } = generateSeoFields({
       title,
       summary,
-      categoryTitle: await Category.findById(category).title
+      categoryTitle: productCategory?.title
     });
     await Campaign.findByIdAndUpdate(resultCampaign._id, {
       $push: { products: result._id }
@@ -151,30 +177,24 @@ exports.addProduct = async (req, res) => {
             "title",
             "summary",
             "description",
-            "canonicalUrl",
             "metaTitle",
             "metaDescription"
           ],
+          copyFields: ["canonicalUrl"],
           lowercaseFields: ["slug"],
           arrayObjectFields: ["features"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "Product",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "product",
+        result._id
       );
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await ProductTranslation.insertMany(
         translationDocs
       );
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
       await Product.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
       });
@@ -220,14 +240,14 @@ exports.getProducts = async (req, res) => {
         {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title fields.summary fields.slug language"
+          select: "title summary slug metaTitle metaDescription canonicalUrl language"
         },
         {
           path: "campaign",
           populate: {
             path: "translations.translation",
             match: { language: req.locale },
-            select: "fields.title  language"
+            select: "title language"
           },
           select: "state translations"
         },
@@ -236,7 +256,7 @@ exports.getProducts = async (req, res) => {
           populate: {
             path: "translations.translation",
             match: { language: req.locale },
-            select: "fields.title  language"
+            select: "title language"
           },
           select: "translations"
         },
@@ -267,7 +287,7 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-exports.getDetailsProducts = async (res) => {
+exports.getDetailsProducts = async (req, res) => {
   const products = await Product.find({
     isDeleted: false,
     publishStatus: "approved",
@@ -280,14 +300,14 @@ exports.getDetailsProducts = async (res) => {
       {
         path: "translations.translation",
         match: { language: req.locale },
-        select: "fields.title fields.summary fields.slug language"
+        select: "title summary slug language"
       },
       {
         path: "campaign",
         populate: {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title  language"
+          select: "title language"
         },
         select: "state translations"
       },
@@ -324,14 +344,14 @@ exports.getDetailsProducts = async (res) => {
           path: "translations.translation",
           match: { language: req.locale },
           select:
-            "fields.title fields.summary fields.features fields.description fields.slug language"
+            "title summary features description slug metaTitle metaDescription canonicalUrl language"
         },
         {
           path: "campaign",
           populate: {
             path: "translations.translation",
             match: { language: req.locale },
-            select: "fields.title  language"
+            select: "title language"
           },
           select: "state translations"
         },
@@ -340,7 +360,7 @@ exports.getDetailsProducts = async (res) => {
           populate: {
             path: "translations.translation",
             match: { language: req.locale },
-            select: "fields.title fields.keynotes  language"
+            select: "title keynotes language"
           },
           select: "translations"
         },
@@ -352,7 +372,7 @@ exports.getDetailsProducts = async (res) => {
           populate: {
             path: "translations.translation",
             match: { language: req.locale },
-            select: "fields.title fields.keynotes language"
+            select: "title keynotes language"
           },
           select: "translations"
         },
@@ -364,7 +384,7 @@ exports.getDetailsProducts = async (res) => {
             populate: {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title fields.description language"
+              select: "title description language"
             },
             select: "title value"
           }
@@ -440,7 +460,6 @@ exports.getProductCart = async (req, res) => {
 
 /* filtered products */
 exports.getFilteredProducts = async (req, res) => {
-  console.log("hs");
   try {
     let filter = {
       isDeleted: false,
@@ -448,11 +467,47 @@ exports.getFilteredProducts = async (req, res) => {
       status: "active"
     };
 
-    if (req.query.category != "null") {
+    if (req.query.category && req.query.category !== "null") {
       filter.category = req.query.category;
     }
 
-    const products = await Product.find(filter).populate(["variations"]);
+    const customFilters = getProductFilterParams(req.query);
+    Object.entries(customFilters).forEach(([key, value]) => {
+      const path = `filterValues.${key}`;
+
+      if (Array.isArray(value)) {
+        filter[path] = { $in: value };
+        return;
+      }
+
+      if (value && typeof value === "object") {
+        const range = {};
+        if (value.min !== undefined && value.min !== "") range.$gte = Number(value.min);
+        if (value.max !== undefined && value.max !== "") range.$lte = Number(value.max);
+        if (Object.keys(range).length) filter[path] = range;
+        return;
+      }
+
+      if (value !== undefined && value !== "") {
+        filter[path] = value === "true" ? true : value === "false" ? false : value;
+      }
+    });
+
+    let products = await Product.find(filter).populate(["variations"]);
+
+    const minPrice = Number(req.query.minPrice);
+    const maxPrice = Number(req.query.maxPrice);
+    if (!Number.isNaN(minPrice) || !Number.isNaN(maxPrice)) {
+      products = products.filter((product) =>
+        (product.variations || []).some((variation) => {
+          const price = Number(variation.price);
+          if (Number.isNaN(price)) return false;
+          if (!Number.isNaN(minPrice) && price < minPrice) return false;
+          if (!Number.isNaN(maxPrice) && price > maxPrice) return false;
+          return true;
+        })
+      );
+    }
 
     res.status(200).json({
       acknowledgement: true,
@@ -613,11 +668,11 @@ exports.updateProductField = async (req, res) => {
       
       if (persianTranslation) {
         // Update the existing translation
-        await Translation.findByIdAndUpdate(
+        await ProductTranslation.findByIdAndUpdate(
           persianTranslation.translation,
           {
             $set: {
-              [`fields.${field}`]: value,
+              [field]: value,
               updatedAt: Date.now()
             }
           },
@@ -625,13 +680,10 @@ exports.updateProductField = async (req, res) => {
         );
       } else {
         // Create new translation if it doesn't exist
-        const newTranslation = await Translation.create({
+        const newTranslation = await ProductTranslation.create({
           language: 'fa',
-          refModel: 'Product',
-          refId: mongoId, // Use MongoDB ObjectId
-          fields: {
-            [field]: value
-          }
+          product: mongoId,
+          [field]: value
         });
         
         // Add the translation reference to the product
@@ -712,11 +764,11 @@ exports.updateProductFeatures = async (req, res) => {
     
     if (persianTranslation) {
       // Update the existing translation
-      await Translation.findByIdAndUpdate(
+      await ProductTranslation.findByIdAndUpdate(
         persianTranslation.translation,
         {
           $set: {
-            'fields.features': features,
+            features,
             updatedAt: Date.now()
           }
         },
@@ -724,13 +776,10 @@ exports.updateProductFeatures = async (req, res) => {
       );
     } else {
       // Create new translation if it doesn't exist
-      const newTranslation = await Translation.create({
+      const newTranslation = await ProductTranslation.create({
         language: 'fa',
-        refModel: 'Product',
-        refId: mongoId, // Use MongoDB ObjectId
-        fields: {
-          features: features
-        }
+        product: mongoId,
+        features
       });
       
       // Add the translation reference to the product

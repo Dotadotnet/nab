@@ -4,11 +4,30 @@ import { useGetTagsQuery, useDeleteTagMutation } from "@/services/tag/tagApi";
 import { toast } from "react-hot-toast";
 import SkeletonItem from "@/components/shared/skeleton/SkeletonItem";
 import StatusIndicator from "@/components/shared/tools/StatusIndicator";
-import UpdateTag from "./UpdateTag";
-import Add from "./add";
+import AddButton from "@/components/shared/button/AddButton";
+import Edit from "@/components/icons/Edit";
 import Search from "@/components/shared/search";
 import DeleteModal from "@/components/shared/modal/DeleteModal";
 import Pagination from "@/components/shared/pagination/Pagination";
+import { Link } from "react-router-dom";
+
+function getTagTranslation(tag) {
+  const translation =
+    tag?.translations?.find((item) => item?.translation && item.language === "fa")
+      ?.translation ||
+    tag?.translations?.find((item) => item?.translation)?.translation ||
+    {};
+
+  return translation.fields || translation;
+}
+
+function getTagTitle(tag) {
+  return getTagTranslation(tag)?.title || tag?.title || "-";
+}
+
+function getTagDescription(tag) {
+  return getTagTranslation(tag)?.description || tag?.description || "";
+}
 
 const Tags = () => {
   const itemsPerPage = 5;
@@ -53,12 +72,11 @@ const Tags = () => {
       toast.error(deleteError?.data?.message, { id: "deleteTag" });
     }
   }, [data, error, isLoading, deleting, deleteData, deleteError]);
-  console.log(data);
   return (
     <>
       <ControlPanel>
         <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        <Add />
+        <AddButton link="/tags/add" />
         <div className="mt-8 w-full grid grid-cols-12 text-slate-400 px-4 ">
           <div className="col-span-11 lg:col-span-3  text-sm">
             <span className="hidden lg:flex">نویسنده</span>
@@ -77,10 +95,8 @@ const Tags = () => {
           <SkeletonItem repeat={5} />
         ) : (
           tags.map((tag) => {
-            const translationItem = tag.translations.find(
-              (t) => t.translation && t.language === "fa"
-            ); // یا زبان موردنظر
-            const fields = translationItem?.translation?.fields ||{};
+            const title = getTagTitle(tag);
+            const description = getTagDescription(tag);
             return (
               <div
                 key={tag._id}
@@ -90,8 +106,8 @@ const Tags = () => {
                   <StatusIndicator isActive={tag.status === "active"} />
                   <div className="py-2 flex justify-center items-center gap-x-2 text-right">
                     <img
-                      src={tag?.creator?.avatar?.url || "/placeholder.png"}
-                      alt="Description of the image"
+                      src={tag?.thumbnail?.url || "/placeholder.png"}
+                      alt={title || "tag"}
                       height={100}
                       width={100}
                       className="h-[60px] w-[60px] rounded-full object-cover"
@@ -99,16 +115,16 @@ const Tags = () => {
                     <article className="flex-col flex gap-y-2  ">
                       <span className="line-clamp-1 text-base ">
                         <span className="hidden lg:flex ">
-                          {tag?.creator?.name}
+                          {tag?.creator?.name || "-"}
                         </span>
-                        <span className=" lg:hidden ">{fields?.title}</span>
+                        <span className=" lg:hidden ">{title}</span>
                       </span>
                       <span className="text-xs hidden lg:flex">
                         {new Date(tag.createdAt).toLocaleDateString("fa-IR")}
                       </span>
                       <span className=" lg:hidden text-xs line-clamp-1 ">
-                        {fields?.description
-                          ? fields?.description
+                        {description
+                          ? description
                           : new Date(tag.createdAt).toLocaleDateString("fa-IR")}
                       </span>
                     </article>
@@ -116,20 +132,20 @@ const Tags = () => {
                 </div>
                 <div className="lg:col-span-3 lg:flex  hidden  text-center  items-center">
                   <span className="break-words text-sm lg:text-sm text-right">
-                    {fields.title}
+                    {title}
                   </span>
                 </div>
                 <div className="lg:col-span-5 lg:flex hidden col-span-5 text-right  items-center">
                   <span className="text-sm lg:text-base overflow-hidden text-ellipsis block line-clamp-1 max-h-[1.2em]">
-                    {fields?.description ? fields.description : "ندارد"}
+                    {description || "ندارد"}
                   </span>
                 </div>
 
                 <div className="col-span-2 md:col-span-1 gap-2  text-center flex justify-center md:items-center items-left">
                   <article className="lg:flex-row flex flex-col gap-x-2 justify-left gap-y-2">
-                    <span>
-                      <UpdateTag id={tag?._id} />
-                    </span>
+                    <Link className="edit-button" to={`/tags/update/${tag?._id}`}>
+                      <Edit className="w-5 h-5" />
+                    </Link>
                     <DeleteModal
                       message="آیا از حذف این تگ  اطمینان دارید؟"
                       isLoading={deleting}
@@ -152,3 +168,4 @@ const Tags = () => {
 };
 
 export default Tags;
+

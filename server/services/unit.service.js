@@ -5,7 +5,11 @@ const User = require("../models/user.model");
 const remove = require("../utils/remove.util");
 const { generateSlug } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
-const Translation = require("../models/translation.model");
+const UnitTranslation = require("../models/unitTranslation.model");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
@@ -34,26 +38,21 @@ console.log("title, description, category, value",title, description, category, 
           canonicalUrl
         },
         {
-          stringFields: ["title", "description", "canonicalUrl"],
+          stringFields: ["title", "description"],
+          copyFields: ["canonicalUrl"],
           lowercaseFields: ["slug"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "Unit",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "unit",
+        result._id
       );
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await UnitTranslation.insertMany(
         translationDocs
       );
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
       await Unit.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
       });

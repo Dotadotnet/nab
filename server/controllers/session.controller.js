@@ -22,6 +22,39 @@ exports.getSession = async (req, res, next) => {
   }
 };
 
+// track session activity
+exports.trackSession = async (req, res, next) => {
+  try {
+    await sessionService.trackSession(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+// get sessions list
+exports.getSessions = async (req, res, next) => {
+  try {
+    await sessionService.getSessions(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
+// get session details
+exports.getSessionDetails = async (req, res, next) => {
+  try {
+    await sessionService.getSessionDetails(req, res);
+  } catch (error) {
+    next(error);
+  } finally {
+    console.log(`Route: ${req.url} || Method: ${req.method}`);
+  }
+};
+
 // clear session
 exports.clearSession = async (req, res, next) => {
   try {

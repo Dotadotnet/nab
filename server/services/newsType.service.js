@@ -1,9 +1,12 @@
 /* internal imports */
 const NewsType = require("../models/newsType.model");
-const { translate } = require("google-translate-api-x");
-const Translation = require("../models/translation.model");
+const NewsTypeTranslation = require("../models/newsTypeTranslation.model");
 const { generateSlug } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 /* 📌 اضافه کردن نوع خبر جدید */
 exports.addNewsType = async (req, res) => {
@@ -27,22 +30,17 @@ exports.addNewsType = async (req, res) => {
           slug
         },
         {
-          stringFields: ["title", "description","slug"]
+          stringFields: ["title", "description"],
+          lowercaseFields: ["slug"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "NewsType",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "newsType",
+        result._id
       );
-      const savedTranslations = await Translation.insertMany(translationDocs);
-      const translationInfos = savedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const savedTranslations = await NewsTypeTranslation.insertMany(translationDocs);
+      const translationInfos = buildTranslationInfos(savedTranslations);
       await NewsType.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
       });
@@ -137,72 +135,39 @@ exports.updateNewsType = async (req, res) => {
   try {
     const updatedNewsType = req.body;
 
-    let translatedTitleEn = "";
-    let translatedTitleTr = "";
-    let translatedDescriptionEn = "";
-    let translatedDescriptionTr = "";
-
     if (updatedNewsType.title || updatedNewsType.description) {
       try {
-        if (updatedNewsType.title) {
-          const resultTitleEn = await translate(updatedNewsType.title, {
-            to: "en",
-            client: "gtx"
-          });
-          translatedTitleEn = resultTitleEn.text;
-
-          const resultTitleTr = await translate(updatedNewsType.title, {
-            to: "tr",
-            client: "gtx"
-          });
-          translatedTitleTr = resultTitleTr.text;
-        }
-
-        if (updatedNewsType.description) {
-          const resultDescriptionEn = await translate(
-            updatedNewsType.description,
-            {
-              to: "en",
-              client: "gtx"
-            }
-          );
-          translatedDescriptionEn = resultDescriptionEn.text;
-
-          const resultDescriptionTr = await translate(
-            updatedNewsType.description,
-            {
-              to: "tr",
-              client: "gtx"
-            }
-          );
-          translatedDescriptionTr = resultDescriptionTr.text;
-        }
-
-        await Translation.updateOne(
-          { refModel: "NewsType", refId: req.params.id, language: "en" },
+        const slug = updatedNewsType.title
+          ? await generateSlug(updatedNewsType.title)
+          : undefined;
+        const translations = await translateFields(
           {
-            $set: {
-              ...(translatedTitleEn && { "fields.title": translatedTitleEn }),
-              ...(translatedDescriptionEn && {
-                "fields.description": translatedDescriptionEn
-              })
-            }
+            title: updatedNewsType.title,
+            description: updatedNewsType.description,
+            slug
           },
-          { upsert: true }
+          {
+            stringFields: ["title", "description"],
+            lowercaseFields: ["slug"]
+          }
         );
 
-        await Translation.updateOne(
-          { refModel: "NewsType", refId: req.params.id, language: "tr" },
-          {
-            $set: {
-              ...(translatedTitleTr && { "fields.title": translatedTitleTr }),
-              ...(translatedDescriptionTr && {
-                "fields.description": translatedDescriptionTr
-              })
-            }
-          },
-          { upsert: true }
-        );
+        const savedTranslations = [];
+        for (const [language, { fields }] of Object.entries(translations)) {
+          const translation = await NewsTypeTranslation.findOneAndUpdate(
+            { newsType: req.params.id, language },
+            { $set: fields },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+          );
+          savedTranslations.push({
+            translation: translation._id,
+            language
+          });
+        }
+
+        await NewsType.findByIdAndUpdate(req.params.id, {
+          $set: { translations: savedTranslations }
+        });
       } catch (translateErr) {
         console.error("❌ خطا در ترجمه:", translateErr.message);
         return res.status(404).json({

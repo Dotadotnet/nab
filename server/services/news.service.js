@@ -2,7 +2,7 @@
 const News = require("../models/news.model");
 const remove = require("../utils/remove.util");
 const translateFields = require("../utils/translateFields");
-const Translation = require("../models/translation.model");
+const ArticleTranslation = require("../models/articleTranslation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const NewsType = require("../models/newsType.model");
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
@@ -47,10 +47,11 @@ exports.addNews = async (req, res) => {
 
     const result = await news.save();
     const slug = await generateSlug(title);
+    const newsType = await NewsType.findById(type).select("title");
     const { metaTitle, metaDescription } = generateSeoFields({
       title,
       summary,
-      categoryTitle: await NewsType.findById(type).title
+      categoryTitle: newsType?.title
     });
     const canonicalUrl = `${defaultDomain}/news/${slug}`;
 
@@ -69,23 +70,28 @@ exports.addNews = async (req, res) => {
           stringFields: [
             "title",
             "summary",
-            "slug",
             "metaTitle",
-            "metaDescription",
-            "canonicalUrl"
+            "metaDescription"
           ],
+          copyFields: ["canonicalUrl"],
+          lowercaseFields: ["slug"],
           longTextFields: ["content"]
         }
       );
       const translationDocs = Object.entries(translations).map(
         ([lang, { fields }]) => ({
           language: lang,
-          refModel: "News",
-          refId: result._id,
-          fields
+          article: result._id,
+          title: fields.title,
+          summary: fields.summary,
+          content: fields.content,
+          slug: fields.slug,
+          metaTitle: fields.metaTitle,
+          metaDescription: fields.metaDescription,
+          canonicalUrl: fields.canonicalUrl
         })
       );
-      const savedTranslations = await Translation.insertMany(translationDocs);
+      const savedTranslations = await ArticleTranslation.insertMany(translationDocs);
 
       const translationInfos = savedTranslations.map((t) => ({
         translation: t._id,
@@ -131,13 +137,12 @@ exports.getAllNews = async (req,res) => {
     let matchedCategoryIds = [];
 
     if (search) {
-      const translations = await Translation.find({
+      const translations = await ArticleTranslation.find({
         language: req.locale,
-        refModel: "News",
-        "fields.title": { $regex: search, $options: "i" }
-      }).select("refId");
+        title: { $regex: search, $options: "i" }
+      }).select("article");
 
-      matchedCategoryIds = translations.map((t) => t.refId);
+      matchedCategoryIds = translations.map((t) => t.article);
     }
 
     const query = {
@@ -196,9 +201,9 @@ exports.getNews = async (req, res) => {
         populate: {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title  language"
+          select: "title language"
         },
-        select: "fields.title  language"
+        select: "title language"
       },
       {
         path: "reviews",
@@ -296,7 +301,7 @@ exports.deleteNews = async (req, res) => {
 
     const translationIds = news.translations.map((item) => item.translation);
 
-    await Translation.deleteMany({ _id: { $in: translationIds } });
+    await ArticleTranslation.deleteMany({ _id: { $in: translationIds } });
 
     await News.findByIdAndDelete(req.params.id);
     await remove("news", news.thumbnail.public_id);

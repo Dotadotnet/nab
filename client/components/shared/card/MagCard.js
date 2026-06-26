@@ -3,18 +3,19 @@ import SkeletonText from "@/components/shared/skeletonLoading/SkeletonText";
 import SkeletonImage from "@/components/shared/skeletonLoading/SkeletonImage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { AiFillStar } from "react-icons/ai";
 const MagazineCard = ({ magazine }) => {
   const router = useRouter();
+  const locale = useLocale();
+  const translation =
+    magazine?.translations?.find((item) => item.language === locale) ||
+    magazine?.translations?.find((item) => item.language === "fa");
+  const title = translation?.title || magazine?.title || "post";
+  const slug = translation?.slug || title.replace(/ /g, "-").toLowerCase();
   return (
     <div
-      onClick={() =>
-        router.push(
-          `/magazine?magazine_id=${magazine?._id}&magazine_title=${magazine?.title
-            .replace(/ /g, "-")
-            .toLowerCase()}`
-        )
-      }
+      onClick={() => router.push(`/${locale}/post/${magazine?._id}/${slug}`)}
       className="flex flex-col justify-center rtl dark:text-white w-full cursor-pointer"
     >
       <div className="relative transition-color ease-linear delay-100 hover:border-primary dark:hover:border-primary flex sm:flex-row min-h-[140px] lg:min-h-[220px] h-[130px] lg:h-[220px] rounded-primary shadow-lg w-full max-w-[650px] mx-auto p-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800/70 bg-white/80">
@@ -54,13 +55,13 @@ const MagazineCard = ({ magazine }) => {
             )}
           </div>
           <h3 className="text-gray-800 line-clamp-1 dark:text-gray-100 m-0 text-sm md:text-lg">
-            {!magazine?.title ? <SkeletonText lines={1} /> : magazine?.title}
+            {!title ? <SkeletonText lines={1} /> : title}
           </h3>
           <p className="text-xs line-clamp-3 lg:line-clamp-4 lg:text-sm text-justify text-gray-500">
-            {!magazine?.description ? (
+            {!translation?.summary ? (
               <SkeletonText lines={3} />
             ) : (
-              magazine?.description
+              translation.summary
             )}
           </p>
 

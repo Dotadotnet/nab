@@ -128,7 +128,7 @@ exports.getCarts = async (req, res) => {
             {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title fields.summary language"
+              select: "title summary language"
             },
             {
               path: "category",
@@ -145,7 +145,7 @@ exports.getCarts = async (req, res) => {
             populate: {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title language"
+              select: "title language"
             }
           }
         }
@@ -205,7 +205,7 @@ exports.getFromCart = async (req, res) => {
         {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title fields.summary fields.slug language"
+          select: "title summary slug language"
         },
         {
           path: "category",
@@ -222,7 +222,7 @@ exports.getFromCart = async (req, res) => {
         populate: {
           path: "translations.translation",
           match: { language: req.locale },
-          select: "fields.title language"
+          select: "title language"
         }
       }
     }

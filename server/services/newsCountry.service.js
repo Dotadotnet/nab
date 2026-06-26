@@ -1,13 +1,12 @@
 /* internal imports */
 const NewsCountry = require("../models/newsCountry.model");
 const Admin = require("../models/admin.model");
-const { translate } = require("google-translate-api-x");
-const Translation = require("../models/translation.model");
+const CountryTranslation = require("../models/countryTranslation.model");
 const translateFields = require("../utils/translateFields");
 const { generateSlug } = require("../utils/seoUtils");
 exports.addNewsCountry = async (req, res) => {
   try {
-    const { title, ...otherInformation } = req.body;
+    const { title, name, description, ...otherInformation } = req.body;
     console.log(req.body)
     const newsCountry = new NewsCountry({
       ...otherInformation,
@@ -15,26 +14,30 @@ exports.addNewsCountry = async (req, res) => {
     });
 
     const result = await newsCountry.save();
-    const slug = await generateSlug(title);
+    const countryName = name || title;
+    const slug = await generateSlug(countryName);
     try {
       const translations = await translateFields(
         {
-          title,
+          name: countryName,
+          description,
           slug
         },
         {
-          stringFields: ["title", "slug"]
+          stringFields: ["name", "description"],
+          lowercaseFields: ["slug"]
         }
       );
       const translationDocs = Object.entries(translations).map(
         ([lang, { fields }]) => ({
           language: lang,
-          refModel: "NewsCountry",
-          refId: result._id,
-          fields
+          country: result._id,
+          name: fields.name,
+          description: fields.description,
+          slug: fields.slug
         })
       );
-      const savedTranslations = await Translation.insertMany(translationDocs);
+      const savedTranslations = await CountryTranslation.insertMany(translationDocs);
       const translationInfos = savedTranslations.map((t) => ({
         translation: t._id,
         language: t.language
@@ -138,31 +141,46 @@ exports.getNewsCountry = async (req, res) => {
 exports.updateNewsCountry = async (req, res) => {
   try {
     const updatedNewsCountry = req.body;
-    let translatedTitleEn = "";
-    let translatedTitleTr = "";
-    if (updatedNewsCountry.title) {
+    const updatedCountryName = updatedNewsCountry.name || updatedNewsCountry.title;
+    if (updatedCountryName || updatedNewsCountry.description) {
       try {
-        const resultTitleEn = await translate(updatedNewsCountry.title, {
-          to: "en",
-          client: "gtx"
-        });
-        translatedTitleEn = resultTitleEn.text;
-
-        const resultTitleTr = await translate(updatedNewsCountry.title, {
-          to: "tr",
-          client: "gtx"
-        });
-        translatedTitleTr = resultTitleTr.text;
-
-        await Translation.updateOne(
-          { refModel: "NewsCountry", refId: req.params.id, language: "en" },
-          { $set: { "fields.title": translatedTitleEn } }
+        const slug = updatedCountryName
+          ? await generateSlug(updatedCountryName)
+          : undefined;
+        const translations = await translateFields(
+          {
+            name: updatedCountryName,
+            description: updatedNewsCountry.description,
+            slug
+          },
+          {
+            stringFields: ["name", "description"],
+            lowercaseFields: ["slug"]
+          }
         );
 
-        await Translation.updateOne(
-          { refModel: "NewsCountry", refId: req.params.id, language: "tr" },
-          { $set: { "fields.title": translatedTitleTr } }
-        );
+        const savedTranslations = [];
+        for (const [language, { fields }] of Object.entries(translations)) {
+          const translation = await CountryTranslation.findOneAndUpdate(
+            { country: req.params.id, language },
+            {
+              $set: {
+                name: fields.name,
+                description: fields.description,
+                slug: fields.slug
+              }
+            },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+          );
+          savedTranslations.push({
+            translation: translation._id,
+            language
+          });
+        }
+
+        await NewsCountry.findByIdAndUpdate(req.params.id, {
+          $set: { translations: savedTranslations }
+        });
       } catch (translateErr) {
         console.error("خطا در ترجمه:", translateErr);
         return res.status(500).json({
@@ -173,8 +191,8 @@ exports.updateNewsCountry = async (req, res) => {
         });
       }
     }
-    if (updatedNewsCountry.title) {
-      updatedNewsCountry.slug = await generateSlug(updatedNewsCountry.title);
+    if (updatedCountryName) {
+      updatedNewsCountry.slug = await generateSlug(updatedCountryName);
     }
     const result = await NewsCountry.findByIdAndUpdate(
       req.params.id,

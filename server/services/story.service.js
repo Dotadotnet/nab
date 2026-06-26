@@ -1,8 +1,12 @@
 // controllers/story.controller.js
 const Story = require("../models/story.model");
-const Translation = require("../models/translation.model");
+const StoryTranslation = require("../models/storyTranslation.model");
 const PromoBanner = require("../models/promoBanner.model");
 const translateFields = require("../utils/translateFields");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 exports.addStory = async (req, res) => {
   try {
@@ -40,23 +44,17 @@ await PromoBanner.findByIdAndUpdate(promoBanner, {
         { stringFields: ["title", "caption"] }
       );
 
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "Story",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "story",
+        result._id
       );
 
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await StoryTranslation.insertMany(
         translationDocs
       );
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
 
       await Story.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
@@ -96,13 +94,12 @@ exports.getStories = async (req, res) => {
     let matchedIds = [];
 
     if (search) {
-      const translations = await Translation.find({
+      const translations = await StoryTranslation.find({
         language: req.locale,
-        refModel: "Story",
-        "fields.title": { $regex: search, $options: "i" }
-      }).select("refId");
+        title: { $regex: search, $options: "i" }
+      }).select("story");
 
-      matchedIds = translations.map((t) => t.refId);
+      matchedIds = translations.map((t) => t.story);
     }
 
     const query = {

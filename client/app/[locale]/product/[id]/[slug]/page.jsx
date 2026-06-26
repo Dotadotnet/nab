@@ -2,24 +2,95 @@ import DetailCard from "@/components/details/DetailCard";
 import Left from "@/components/details/Left";
 import Right from "@/components/details/Right";
 import AllReviews from "@/components/shared/review/AllReviews";
+import {
+  JsonLd,
+  absoluteUrl,
+  buildAlternates,
+  buildMetadata,
+  fetchJson,
+  getTranslationFields,
+  localizedPath,
+  stripHtml
+} from "@/lib/seo";
+
+async function getProduct(id, locale) {
+  return fetchJson(`/product/get-product/${id}`, locale, {
+    next: { tags: ["product", `product/${id}`] }
+  });
+}
+
+export async function generateMetadata({ params }) {
+  const { id, locale, slug } = await params;
+  const product = await getProduct(id, locale);
+  const fields = getTranslationFields(product, locale);
+  const title = fields.title || product?.title;
+  const description = fields.metaDescription || fields.summary || fields.description;
+  const canonical = localizedPath(
+    locale,
+    `/product/${product?.productId || id}/${fields.slug || slug}`
+  );
+
+  return buildMetadata({
+    title: fields.metaTitle || title,
+    description,
+    canonical,
+    image: product?.thumbnail?.url,
+    locale,
+    type: "website",
+    noIndex:
+      product?.publishStatus !== "approved" ||
+      product?.status !== "active" ||
+      product?.isDeleted,
+    alternates: buildAlternates((targetLocale) => {
+      const targetFields = getTranslationFields(product, targetLocale);
+      return `/product/${product?.productId || id}/${targetFields.slug || fields.slug || slug}`;
+    })
+  });
+}
 
 const ProductDetailPage = async ({ params }) => {
   const { id, locale } = await params;
-
-  const api =
-    `${process.env.NEXT_PUBLIC_BASE_URL}` + `/product/get-product/${id}`;
-  const response = await fetch(api, {
-    cache: "no-store",
-    next: { tags: ["product", `product/${id}`] },
-    headers: {
-      "Accept-Language": locale
-    }
-  });
-  const res = await response.json();
-  const product = res.data;
+  const product = await getProduct(id, locale);
+  const fields = getTranslationFields(product, locale);
+  const price = product?.variations?.[0]?.price;
+  const discountedPrice =
+    price && product?.discountAmount > 0
+      ? Math.round(price * (1 - product.discountAmount / 100))
+      : price;
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: fields.title || product?.title,
+          description: stripHtml(fields.summary || fields.description || ""),
+          image: product?.thumbnail?.url ? [absoluteUrl(product.thumbnail.url)] : undefined,
+          sku: String(product?.productId || product?._id || ""),
+          url: absoluteUrl(
+            localizedPath(locale, `/product/${product?.productId}/${fields.slug || ""}`)
+          ),
+          brand: {
+            "@type": "Brand",
+            name: "نقل و حلوای ناب"
+          },
+          offers: discountedPrice
+            ? {
+                "@type": "Offer",
+                priceCurrency: "IRR",
+                price: discountedPrice,
+                availability:
+                  product?.stockStatus === "out-of-stock"
+                    ? "https://schema.org/OutOfStock"
+                    : "https://schema.org/InStock",
+                url: absoluteUrl(
+                  localizedPath(locale, `/product/${product?.productId}/${fields.slug || ""}`)
+                )
+              }
+            : undefined
+        }}
+      />
       <Left product={product} />
       <Right product={product} />
       <div className="  flex  flex-col gap-y-2.5 md:col-span-6 col-span-12">

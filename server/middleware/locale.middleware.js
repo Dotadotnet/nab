@@ -1,11 +1,13 @@
+const { normalizeLanguage } = require("../utils/languages");
+
 module.exports = (req, res, next) => {
-  const originalSend = res.send;
-  
-  let locale =
+  const requestedLocale =
     req.headers["x-lang"] ||
+    req.cookies?.NEXT_LOCALE ||
     (req.headers["accept-language"]
       ? req.headers["accept-language"].split(",")[0].split("-")[0]
       : "fa");
-  req.locale = locale;
+
+  req.locale = normalizeLanguage(requestedLocale);
   next();
 };

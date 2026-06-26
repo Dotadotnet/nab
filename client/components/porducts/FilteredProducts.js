@@ -43,6 +43,22 @@ const FilteredProducts = () => {
       if (filter.dateRange.startDate) params.set("startDate", filter.dateRange.startDate);
       if (filter.dateRange.endDate) params.set("endDate", filter.dateRange.endDate);
     }
+    Object.entries(filter?.dynamicFilters || {}).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => params.append(`filters[${key}]`, item));
+        return;
+      }
+
+      if (value && typeof value === "object") {
+        if (value.min != null && value.min !== "") params.set(`filters[${key}][min]`, value.min);
+        if (value.max != null && value.max !== "") params.set(`filters[${key}][max]`, value.max);
+        return;
+      }
+
+      if (value != null && value !== "") {
+        params.set(`filters[${key}]`, value);
+      }
+    });
     addFilter(params.toString());
   }, [filter, addFilter]);
 

@@ -4,6 +4,7 @@ const validator = require("validator");
 const { ObjectId } = mongoose.Schema.Types;
 const Counter = require("./counter")
 const baseSchema = require("./baseSchema.model");
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 /* ایجاد اسکیمای دسته‌بندی */
 const categorySchema = new mongoose.Schema(
   {
@@ -22,12 +23,12 @@ const categorySchema = new mongoose.Schema(
       {
         translation: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Translation",
+          ref: "CategoryTranslation",
           required: true
         },
         language: {
           type: String,
-          enum: ["fa","en", "tr", "ar"],
+          enum: SUPPORTED_LANGUAGES,
           required: true
         }
       }
@@ -50,6 +51,12 @@ const categorySchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+
+    parent: {
+      type: ObjectId,
+      ref: "Category",
+      default: null
+    },
 
     creator: {
       type: ObjectId,

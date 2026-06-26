@@ -4,7 +4,7 @@
 const express = require("express");
 
 /* middleware imports */
-const upload = require("../middleware/upload.middleware");
+const upload = require("../middleware/arvanUpload.middleware");
 
 /* internal import */
 const bannerController = require("../controllers/promoBanner.controller");

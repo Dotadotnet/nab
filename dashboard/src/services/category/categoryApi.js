@@ -2,6 +2,32 @@
 
 import { nabApi } from "../nab";
 
+function buildCategoryTree(categories = []) {
+  const map = new Map();
+  const roots = [];
+
+  categories.forEach((category) => {
+    map.set(category._id, {
+      ...category,
+      name: category.title,
+      children: []
+    });
+  });
+
+  map.forEach((category) => {
+    const parentId =
+      typeof category.parent === "object" ? category.parent?._id : category.parent;
+
+    if (parentId && map.has(parentId)) {
+      map.get(parentId).children.push(category);
+    } else {
+      roots.push(category);
+    }
+  });
+
+  return roots;
+}
+
 const categoryApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     addCategory: builder.mutation({
@@ -24,6 +50,18 @@ const categoryApi = nabApi.injectEndpoints({
         method: "GET",
       }),
 
+      providesTags: ["Category"],
+    }),
+
+    getCategoryTree: builder.query({
+      query: () => ({
+        url: "/category/get-categories",
+        method: "GET",
+      }),
+      transformResponse: (response) => ({
+        ...response,
+        data: buildCategoryTree(response?.data || []),
+      }),
       providesTags: ["Category"],
     }),
 
@@ -69,6 +107,7 @@ const categoryApi = nabApi.injectEndpoints({
 export const {
   useAddCategoryMutation,
   useGetCategoriesQuery,
+  useGetCategoryTreeQuery,
   useUpdateCategoryMutation,
   useGetCategoryQuery,
   useDeleteCategoryMutation,

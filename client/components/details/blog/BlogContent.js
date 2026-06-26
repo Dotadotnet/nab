@@ -1,4 +1,4 @@
-
+"use client";
 import React from "react";
 import SkeletonText from "@/components/shared/skeletonLoading/SkeletonText";
 import SkeletonImage from "@/components/shared/skeletonLoading/SkeletonImage";

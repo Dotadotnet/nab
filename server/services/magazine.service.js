@@ -149,6 +149,23 @@ exports.getMagazines = async (req, res) => {
     .limit(limit)
     .sort({ createdAt: -1 });
 
+  const magazineIds = magazines.map((magazine) => magazine._id);
+  const translations = await MagazineTranslation.find({
+    magazine: { $in: magazineIds }
+  }).select("magazine language title slug summary metaTitle metaDescription canonicalUrl");
+
+  const translationsByMagazine = translations.reduce((result, translation) => {
+    const key = String(translation.magazine);
+    result[key] = result[key] || [];
+    result[key].push(translation);
+    return result;
+  }, {});
+
+  const data = magazines.map((magazine) => ({
+    ...magazine.toObject(),
+    translations: translationsByMagazine[String(magazine._id)] || []
+  }));
+
   const total = await Magazine.countDocuments(filter);
   const totalPages = Math.ceil(total / limit);
 
@@ -156,7 +173,7 @@ exports.getMagazines = async (req, res) => {
     acknowledgement: true,
     message: "Ok",
     description: "مجله‌ها با موفقیت دریافت شدند",
-    data: magazines,
+    data,
     pagination: {
       currentPage: page,
       totalPages,

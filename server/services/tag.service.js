@@ -1,9 +1,13 @@
 /* internal import */
 const Tag = require("../models/tag.model");
-const Translation = require("../models/translation.model");
+const TagTranslation = require("../models/tagTranslation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const translateFields = require("../utils/translateFields");
 const Product = require("../models/product.model");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
@@ -11,20 +15,20 @@ const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 /* add new tag */
 exports.addTag = async (req, res) => {
   try {
-    const { title, description, keynotes, robots } = req.body;
+    const { title, description, keynotes } = req.body;
 
     const parsedKeynotes = JSON.parse(keynotes);
-    const parsedRobots = JSON.parse(robots);
-
-    const robotsArray = parsedRobots.map((value, index) => ({
-      id: index + 1,
-      value
-    }));
+    const thumbnail = req.uploadedFiles?.thumbnail?.length
+      ? {
+          url: req.uploadedFiles.thumbnail[0].url,
+          public_id: req.uploadedFiles.thumbnail[0].key
+        }
+      : undefined;
 
     const tag = new Tag({
       creator: req.admin._id,
       title: title,
-      robots: robotsArray
+      ...(thumbnail ? { thumbnail } : {})
     });
 
     const result = await tag.save();
@@ -51,26 +55,20 @@ exports.addTag = async (req, res) => {
             "description",
             "content",
             "metaTitle",
-            "metaDescription",
-            "canonicalUrl"
+            "metaDescription"
           ],
+          copyFields: ["canonicalUrl"],
           lowercaseFields: ["slug"],
           arrayStringFields: ["keynotes"]
         }
       );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "Tag",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "tag",
+        result._id
       );
-      const savedTranslations = await Translation.insertMany(translationDocs);
-      const translationInfos = savedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const savedTranslations = await TagTranslation.insertMany(translationDocs);
+      const translationInfos = buildTranslationInfos(savedTranslations);
       await Tag.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
       });
@@ -99,6 +97,42 @@ exports.addTag = async (req, res) => {
       error: error.message
     });
   }
+};
+
+exports.getTag = async (req, res) => {
+  const tag = await Tag.findOne({ _id: req.params.id, isDeleted: false })
+    .populate([
+      {
+        path: "translations.translation",
+        match: { language: req.locale }
+      },
+      {
+        path: "creator",
+        select: "name avatar"
+      }
+    ]);
+
+  if (!tag) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "ØªÚ¯ ÛŒØ§ÙØª Ù†Ø´Ø¯"
+    });
+  }
+
+  const object = tag.toObject();
+  const fields = object.translations?.find((item) => item.translation)?.translation || {};
+
+  res.status(200).json({
+    acknowledgement: true,
+    message: "Ok",
+    description: "ØªÚ¯ Ø¨Ø§ Ù…ÙˆÙÙ‚ÛŒØª Ø¯Ø±ÛŒØ§ÙØª Ø´Ø¯",
+    data: {
+      ...object,
+      description: fields.description || "",
+      keynotes: fields.keynotes || []
+    }
+  });
 };
 
 
@@ -143,13 +177,12 @@ exports.getTags = async (req, res) => {
     let matchedTagIds = [];
 
     if (search) {
-      const translations = await Translation.find({
+      const translations = await TagTranslation.find({
         language: req.locale,
-        refModel: "Tag",
-        "fields.title": { $regex: search, $options: "i" }
-      }).select("refId");
+        title: { $regex: search, $options: "i" }
+      }).select("tag");
 
-      matchedTagIds = translations.map((t) => t.refId);
+      matchedTagIds = translations.map((t) => t.tag);
     }
 
     const query = {
@@ -196,14 +229,15 @@ exports.getTags = async (req, res) => {
 /* update tag */
 exports.updateTag = async (req, res) => {
   let updatedTag = req.body;
-  const parsedRobots = JSON.parse(req.body.robots);
-  const robotsArray = parsedRobots.map((value, index) => ({
-    id: index + 1,
-    value
-  }));
 
   updatedTag.keynotes = JSON.parse(req.body.keynotes);
-  updatedTag.robots = robotsArray;
+  if (req.uploadedFiles?.thumbnail?.length) {
+    updatedTag.thumbnail = {
+      url: req.uploadedFiles.thumbnail[0].url,
+      public_id: req.uploadedFiles.thumbnail[0].key
+    };
+  }
+
   await Tag.findByIdAndUpdate(req.params.id, updatedTag);
 
   res.status(200).json({

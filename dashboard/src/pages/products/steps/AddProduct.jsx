@@ -11,7 +11,6 @@ import Gallery from "./Gallery";
 import Features from "./Features";
 import Campaign from "./Campaign";
 import ProductStatus from "./ProductStatus";
-import AddTag from "../../tags/add";
 
 const StepAddProduct = () => {
   const [thumbnail, setThumbnail] = useState(null);
@@ -22,9 +21,6 @@ const StepAddProduct = () => {
   const [invalidSteps, setInvalidSteps] = useState({});
   const [features, setFeatures] = useState([{icon:'', title: "", content: [""] }]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const openAddModal = () => setIsAddModalOpen(true);
-  const closeAddModal = () => setIsAddModalOpen(false);
   const {
     register,
     setValue,
@@ -236,7 +232,6 @@ const StepAddProduct = () => {
           errors={errors}
           setSelectedOptions={setSelectedTags}
           selectedOptions={selectedTags}
-          setIsAddModalOpen={setIsAddModalOpen}
         />
         );
       default:
@@ -286,7 +281,6 @@ const StepAddProduct = () => {
           </div>
         )}
       </form>
-      {isAddModalOpen && <AddTag isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />}
 
     </>
   );

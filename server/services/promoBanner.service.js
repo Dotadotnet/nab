@@ -1,7 +1,11 @@
 const PromoBanner = require("../models/promoBanner.model");
 const remove = require("../utils/remove.util");
-const Translation = require("../models/translation.model");
+const PromoBannerTranslation = require("../models/promoBannerTranslation.model");
 const translateFields = require("../utils/translateFields");
+const {
+  buildTranslationDocs,
+  buildTranslationInfos
+} = require("../utils/translationDocs");
 
 exports.addPromoBanner = async (req, res) => {
   try {
@@ -28,23 +32,17 @@ exports.addPromoBanner = async (req, res) => {
         { stringFields: ["title", "description"] }
       );
 
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          refModel: "PromoBanner",
-          refId: result._id,
-          fields
-        })
+      const translationDocs = buildTranslationDocs(
+        translations,
+        "promoBanner",
+        result._id
       );
 
-      const insertedTranslations = await Translation.insertMany(
+      const insertedTranslations = await PromoBannerTranslation.insertMany(
         translationDocs
       );
 
-      const translationInfos = insertedTranslations.map((t) => ({
-        translation: t._id,
-        language: t.language
-      }));
+      const translationInfos = buildTranslationInfos(insertedTranslations);
 
       await PromoBanner.findByIdAndUpdate(result._id, {
         $set: { translations: translationInfos }
@@ -83,13 +81,12 @@ exports.getbanners = async (req, res) => {
     let matchedIds = [];
 
     if (search) {
-      const translations = await Translation.find({
+      const translations = await PromoBannerTranslation.find({
         language: req.locale,
-        refModel: "PromoBanner",
-        "fields.title ": { $regex: search, $options: "i" }
-      }).select("refId");
+        title: { $regex: search, $options: "i" }
+      }).select("promoBanner");
 
-      matchedIds = translations.map((t) => t.refId);
+      matchedIds = translations.map((t) => t.promoBanner);
     }
 
     const query = {
@@ -199,16 +196,17 @@ exports.updatePromoBanner = async (req, res) => {
     }
 
     if (changedFields.length > 0) {
-      const translations = await translateFields(updated, changedFields);
+      const translations = await translateFields(updated, {
+        stringFields: changedFields
+      });
 
       for (const [language, { fields }] of Object.entries(translations)) {
-        await Translation.findOneAndUpdate(
+        await PromoBannerTranslation.findOneAndUpdate(
           {
             language,
-            refModel: "PromoBanner",
-            refId: promoBanner._id
+            promoBanner: promoBanner._id
           },
-          { fields },
+          { $set: fields },
           { upsert: true, new: true }
         );
       }

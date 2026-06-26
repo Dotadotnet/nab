@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const translationSchema = new mongoose.Schema(
   {
-    language: { type: String, enum: ["fa" ,"en", "tr","ar"], required: true },
+    language: { type: String, enum: SUPPORTED_LANGUAGES, required: true },
 
     refModel: { type: String, required: true },
     refId: { type: ObjectId, required: true }, 

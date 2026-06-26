@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const baseSchema = require("./baseSchema.model");
 const Counter = require("./counter");
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
+const { generateSlug } = require("../utils/seoUtils");
 
 const productSchema = new mongoose.Schema(
   {
@@ -21,12 +23,12 @@ const productSchema = new mongoose.Schema(
       {
         translation: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Translation",
+          ref: "ProductTranslation",
           required: true
         },
         language: {
           type: String,
-          enum: ["fa", "en", "tr", "ar"],
+          enum: SUPPORTED_LANGUAGES,
           required: true
         }
       }
@@ -120,6 +122,11 @@ const productSchema = new mongoose.Schema(
       type: ObjectId,
       ref: "Category"
     },
+    filterValues: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
     qrCode: {
       type: String,
       required: false
@@ -182,7 +189,7 @@ productSchema.pre("save", async function (next) {
     );
     this.productId = counter.seq;
     if (!this.canonicalUrl) {
-      const slugPart = this.slug ? this.slug : encodeURIComponent(this.title).replace(" ",'-');
+      const slugPart = this.slug || await generateSlug(this.title);
       this.canonicalUrl = `${defaultDomain}/product/${this.productId}/${slugPart}`;
     }
     next();

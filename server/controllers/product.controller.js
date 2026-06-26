@@ -27,7 +27,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getDetailsProducts = async (req, res, next) => {
   try {
-    await productService.getDetailsProducts(res);
+    await productService.getDetailsProducts(req, res);
   } catch (error) {
     next(error);
   } finally {

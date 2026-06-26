@@ -7,6 +7,7 @@ const axios = require("axios");
 const Session = require("../models/session.model");
 const Address = require("../models/address.model");
 const { sendSms } = require("../utils/smsService");
+const { notifyAdmins } = require("./support.service");
 
 require("dotenv").config();
 
@@ -251,6 +252,11 @@ exports.verifyMellatPayment = async (req, res) => {
       );
 
 
+      const defaultAddress = await Address.findOne({
+        user: updatedPurchase.customer._id,
+        isDefault: true
+      });
+
       const order = await Order.create({
         customer: updatedPurchase.customer._id,
         purchase: updatedPurchase._id,
@@ -264,10 +270,18 @@ exports.verifyMellatPayment = async (req, res) => {
         paymentRefId: SaleReferenceId
       });
 
-      const defaultAddress = await Address.findOne({
-        user: updatedPurchase.customer._id,
-        isDefault: true
+      notifyAdmins({
+        type: "order_created",
+        title: "سفارش جدید",
+        body: `سفارش ${order.orderId} ثبت شد`,
+        data: {
+          order: order._id,
+          orderId: order.orderId
+        }
+      }).catch((error) => {
+        console.error("Admin notification error:", error.message);
       });
+
       let successMessage = "";
       let customerMessage = `سفارش شما با موفقیت ثبت و در اسرع وقت ارسال خواهد شد.\n`;
       customerMessage += `🎁 از اینکه نقل و حلوا ناب را انتخاب کردید سپاسگزاریم.\n`;
@@ -403,7 +417,7 @@ exports.getAllPayments = async (req, res) => {
             populate: {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title language"
+              select: "title language"
             }
           }
         }
@@ -637,7 +651,7 @@ exports.getPaymentDetails = async (req, res) => {
             populate: {
               path: "translations.translation",
               match: { language: req.locale },
-              select: "fields.title language"
+              select: "title language"
             }
           }
         }
