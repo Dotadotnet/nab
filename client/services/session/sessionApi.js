@@ -4,14 +4,16 @@ const sessionApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     // createSession
     createSession: builder.mutation({
-      query: () => {
+      query: ({ locale } = {}) => {
         return {
           url: "/session/create",
           method: "POST",
-          credentials: "include"
+          credentials: "include",
+          headers: {
+            "Accept-Language": locale
+          }
         };
-      },
-      invalidatesTags: ["Session"]
+      }
     }),
 
     // persist sesssion
@@ -36,8 +38,7 @@ const sessionApi = nabApi.injectEndpoints({
         method: "POST",
         body,
         credentials: "include"
-      }),
-      invalidatesTags: ["Session"]
+      })
     })
   })
 });

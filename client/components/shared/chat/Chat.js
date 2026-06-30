@@ -9,7 +9,7 @@ import language from "@/app/language";
 
 const CRISP_LAUNCHER_STYLE_ID = "nab-hide-crisp-launcher";
 const CRISP_LAUNCHER_SELECTORS =
-	"#crisp-chatbox > div > a, #crisp-chatbox a.cc-unoo, #crisp-chatbox span.cc-157aw.cc-1kgzy";
+	"#crisp-chatbox a.cc-unoo, #crisp-chatbox span.cc-157aw.cc-1kgzy, #crisp-chatbox span.cc-1gfkz";
 
 function hideCrispLauncher() {
 	if (typeof document === "undefined") return;
@@ -18,9 +18,9 @@ function hideCrispLauncher() {
 		const style = document.createElement("style");
 		style.id = CRISP_LAUNCHER_STYLE_ID;
 		style.textContent = `
-			#crisp-chatbox > div > a,
 			#crisp-chatbox a.cc-unoo,
-			#crisp-chatbox span.cc-157aw.cc-1kgzy {
+			#crisp-chatbox span.cc-157aw.cc-1kgzy,
+			#crisp-chatbox span.cc-1gfkz {
 				display: none !important;
 				opacity: 0 !important;
 				pointer-events: none !important;
@@ -156,10 +156,6 @@ export default function Chat({ chatState, setChatState }) {
                 all_elements.forEach(element => {
                     element.style.cssText += 'font-family:Vazir !important';
                 });
-                let option_button = document.querySelector('a.cc-8ve5w.cc-gge6o');
-                if (option_button) {
-                    option_button.remove();
-                }
                 if (document.querySelector("div.cc-1no03")) {                    
                     if (screen.width > 480) {
                         document.querySelector("div.cc-1no03").style.cssText = "width: 320px !important; bottom: 117px !important;";

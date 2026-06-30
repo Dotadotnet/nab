@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   usePersistSessionQuery,
@@ -89,22 +89,44 @@ const Session = ({ children }) => {
   const pathname = usePathname();
 
   const dispatch = useDispatch();
+  const initializedRef = useRef(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const [createSession] = useCreateSessionMutation();
   const [trackSession] = useTrackSessionMutation();
   const {
     data: sessionData,
-    error: sessionError,
     isFetching
-  } = usePersistSessionQuery({ locale });
+  } = usePersistSessionQuery(
+    { locale },
+    {
+      skip: !sessionReady
+    }
+  );
 
   const session = useMemo(() => sessionData?.data || null, [sessionData]);
+
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    createSession({ locale })
+      .unwrap()
+      .then((data) => {
+        dispatch(setSession(data?.data || data));
+      })
+      .catch(() => {})
+      .finally(() => {
+        setSessionReady(true);
+      });
+  }, [createSession, dispatch, locale]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+
     if (!isFetching && session) {
       dispatch(setSession(session));
-    } else if (!isFetching && sessionError) {
-      createSession();
     }
-  }, [dispatch, session, sessionError, createSession, isFetching]);
+  }, [dispatch, session, isFetching, sessionReady]);
 
   useEffect(() => {
     if (!session) return undefined;

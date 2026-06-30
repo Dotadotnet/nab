@@ -198,9 +198,11 @@ async function initSession(req, res, next) {
     }
 
     res.json({
+      acknowledgement: true,
       sessionId: sessionData.sessionId,
       userId: sessionData.userId,
-      role: sessionData.role
+      role: sessionData.role,
+      data: sessionData
     });
   } catch (err) {
     next(err);
@@ -209,7 +211,27 @@ async function initSession(req, res, next) {
 
 async function getSession(req, res) {
   try {
-    const sessionData = await Session.findOne({ sessionId: req.sessionID });
+    let sessionData = await Session.findOne({ sessionId: req.sessionID });
+
+    if (!sessionData) {
+      const tracking = buildTrackingData(req);
+      sessionData = await ensureSession(req, {
+        ip: tracking.ip,
+        forwardedFor: tracking.forwardedFor,
+        userAgent: tracking.userAgent,
+        language: tracking.language,
+        timezone: tracking.timezone,
+        referrer: tracking.referrer,
+        landingPage: tracking.pageView.path || tracking.pageView.url,
+        lastPage: tracking.pageView.path || tracking.pageView.url,
+        location: tracking.location,
+        browser: tracking.browser,
+        os: tracking.os,
+        device: tracking.device,
+        screen: tracking.screen,
+        utm: tracking.utm
+      });
+    }
 
     if (!sessionData) {
       return res.status(404).json({
