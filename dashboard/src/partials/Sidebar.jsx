@@ -82,19 +82,27 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
     },
     { title: "کاربران", icon: User, path: "/users" },
     { title: "نشست‌ها", icon: User, path: "/sessions" },
-    { title: " دسته بندی", icon: Category, path: "/categories" },
     {
-      title: "فیلترها",
+      title: "دسته‌بندی و فیلترها",
       icon: Category,
       subItems: [
+        { title: "دسته‌بندی", path: "/categories" },
         { title: "تعریف فیلترها", path: "/filter-definitions" },
         { title: "فیلترهای دسته", path: "/category-filters" }
+      ]
+    },
+    {
+      title: "محصولات",
+      icon: Product,
+      subItems: [
+        { title: "لیست محصولات", path: "/products" },
+        { title: "واحدها", path: "/units" },
+        { title: "ویژگی‌ها", path: "/product-attributes" }
       ]
     },
     { title: "َشبکه های اجتماعی", icon: Social, path: "/socialLinks" },
     { title: "تگها", icon: Tag, path: "/tags" },
     { title: "مجله ها ", icon: Post, path: "/magazines" },
-    { title: "محصولات", icon: Product, path: "/products" },
     { title: "سبد های خرید", icon: Cart, path: "/carts" },
     { title: "پرداخت ها", icon: Payment, path: "/payments" },
     { title: "سفارشات", icon: Order, path: "/orders" },

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import Edit from "../icons/Edit";
-import Upload from "../icons/Upload";
 import { toast } from "react-hot-toast";
+import ImageCropModal from "./gallery/ImageCropModal";
 
 const EditableImage = ({ 
   src, 
@@ -13,19 +13,10 @@ const EditableImage = ({
   onClick // Add onClick prop for gallery images
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleImageUpdate = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("لطفاً یک فایل تصویری انتخاب کنید");
-      return;
-    }
-
-    // Validate file size (max 5MB)
+  const uploadImage = async (file) => {
     if (file.size > 5 * 1024 * 1024) {
       toast.error("حجم فایل نباید بیشتر از 5 مگابایت باشد");
       return;
@@ -43,6 +34,18 @@ const EditableImage = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleImageUpdate = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("لطفاً یک فایل تصویری انتخاب کنید");
+      return;
+    }
+
+    setCropFile(file);
   };
 
   const handleEditClick = () => {
@@ -91,6 +94,17 @@ const EditableImage = ({
         accept="image/*"
         onChange={handleImageUpdate}
         className="hidden"
+      />
+
+      <ImageCropModal
+        file={cropFile}
+        height={1440}
+        width={1440}
+        onApply={(file) => {
+          setCropFile(null);
+          uploadImage(file);
+        }}
+        onCancel={() => setCropFile(null)}
       />
     </div>
   );

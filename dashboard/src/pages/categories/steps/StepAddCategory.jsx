@@ -46,6 +46,10 @@ const StepAddCategory = () => {
     formData.append("tags", JSON.stringify(tags));
     formData.append("title", data.title);
     formData.append("description", data.description);
+    formData.append(
+      "categoryTranslations",
+      JSON.stringify(data.categoryTranslations || {})
+    );
     if (data.parent) formData.append("parent", data.parent);
 
     addCategory(formData);
@@ -143,6 +147,8 @@ const StepAddCategory = () => {
             errors={errors}
             prevStep={prevStep}
             nextStep={nextStep}
+            setValue={setValue}
+            watch={watch}
           />
         );
       case 3:

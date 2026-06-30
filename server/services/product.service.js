@@ -15,6 +15,12 @@ const {
   buildTranslationDocs,
   buildTranslationInfos
 } = require("../utils/translationDocs");
+const { translate } = require("google-translate-api-x");
+const {
+  normalizeLanguage,
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES
+} = require("../utils/languages");
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
@@ -46,26 +52,379 @@ function getProductFilterParams(query = {}) {
   }, {});
 }
 
+function parseJsonObject(value, fallback = {}) {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function parseJsonArray(value, fallback = []) {
+  if (!value) return fallback;
+  if (Array.isArray(value)) return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeIngredients(value) {
+  return parseJsonArray(value)
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+}
+
+function normalizeProductAttributes(value) {
+  return parseJsonArray(value)
+    .map((item, index) => {
+      const label = String(item.label || "").trim();
+      const rawKey = String(item.key || label || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+      const key = /^[a-z]/.test(rawKey) ? rawKey : `attribute_${index + 1}`;
+
+      return {
+        attribute: item.attribute || item.attributeId || undefined,
+        key,
+        label,
+        value: item.value,
+        isComparable: item.isComparable !== false,
+        sortOrder: Number(item.sortOrder) || index
+      };
+    })
+    .filter((item) => item.attribute && item.label && item.value !== undefined && item.value !== "");
+}
+
+function attributesToLegacyFeatures(attributes = []) {
+  return attributes.map((attribute) => ({
+    icon: "",
+    title: attribute.label,
+    content: [String(attribute.value)]
+  }));
+}
+
+function hasNestedTranslationValues(value) {
+  if (!value) return false;
+  if (typeof value === "string") return Boolean(value.trim());
+  if (Array.isArray(value)) return value.some(hasNestedTranslationValues);
+  if (typeof value === "object") {
+    return Object.values(value).some(hasNestedTranslationValues);
+  }
+  return false;
+}
+
+function normalizeIngredientTranslations(translations, fallbackIngredients = []) {
+  const normalized = {};
+
+  for (const language of SUPPORTED_LANGUAGES) {
+    if (language === DEFAULT_LANGUAGE) continue;
+    const values = Array.isArray(translations?.[language])
+      ? translations[language]
+      : [];
+
+    normalized[language] = fallbackIngredients.map((ingredient, index) => {
+      const translated = String(values[index] || "").trim();
+      return translated || ingredient;
+    });
+  }
+
+  return normalized;
+}
+
+function normalizeAttributeTranslations(translations, fallbackAttributes = []) {
+  const normalized = {};
+
+  for (const language of SUPPORTED_LANGUAGES) {
+    if (language === DEFAULT_LANGUAGE) continue;
+    const values = Array.isArray(translations?.[language])
+      ? translations[language]
+      : [];
+
+    normalized[language] = fallbackAttributes.map((attribute, index) => {
+      const translated = values[index] || {};
+      return {
+        ...attribute,
+        label:
+          typeof translated.label === "string" && translated.label.trim()
+            ? translated.label.trim()
+            : attribute.label,
+        value:
+          typeof translated.value === "string" && translated.value.trim()
+            ? translated.value.trim()
+            : attribute.value
+      };
+    });
+  }
+
+  return normalized;
+}
+
+function hasDashboardProductTranslations(translations) {
+  if (!translations || typeof translations !== "object") return false;
+
+  return SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
+    .some((language) => {
+      const fields = translations[language];
+      return (
+        fields &&
+        typeof fields === "object" &&
+        ["title", "summary", "description"].some(
+          (field) => typeof fields[field] === "string" && fields[field].trim()
+        )
+      );
+    });
+}
+
+function isRequiredTranslationFilled(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function validateRequiredProductTranslations({
+  productTranslations,
+  ingredientTranslations,
+  attributeTranslations,
+  ingredients,
+  attributes,
+}) {
+  const missing = [];
+  const requiredProductFields = ["title", "summary", "description"];
+  const requiredLanguages = SUPPORTED_LANGUAGES.filter(
+    (language) => language !== DEFAULT_LANGUAGE
+  );
+
+  for (const language of requiredLanguages) {
+    for (const field of requiredProductFields) {
+      if (!isRequiredTranslationFilled(productTranslations?.[language]?.[field])) {
+        missing.push(`productTranslations.${language}.${field}`);
+      }
+    }
+
+    const languageIngredients = Array.isArray(ingredientTranslations?.[language])
+      ? ingredientTranslations[language]
+      : [];
+    ingredients.forEach((_, index) => {
+      if (!isRequiredTranslationFilled(languageIngredients[index])) {
+        missing.push(`ingredientTranslations.${language}.${index}`);
+      }
+    });
+
+    const languageAttributes = Array.isArray(attributeTranslations?.[language])
+      ? attributeTranslations[language]
+      : [];
+    attributes.forEach((_, index) => {
+      if (!isRequiredTranslationFilled(languageAttributes[index]?.value)) {
+        missing.push(`attributeTranslations.${language}.${index}.value`);
+      }
+    });
+  }
+
+  if (missing.length) {
+    const error = new Error("لطفاً همه فیلدهای ترجمه محصول را کامل کنید");
+    error.statusCode = 400;
+    error.missingFields = missing;
+    throw error;
+  }
+}
+
+function buildRequiredProductTranslationFields(product, overrides = {}) {
+  const fallback = String(
+    overrides.title ||
+      overrides.summary ||
+      overrides.description ||
+      product?.title ||
+      ""
+  ).trim();
+
+  return {
+    title: String(overrides.title || product?.title || fallback).trim(),
+    summary: String(overrides.summary || fallback).trim(),
+    description: String(overrides.description || fallback).trim(),
+    ...overrides,
+  };
+}
+
+function buildDashboardProductTranslations({
+  providedTranslations,
+  ingredientTranslations,
+  attributeTranslations,
+  title,
+  summary,
+  description,
+  slug,
+  metaTitle,
+  metaDescription,
+  canonicalUrl,
+  features,
+  ingredients,
+  attributes,
+}) {
+  const translations = {
+    [DEFAULT_LANGUAGE]: {
+      fields: {
+        title,
+        summary,
+        description,
+        slug,
+        metaTitle,
+        metaDescription,
+        canonicalUrl,
+        features,
+        ingredients,
+        attributes,
+      },
+    },
+  };
+
+  for (const language of SUPPORTED_LANGUAGES) {
+    if (language === DEFAULT_LANGUAGE) continue;
+
+    const fields = providedTranslations?.[language] || {};
+    const translatedTitle =
+      typeof fields.title === "string" ? fields.title.trim() : "";
+    const translatedSummary =
+      typeof fields.summary === "string" ? fields.summary.trim() : "";
+    const translatedDescription =
+      typeof fields.description === "string" ? fields.description.trim() : "";
+    const translatedIngredients = ingredientTranslations?.[language] || ingredients;
+    const translatedAttributes = attributeTranslations?.[language] || attributes;
+    const translatedFeatures = translatedAttributes?.length
+      ? attributesToLegacyFeatures(translatedAttributes)
+      : features;
+
+    if (
+      !translatedTitle &&
+      !translatedSummary &&
+      !translatedDescription &&
+      !hasNestedTranslationValues(translatedIngredients) &&
+      !hasNestedTranslationValues(translatedAttributes)
+    ) {
+      continue;
+    }
+
+    translations[language] = {
+      fields: {
+        title: translatedTitle || title,
+        summary: translatedSummary || summary,
+        description: translatedDescription || description,
+        slug,
+        metaTitle: translatedTitle || metaTitle,
+        metaDescription: translatedSummary || metaDescription,
+        canonicalUrl,
+        features: translatedFeatures,
+        ingredients: translatedIngredients,
+        attributes: translatedAttributes,
+      },
+    };
+  }
+
+  return translations;
+}
+
 /* add new product */
+exports.translateText = async (req, res) => {
+  try {
+    const { text, to = "en" } = req.body;
+    const targetLanguage = normalizeLanguage(to);
+
+    if (!text || typeof text !== "string" || text.trim().length < 2) {
+      return res.status(400).json({
+        acknowledgement: false,
+        message: "Bad Request",
+        description: "متن برای ترجمه معتبر نیست"
+      });
+    }
+
+    const result = await translate(text.trim(), {
+      to: targetLanguage === DEFAULT_LANGUAGE ? "en" : targetLanguage
+    });
+
+    return res.status(200).json({
+      acknowledgement: true,
+      message: "OK",
+      description: "ترجمه با موفقیت انجام شد",
+      data: {
+        text: result.text
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      acknowledgement: false,
+      message: "Translation Error",
+      description: "خطا در ترجمه خودکار",
+      error: error.message
+    });
+  }
+};
+
 exports.addProduct = async (req, res) => {
   try {
     const {
       title,
+      titleEn,
       description,
       summary,
       features,
       campaign,
       variations,
       category,
+      filterValues,
+      ingredients,
+      attributes,
+      ingredientTranslations,
+      attributeTranslations,
+      productTranslations,
       tags,
       ...otherInformation
     } = req.body;
     let thumbnail = null;
     let gallery = [];
-    const parsedFeatures = JSON.parse(features);
+    const parsedIngredients = normalizeIngredients(ingredients);
+    const parsedAttributes = normalizeProductAttributes(attributes);
+    const parsedFeatures = parsedAttributes.length
+      ? attributesToLegacyFeatures(parsedAttributes)
+      : JSON.parse(features);
     const parsedCampaign = JSON.parse(campaign);
     const parsedVariations = JSON.parse(variations);
     const parsedTags = JSON.parse(tags);
+    const parsedFilterValues = parseJsonObject(filterValues);
+    const parsedProductTranslations = parseJsonObject(productTranslations, {});
+    const rawIngredientTranslations = parseJsonObject(ingredientTranslations, {});
+    const rawAttributeTranslations = parseJsonObject(attributeTranslations, {});
+    const parsedIngredientTranslations = normalizeIngredientTranslations(
+      rawIngredientTranslations,
+      parsedIngredients
+    );
+    const parsedAttributeTranslations = normalizeAttributeTranslations(
+      rawAttributeTranslations,
+      parsedAttributes
+    );
+
+    validateRequiredProductTranslations({
+      productTranslations: parsedProductTranslations,
+      ingredientTranslations: rawIngredientTranslations,
+      attributeTranslations: rawAttributeTranslations,
+      ingredients: parsedIngredients,
+      attributes: parsedAttributes,
+    });
+
+    const hasDashboardTranslations =
+      hasDashboardProductTranslations(parsedProductTranslations) ||
+      hasNestedTranslationValues(rawIngredientTranslations) ||
+      hasNestedTranslationValues(rawAttributeTranslations);
+    const manualEnglishTitle =
+      typeof titleEn === "string" ? titleEn.trim() : "";
 
     const resultCampaign = await Campaign.create({
       title: parsedCampaign.title,
@@ -127,6 +486,9 @@ exports.addProduct = async (req, res) => {
       creator: req.admin._id,
       thumbnail,
       category,
+      filterValues: parsedFilterValues,
+      ingredients: parsedIngredients,
+      attributes: parsedAttributes,
       gallery,
       campaign: resultCampaign._id
     });
@@ -161,30 +523,53 @@ exports.addProduct = async (req, res) => {
       $push: { products: product._id }
     });
     try {
-      const translations = await translateFields(
-        {
-          title,
-          summary,
-          description,
-          slug,
-          metaTitle,
-          metaDescription,
-          canonicalUrl,
-          features: parsedFeatures
-        },
-        {
-          stringFields: [
-            "title",
-            "summary",
-            "description",
-            "metaTitle",
-            "metaDescription"
-          ],
-          copyFields: ["canonicalUrl"],
-          lowercaseFields: ["slug"],
-          arrayObjectFields: ["features"]
-        }
-      );
+      const translations = hasDashboardTranslations
+        ? buildDashboardProductTranslations({
+            providedTranslations: parsedProductTranslations,
+            ingredientTranslations: parsedIngredientTranslations,
+            attributeTranslations: parsedAttributeTranslations,
+            title,
+            summary,
+            description,
+            slug,
+            metaTitle,
+            metaDescription,
+            canonicalUrl,
+            features: parsedFeatures,
+            ingredients: parsedIngredients,
+            attributes: parsedAttributes,
+          })
+        : await translateFields(
+            {
+              title,
+              summary,
+              description,
+              slug,
+              metaTitle,
+              metaDescription,
+              canonicalUrl,
+              features: parsedFeatures,
+              ingredients: parsedIngredients,
+              attributes: parsedAttributes
+            },
+            {
+              stringFields: [
+                "title",
+                "summary",
+                "description",
+                "metaTitle",
+                "metaDescription"
+              ],
+              copyFields: ["canonicalUrl", "attributes"],
+              lowercaseFields: ["slug"],
+              arrayStringFields: ["ingredients"],
+              arrayObjectFields: ["features"]
+            }
+          );
+      if (manualEnglishTitle) {
+        translations.en = translations.en || { fields: {} };
+        translations.en.fields.title = manualEnglishTitle;
+      }
       const translationDocs = buildTranslationDocs(
         translations,
         "product",
@@ -219,10 +604,12 @@ exports.addProduct = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in addCategory:", error.message);
-    res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
       acknowledgement: false,
-      message: "Error",
+      message: statusCode === 400 ? "Bad Request" : "Error",
       description: error.message,
+      missingFields: error.missingFields,
       error: error.message
     });
   }
@@ -263,7 +650,7 @@ exports.getProducts = async (req, res) => {
 
         {
           path: "variations",
-          select: "price stock unit lowStockThreshold",
+          select: "price priceHistory stock unit lowStockThreshold",
           populate: {
             path: "unit",
             select: "title value"
@@ -317,7 +704,7 @@ exports.getDetailsProducts = async (req, res) => {
       },
       {
         path: "variations",
-        select: "price stock unit lowStockThreshold",
+        select: "price priceHistory stock unit lowStockThreshold",
         populate: {
           path: "unit",
           select: "title value"
@@ -378,7 +765,7 @@ exports.getDetailsProducts = async (req, res) => {
         },
         {
           path: "variations",
-          select: "price stock unit lowStockThreshold",
+          select: "price priceHistory stock unit lowStockThreshold",
           populate: {
             path: "unit",
             populate: {
@@ -558,6 +945,15 @@ exports.updateProduct = async (req, res) => {
   updatedProduct.features = JSON.parse(req.body.features);
   updatedProduct.campaign = JSON.parse(req.body.campaign);
   updatedProduct.variations = JSON.parse(req.body.variations);
+  if (Object.prototype.hasOwnProperty.call(req.body, "filterValues")) {
+    updatedProduct.filterValues = parseJsonObject(req.body.filterValues);
+  }
+  if (Object.prototype.hasOwnProperty.call(req.body, "ingredients")) {
+    updatedProduct.ingredients = normalizeIngredients(req.body.ingredients);
+  }
+  if (Object.prototype.hasOwnProperty.call(req.body, "attributes")) {
+    updatedProduct.attributes = normalizeProductAttributes(req.body.attributes);
+  }
 
   await Product.findByIdAndUpdate(req.params.id, { $set: updatedProduct });
 
@@ -681,9 +1077,9 @@ exports.updateProductField = async (req, res) => {
       } else {
         // Create new translation if it doesn't exist
         const newTranslation = await ProductTranslation.create({
+          ...buildRequiredProductTranslationFields(product, { [field]: value }),
           language: 'fa',
           product: mongoId,
-          [field]: value
         });
         
         // Add the translation reference to the product
@@ -777,9 +1173,9 @@ exports.updateProductFeatures = async (req, res) => {
     } else {
       // Create new translation if it doesn't exist
       const newTranslation = await ProductTranslation.create({
+        ...buildRequiredProductTranslationFields(product, { features }),
         language: 'fa',
         product: mongoId,
-        features
       });
       
       // Add the translation reference to the product
@@ -885,17 +1281,49 @@ exports.updateProductVariation = async (req, res) => {
       });
     }
 
+    const existingVariation = await Variation.findById(variationId).select("price");
+    if (!existingVariation) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "وریاسیون پیدا نشد",
+        description: "وریاسیونی با این آیدی پیدا نشد"
+      });
+    }
+
     const updateData = {
       updatedAt: Date.now()
     };
-    
-    if (price !== undefined) updateData.price = price;
+    const updateOperation = { $set: updateData };
+
+    if (price !== undefined) {
+      const nextPrice = Number(price);
+      if (Number.isNaN(nextPrice) || nextPrice < 0) {
+        return res.status(400).json({
+          acknowledgement: false,
+          message: "قیمت نامعتبر است",
+          description: "لطفاً قیمت معتبر وارد کنید"
+        });
+      }
+
+      updateData.price = nextPrice;
+
+      if (Number(existingVariation.price) !== nextPrice) {
+        updateOperation.$push = {
+          priceHistory: {
+            previousPrice: existingVariation.price,
+            newPrice: nextPrice,
+            changedBy: req.admin?._id || null,
+            changedAt: new Date()
+          }
+        };
+      }
+    }
     if (stock !== undefined) updateData.stock = stock;
     if (lowStockThreshold !== undefined) updateData.lowStockThreshold = lowStockThreshold;
 
     const variation = await Variation.findByIdAndUpdate(
       variationId,
-      { $set: updateData },
+      updateOperation,
       { new: true }
     ).populate('unit', 'title value');
 

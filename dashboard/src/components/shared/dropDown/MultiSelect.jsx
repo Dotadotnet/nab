@@ -12,8 +12,9 @@ const MultiSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
+  const getItemDisplay = (item) => item?.title || item?.label || item?.value || "";
   const filteredItems = items.filter((item) =>
-    item.value.toLowerCase().includes(searchTerm.toLowerCase())
+    getItemDisplay(item).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleItemSelect = (item) => {
@@ -62,7 +63,7 @@ const MultiSelect = ({
                 className="bg-blue-100  text-blue-700 px-2 py-1 rounded-md flex items-center gap-1 "
               >
                 {icon && <span className="mr-1">{icon}</span>}
-                {item.value}
+                {getItemDisplay(item)}
                 <span
                   className="text-red-500"
                   onClick={(e) => {
@@ -111,7 +112,7 @@ const MultiSelect = ({
                     : "bg-gray-100 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-gray-900  flex gap-x-4 "
                 }`}
               >
-                <span>{item.value}</span>
+                <span>{getItemDisplay(item)}</span>
                 {item.description && (
                   <Tooltip position="left" bg="dark" size="sm">
                     {item.description}

@@ -5,6 +5,7 @@ const Dropdown = ({
   value,
   handleSelect,
   onChange,
+  placeholder = "انتخاب کنید",
   className = "h-12 w-full",
   isReadOnly = false,
   iconOnly = false
@@ -73,7 +74,7 @@ const Dropdown = ({
                 className="w-5 h-5"
                 dangerouslySetInnerHTML={{ __html: selectedItem?.icon }}
               />
-              <span>{selectedItem?.title || selectedItem?.value}</span>
+              <span>{selectedItem?.title || selectedItem?.value || placeholder}</span>
             </div>
           )}
         </span>

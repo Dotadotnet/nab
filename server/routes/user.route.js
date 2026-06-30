@@ -53,7 +53,6 @@ router.get(
 router.patch(
   "/update-information",
   verifyAdmin,
-  authorize("superAdmin", "admin"),
   upload("avatar").single("avatar"),
   userController.updateUser
 );
@@ -70,7 +69,6 @@ router.patch(
 router.delete(
   "/delete-user/:id",
   verifyAdmin,
-  authorize("superAdmin", "admin"),
   userController.deleteUser
 );
 

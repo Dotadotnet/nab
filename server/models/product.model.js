@@ -127,6 +127,43 @@ const productSchema = new mongoose.Schema(
       of: mongoose.Schema.Types.Mixed,
       default: {}
     },
+    ingredients: {
+      type: [String],
+      default: []
+    },
+    attributes: [
+      {
+        attribute: {
+          type: ObjectId,
+          ref: "ProductAttribute"
+        },
+        key: {
+          type: String,
+          trim: true,
+          lowercase: true,
+          match: [/^[a-z][a-z0-9_]*$/, "Attribute key must be snake_case"],
+          maxLength: [60, "Attribute key must be at most 60 characters"]
+        },
+        label: {
+          type: String,
+          trim: true,
+          required: true,
+          maxLength: [100, "Attribute label must be at most 100 characters"]
+        },
+        value: {
+          type: mongoose.Schema.Types.Mixed,
+          required: true
+        },
+        isComparable: {
+          type: Boolean,
+          default: true
+        },
+        sortOrder: {
+          type: Number,
+          default: 0
+        }
+      }
+    ],
     qrCode: {
       type: String,
       required: false

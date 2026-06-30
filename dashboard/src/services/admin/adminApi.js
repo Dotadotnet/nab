@@ -50,7 +50,7 @@ const adminApi = nabApi.injectEndpoints({
         body,
       }),
 
-      invalidatesTags: ["Admin"],
+      invalidatesTags: ["Admin", "User"],
     }),
 
     // admin single admin

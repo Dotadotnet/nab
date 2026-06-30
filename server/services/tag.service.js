@@ -8,16 +8,48 @@ const {
   buildTranslationDocs,
   buildTranslationInfos
 } = require("../utils/translationDocs");
+const { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
 
+function parseJsonObject(value, fallback = {}) {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function hasDashboardTranslations(translations) {
+  if (!translations || typeof translations !== "object") return false;
+
+  return SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
+    .some((language) => {
+      const fields = translations[language];
+      return (
+        fields &&
+        typeof fields === "object" &&
+        ["title", "description"].some(
+          (field) => typeof fields[field] === "string" && fields[field].trim()
+        )
+      );
+    });
+}
+
 /* add new tag */
 exports.addTag = async (req, res) => {
   try {
-    const { title, description, keynotes } = req.body;
+    const { title, description, keynotes, translations: dashboardTranslations } = req.body;
 
     const parsedKeynotes = JSON.parse(keynotes);
+    const parsedTranslations = parseJsonObject(dashboardTranslations);
     const thumbnail = req.uploadedFiles?.thumbnail?.length
       ? {
           url: req.uploadedFiles.thumbnail[0].url,
@@ -39,29 +71,72 @@ exports.addTag = async (req, res) => {
       summary: description
     });
     try {
-      const translations = await translateFields(
-        {
-          title,
-          description,
-          metaTitle,
-          slug,
-          metaDescription,
-          keynotes: parsedKeynotes,
-          canonicalUrl
-        },
-        {
-          stringFields: [
-            "title",
-            "description",
-            "content",
-            "metaTitle",
-            "metaDescription"
-          ],
-          copyFields: ["canonicalUrl"],
-          lowercaseFields: ["slug"],
-          arrayStringFields: ["keynotes"]
-        }
-      );
+      const translations = hasDashboardTranslations(parsedTranslations)
+        ? {
+            [DEFAULT_LANGUAGE]: {
+              fields: {
+                title,
+                description,
+                metaTitle,
+                slug,
+                metaDescription,
+                keynotes: parsedKeynotes,
+                canonicalUrl
+              }
+            },
+            ...Object.fromEntries(
+              SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
+                .map((language) => {
+                  const fields = parsedTranslations[language] || {};
+                  const translatedTitle =
+                    typeof fields.title === "string" && fields.title.trim()
+                      ? fields.title.trim()
+                      : title;
+                  const translatedDescription =
+                    typeof fields.description === "string" && fields.description.trim()
+                      ? fields.description.trim()
+                      : description;
+
+                  return [
+                    language,
+                    {
+                      fields: {
+                        title: translatedTitle,
+                        description: translatedDescription,
+                        metaTitle: translatedTitle,
+                        slug,
+                        metaDescription: translatedDescription,
+                        keynotes: parsedKeynotes,
+                        canonicalUrl
+                      }
+                    }
+                  ];
+                })
+            )
+          }
+        : await translateFields(
+            {
+              title,
+              description,
+              metaTitle,
+              slug,
+              metaDescription,
+              keynotes: parsedKeynotes,
+              canonicalUrl
+            },
+            {
+              stringFields: [
+                "title",
+                "description",
+                "content",
+                "metaTitle",
+                "metaDescription"
+              ],
+              copyFields: ["canonicalUrl"],
+              lowercaseFields: ["slug"],
+              arrayStringFields: ["keynotes"]
+            }
+          );
       const translationDocs = buildTranslationDocs(
         translations,
         "tag",

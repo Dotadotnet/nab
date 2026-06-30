@@ -101,13 +101,43 @@ const adminSchema = new mongoose.Schema(
 
 
     // آدرس
+    province: {
+      type: String,
+      trim: true,
+      maxLength: [100, "استان نباید بیشتر از 100 کاراکتر باشد"],
+    },
+    city: {
+      type: String,
+      trim: true,
+      maxLength: [100, "شهر نباید بیشتر از 100 کاراکتر باشد"],
+    },
     address: {
       type: String,
       default: "N/A",
       trim: true,
       maxLength: [500, "آدرس شما باید حداکثر 500 کاراکتر باشد"],
     },
-
+    plateNumber: {
+      type: Number,
+    },
+    postalCode: {
+      type: Number,
+    },
+    nationalCode: {
+      type: String,
+      trim: true,
+      maxLength: [10, "کد ملی باید 10 رقم باشد"],
+    },
+    identityNumber: {
+      type: String,
+      trim: true,
+      maxLength: [20, "شماره شناسنامه نباید بیشتر از 20 کاراکتر باشد"],
+    },
+    bio: {
+      type: String,
+      trim: true,
+      maxLength: [500, "بیوگرافی نباید بیشتر از 500 کاراکتر باشد"],
+    },
 
     ...baseSchema.obj
   },

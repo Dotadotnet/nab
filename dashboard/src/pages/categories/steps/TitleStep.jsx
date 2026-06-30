@@ -1,14 +1,22 @@
-// components/signup/steps/NameStep.jsx
 import React from "react";
 import NavigationButton from "@/components/shared/button/NavigationButton";
+import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 
-const TitleStep = ({ categories = [], register, errors, prevStep, nextStep }) => {
+const TitleStep = ({
+  categories = [],
+  register,
+  errors,
+  prevStep,
+  nextStep,
+  setValue,
+  watch,
+}) => {
   return (
     <>
       <label htmlFor="parent" className="flex flex-col gap-y-1">
         <span className="text-sm">دسته والد</span>
         <select
-          className="p-2 rounded border"
+          className="rounded border p-2"
           id="parent"
           name="parent"
           {...register("parent")}
@@ -22,61 +30,34 @@ const TitleStep = ({ categories = [], register, errors, prevStep, nextStep }) =>
         </select>
       </label>
 
-      <label htmlFor="title" className="flex flex-col gap-y-1">
-        <span className="text-sm">* عنوان </span>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          {...register("title", {
-            required: "وارد کردن عنوان الزامی است",
-            minLength: {
-              value: 3,
-              message: "عنوان باید حداقل ۳ حرف داشته باشد",
-            },
-            maxLength: {
-              value: 30,
-              message: "عنوان نباید بیشتر از ۳۰ حرف باشد",
-            },
-          })}
-          placeholder="عنوان"
-          maxLength="100"
-          className="p-2 rounded border "
-        />
-        {errors.title && (
-          <span className="text-red-500 text-sm">{errors.title.message}</span>
-        )}
-      </label>
-      <label htmlFor="description" className="w-full flex flex-col gap-y-1">
-        <span className="text-sm">توضیحات*</span>
-        <textarea
-          name="description"
-          id="description"
-          rows="4"
-          maxLength="500"
-          {...register("description", {
-            required: "وارد کردن توضیحات الزامی است",
-            minLength: {
-              value: 50,
-              message: "توضیحات باید حداقل ۵۰ کاراکتر باشد",
-            },
-            maxLength: {
-              value: 800,
-              message: "توضیحات نباید بیشتر از 800 کاراکتر باشد",
-            },
-          })}
-          required
-        />
-        {errors.description && (
-          <span className="text-red-500 text-sm">
-            {errors.description.message}
-          </span>
-        )}
-      </label>
+      <TranslationTabs
+        errors={errors}
+        fields={[
+          {
+            name: "title",
+            label: "عنوان",
+            required: true,
+            minLength: 3,
+            maxLength: 100,
+          },
+          {
+            name: "description",
+            label: "توضیحات",
+            type: "textarea",
+            rows: 4,
+            required: true,
+            minLength: 50,
+            maxLength: 800,
+          },
+        ]}
+        namespace="categoryTranslations"
+        register={register}
+        setValue={setValue}
+        watch={watch}
+      />
 
-      <div className="flex justify-between mt-12">
+      <div className="mt-12 flex justify-between">
         <NavigationButton direction="next" onClick={nextStep} />
-
         <NavigationButton direction="prev" onClick={prevStep} />
       </div>
     </>

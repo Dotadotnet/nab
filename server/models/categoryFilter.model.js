@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 const baseSchema = require("./baseSchema.model");
+const { SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const optionSchema = new mongoose.Schema(
   {
@@ -53,6 +54,20 @@ const categoryFilterSchema = new mongoose.Schema(
       type: [optionSchema],
       default: [],
     },
+    translations: [
+      {
+        translation: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "CategoryFilterTranslation",
+          required: true,
+        },
+        language: {
+          type: String,
+          enum: SUPPORTED_LANGUAGES,
+          required: true,
+        },
+      },
+    ],
     min: {
       type: Number,
       default: null,

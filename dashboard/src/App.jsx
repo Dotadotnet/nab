@@ -5,6 +5,7 @@ import Auth from "./auth"
 import "./css/style.css";
 import "./charts/ChartjsConfig";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/profile";
 import SignIn from "./pages/auth/signin/index";
 import SignUp from "./pages/auth/signup/index";
 import Users from "./pages/users/index";
@@ -37,6 +38,7 @@ import AddStory from "./pages/stories/add";
 import CategoryFilters from "./pages/categoryFilters";
 import CategoryFilterForm from "./pages/categoryFilters/CategoryFilterForm";
 import FilterDefinitions from "./pages/filterDefinitions";
+import ProductAttributes from "./pages/productAttributes";
 import Sessions from "./pages/sessions";
 
 function App() {
@@ -54,6 +56,7 @@ function App() {
       <Auth>
         <Routes>
           <Route exact path="/" element={<Dashboard />} />
+          <Route exact path="/my-profile" element={<Profile />} />
           <Route exact path="/signin" element={<SignIn />} />
           <Route exact path="/signup" element={<SignUp />} />
           <Route exact path="/users" element={<Users />} />
@@ -63,6 +66,7 @@ function App() {
           <Route exact path="/tags/update/:id" element={<UpdateTag />} />
           <Route exact path="/categories" element={<Categories />} />
           <Route exact path="/filter-definitions" element={<FilterDefinitions />} />
+          <Route exact path="/product-attributes" element={<ProductAttributes />} />
           <Route exact path="/category-filters" element={<CategoryFilters />} />
           <Route exact path="/category-filters/add" element={<CategoryFilterForm />} />
           <Route exact path="/category-filters/edit/:id" element={<CategoryFilterForm mode="edit" />} />

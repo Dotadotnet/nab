@@ -17,6 +17,27 @@ const variationSchema = new mongoose.Schema(
       type: Number,
       required: [true, "لطفاً قیمت را وارد کنید"]
     },
+    priceHistory: [
+      {
+        previousPrice: {
+          type: Number,
+          required: true
+        },
+        newPrice: {
+          type: Number,
+          required: true
+        },
+        changedBy: {
+          type: ObjectId,
+          ref: "Admin",
+          default: null
+        },
+        changedAt: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ],
     stock: {
       type: Number,
       required: [true, "لطفاً تعداد موجود را وارد کنید"],

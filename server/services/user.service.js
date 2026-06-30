@@ -259,8 +259,17 @@ exports.getUser = async (req, res) => {
 
 /* update user information */
 exports.updateUser = async (req, res) => {
-  const existingUser = await User.findById(req.user._id);
+  const existingUser = await User.findById(req.admin._id);
   const user = req.body;
+  let avatar = existingUser?.avatar;
+
+  if (!existingUser) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "کاربر یافت نشد"
+    });
+  }
 
   // بررسی عدم تغییر نقش superAdmin
   if (user.role === "superAdmin") {
@@ -278,23 +287,14 @@ exports.updateUser = async (req, res) => {
     req.uploadedFiles["avatar"].length > 0
   ) {
     // حذف تصویر قبلی از سرویس ذخیره‌سازی
-    await remove("avatar", existingUser.avatar?.public_id);
+    if (existingUser.avatar?.public_id && existingUser.avatar.public_id !== "N/A") {
+      await remove("avatar", existingUser.avatar.public_id);
+    }
 
     // تنظیم تصویر جدید
     avatar = {
       url: req.uploadedFiles["avatar"][0].url,
       public_id: req.uploadedFiles["avatar"][0].key
-    };
-  } else if (!req.body.avatarUrl) {
-    // اگر تصویر جدید نیست، حذف تصویر قبلی
-    if (existingUser.avatar?.public_id) {
-      await remove("avatar", existingUser.avatar.public_id);
-    }
-
-    // در صورت عدم ارسال آدرس جدید برای تصویر، مقدار پیش‌فرض
-    avatar = {
-      url: null,
-      public_id: null
     };
   }
 
@@ -429,6 +429,20 @@ exports.updateUserInfo = async (req, res) => {
 
 /* delete user information */
 exports.deleteUser = async (req, res) => {
+  const requesterRole = req.admin?.role;
+  const requesterId = req.admin?._id?.toString();
+  const targetId = req.params.id?.toString();
+  const canDeleteUser =
+    requesterId === targetId || ["superAdmin", "admin"].includes(requesterRole);
+
+  if (!canDeleteUser) {
+    return res.status(403).json({
+      acknowledgement: false,
+      message: "Forbidden",
+      description: "شما مجاز به حذف این حساب کاربری نیستید"
+    });
+  }
+
   const user = await User.findByIdAndUpdate(
     req.params.id,
     {

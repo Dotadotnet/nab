@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import ControlPanel from "../ControlPanel";
 import DynamicOptionsInput from "@/components/shared/DynamicOptionsInput";
-import SendButton from "@/components/shared/button/SendButton";
+import Button from "@/components/shared/button/Button";
+import Modal from "@/components/shared/modal/Modal";
 import {
   useCreateCategoryFilterMutation,
   useGetCategoryFilterQuery,
@@ -44,7 +45,7 @@ function CategoryOptionsEditor({ definition, onChange, value }) {
         helperText={
           isColor
             ? "رنگ‌هایی را وارد کنید که برای این دسته‌بندی قابل انتخاب هستند."
-            : "آیتم‌هایی را وارد کنید که این دسته‌بندی برای این فیلتر دارد."
+            : "گزینه‌هایی را وارد کنید که این دسته‌بندی برای این فیلتر دارد."
         }
         isColor={isColor}
         label={isColor ? "رنگ‌های این دسته‌بندی" : "آیتم‌های این فیلتر در این دسته‌بندی"}
@@ -55,7 +56,7 @@ function CategoryOptionsEditor({ definition, onChange, value }) {
       {definitionOptions.length ? (
         <div className="flex justify-end">
           <button
-            className="rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-300 transition hover:border-white hover:text-white"
+            className="rounded border px-3 py-2 text-xs transition hover:bg-green-50 dark:hover:bg-slate-700"
             onClick={() => onChange(definitionOptions)}
             type="button"
           >
@@ -67,10 +68,117 @@ function CategoryOptionsEditor({ definition, onChange, value }) {
   );
 }
 
-function CategoryFilterForm({ mode = "create" }) {
+function CategoryFilterFields({
+  form,
+  handleChange,
+  handleOptionsChange,
+  isLoadingFilter,
+  selectedDefinition,
+  showNumbers,
+  showOptions,
+  tree,
+  definitions,
+}) {
+  if (isLoadingFilter) {
+    return <div className="w-full p-4 border rounded text-sm">در حال دریافت...</div>;
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-y-4 p-4 border rounded">
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="flex flex-col gap-y-1">
+          <span className="text-sm">دسته‌بندی*</span>
+          <select name="category" onChange={handleChange} required value={form.category}>
+            <option value="">انتخاب دسته‌بندی</option>
+            {renderTreeOptions(tree)}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-y-1">
+          <span className="text-sm">فیلتر آماده*</span>
+          <select name="filter" onChange={handleChange} required value={form.filter}>
+            <option value="">انتخاب فیلتر</option>
+            {definitions.map((filter) => (
+              <option key={filter._id} value={filter._id}>
+                {filter.label} - {getTypeLabel(filter.type)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {selectedDefinition ? (
+        <div className="rounded border bg-gray-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-200">
+          <span className="font-medium">{selectedDefinition.label}</span>
+          <span className="mx-2 text-slate-400">/</span>
+          <span dir="ltr">{selectedDefinition.key}</span>
+          <span className="mx-2 text-slate-400">/</span>
+          <span>{getTypeLabel(selectedDefinition.type)}</span>
+        </div>
+      ) : null}
+
+      {showOptions ? (
+        <CategoryOptionsEditor
+          definition={selectedDefinition}
+          onChange={handleOptionsChange}
+          value={form.options}
+        />
+      ) : null}
+
+      {showNumbers ? (
+        <div className="space-y-3">
+          <div className="rounded border bg-gray-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-200">
+            بازه تعریف اصلی:
+            <span className="mx-2 font-medium">
+              {selectedDefinition.min ?? "-"} تا {selectedDefinition.max ?? "-"}{" "}
+              {selectedDefinition.unit || ""}
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="flex flex-col gap-y-1">
+              <span className="text-sm">حداقل این دسته‌بندی</span>
+              <input name="min" onChange={handleChange} placeholder={selectedDefinition.min ?? ""} type="number" value={form.min} />
+            </label>
+            <label className="flex flex-col gap-y-1">
+              <span className="text-sm">حداکثر این دسته‌بندی</span>
+              <input name="max" onChange={handleChange} placeholder={selectedDefinition.max ?? ""} type="number" value={form.max} />
+            </label>
+            <label className="flex flex-col gap-y-1">
+              <span className="text-sm">واحد این دسته‌بندی</span>
+              <input name="unit" onChange={handleChange} placeholder={selectedDefinition.unit || "GB، تومان، اینچ"} value={form.unit} />
+            </label>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="flex items-center gap-3 text-sm">
+          <input checked={form.isRequired} className="h-4 w-4 accent-green-500" name="isRequired" onChange={handleChange} type="checkbox" />
+          اجباری
+        </label>
+
+        <label className="flex items-center gap-3 text-sm">
+          <input checked={form.isActive} className="h-4 w-4 accent-green-500" name="isActive" onChange={handleChange} type="checkbox" />
+          فعال
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function CategoryFilterForm({
+  editId,
+  isOpen,
+  mode = "create",
+  onClose,
+  onSuccess,
+}) {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const params = useParams();
+  const id = editId || params.id;
   const isEdit = mode === "edit";
+  const isModalMode = typeof isOpen === "boolean";
   const [form, setForm] = useState(initialForm);
 
   const { data: treeData } = useGetCategoryTreeQuery();
@@ -90,6 +198,11 @@ function CategoryFilterForm({ mode = "create" }) {
   const showNumbers = numericTypes.includes(selectedDefinition?.type);
 
   useEffect(() => {
+    if (!isEdit) {
+      setForm(initialForm);
+      return;
+    }
+
     const filter = filterData?.data;
     if (!filter) return;
 
@@ -103,7 +216,7 @@ function CategoryFilterForm({ mode = "create" }) {
       isRequired: Boolean(filter.isRequired),
       isActive: filter.status !== "inactive",
     });
-  }, [filterData]);
+  }, [filterData, isEdit]);
 
   const handleChange = (event) => {
     const { name, value, checked, type } = event.target;
@@ -116,6 +229,14 @@ function CategoryFilterForm({ mode = "create" }) {
 
   const handleOptionsChange = (options) => {
     setForm((prev) => ({ ...prev, options }));
+  };
+
+  const close = () => {
+    if (isModalMode) {
+      onClose?.();
+      return;
+    }
+    navigate("/category-filters");
   };
 
   const handleSubmit = async (event) => {
@@ -148,182 +269,58 @@ function CategoryFilterForm({ mode = "create" }) {
         ? await updateFilter({ id, body }).unwrap()
         : await createFilter(body).unwrap();
 
-      toast.success(response.description || "اتصال فیلتر ذخیره شد");
-      navigate("/category-filters");
+      toast.success(response.description || "فیلتر دسته‌بندی ذخیره شد");
+      onSuccess?.();
+      close();
     } catch (error) {
-      toast.error(
-        error?.data?.description ||
-          error?.message ||
-          "ذخیره اتصال فیلتر انجام نشد"
-      );
+      toast.error(error?.data?.description || error?.message || "ذخیره فیلتر دسته‌بندی انجام نشد");
     }
   };
 
+  const formContent = (
+    <form className="text-sm w-full h-full flex flex-col gap-y-4 mb-3 p-4 overflow-y-auto" onSubmit={handleSubmit}>
+      <h2 className="text-base font-bold">
+        {isEdit ? "ویرایش فیلتر دسته‌بندی" : "افزودن فیلتر به دسته‌بندی"}
+      </h2>
+      <CategoryFilterFields
+        definitions={definitions}
+        form={form}
+        handleChange={handleChange}
+        handleOptionsChange={handleOptionsChange}
+        isLoadingFilter={isLoadingFilter}
+        selectedDefinition={selectedDefinition}
+        showNumbers={showNumbers}
+        showOptions={showOptions}
+        tree={tree}
+      />
+      <div className="flex gap-2">
+        <Button type="submit" className="py-2 mt-4 mb-4 bg-black flex-1" isLoading={isSaving}>
+          ذخیره
+        </Button>
+        <button type="button" className="py-2 px-4 mt-4 mb-4 rounded-secondary border" onClick={close}>
+          انصراف
+        </button>
+      </div>
+    </form>
+  );
+
+  if (isModalMode) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={close}
+        className="lg:w-1/2 md:w-3/5 w-full z-50 p-4 rounded-md overflow-y-hidden"
+      >
+        {formContent}
+      </Modal>
+    );
+  }
+
   return (
     <ControlPanel>
-      <section className="mx-auto max-w-4xl space-y-6">
-        <div className="flex items-center justify-between rounded-2xl border border-zinc-700 bg-black/80 p-5">
-          <div>
-            <p className="text-xs text-zinc-400">تنظیم آیتم‌های فیلتر برای هر دسته‌بندی</p>
-            <h1 className="mt-1 text-2xl font-bold text-white">
-              {isEdit ? "ویرایش فیلتر دسته‌بندی" : "افزودن فیلتر به دسته‌بندی"}
-            </h1>
-          </div>
-          <Link
-            className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-300 transition hover:border-white hover:text-white"
-            to="/category-filters"
-          >
-            بازگشت
-          </Link>
-        </div>
-
-        <form
-          className="space-y-5 rounded-2xl border border-zinc-700 bg-zinc-950 p-5"
-          onSubmit={handleSubmit}
-        >
-          {isLoadingFilter ? (
-            <div className="rounded-xl border border-zinc-800 bg-black px-4 py-6 text-sm text-zinc-500">
-              در حال دریافت...
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="text-sm text-zinc-300">دسته‌بندی</span>
-                  <select
-                    className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition focus:border-white"
-                    name="category"
-                    onChange={handleChange}
-                    required
-                    value={form.category}
-                  >
-                    <option value="" className="text-left">انتخاب دسته‌بندی</option>
-                    {renderTreeOptions(tree)}
-                  </select>
-                </label>
-
-                <label className="space-y-2">
-                  <span className="text-sm text-zinc-300">فیلتر آماده</span>
-                  <select
-                    className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition focus:border-white"
-                    name="filter"
-                    onChange={handleChange}
-                    required
-                    value={form.filter}
-                  >
-                    <option value="">انتخاب فیلتر</option>
-                    {definitions.map((filter) => (
-                      <option key={filter._id} value={filter._id}>
-                        {filter.label} - {getTypeLabel(filter.type)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              {selectedDefinition ? (
-                <div className="rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-400">
-                  <span className="text-white">{selectedDefinition.label}</span>
-                  <span className="mx-2 text-zinc-600">/</span>
-                  <span dir="ltr">{selectedDefinition.key}</span>
-                  <span className="mx-2 text-zinc-600">/</span>
-                  <span>{getTypeLabel(selectedDefinition.type)}</span>
-                </div>
-              ) : null}
-
-              {showOptions ? (
-                <CategoryOptionsEditor
-                  definition={selectedDefinition}
-                  onChange={handleOptionsChange}
-                  value={form.options}
-                />
-              ) : null}
-
-              {showNumbers ? (
-                <div className="space-y-3">
-                  <div className="rounded-xl border border-zinc-800 bg-black px-4 py-3 text-sm text-zinc-400">
-                    بازه تعریف اصلی:
-                    <span className="mx-2 text-white">
-                      {selectedDefinition.min ?? "-"} تا {selectedDefinition.max ?? "-"}{" "}
-                      {selectedDefinition.unit || ""}
-                    </span>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <label className="space-y-2">
-                      <span className="text-sm text-zinc-300">حداقل این دسته‌بندی</span>
-                      <input
-                        className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
-                        name="min"
-                        onChange={handleChange}
-                        placeholder={selectedDefinition.min ?? ""}
-                        type="number"
-                        value={form.min}
-                      />
-                    </label>
-                    <label className="space-y-2">
-                      <span className="text-sm text-zinc-300">حداکثر این دسته‌بندی</span>
-                      <input
-                        className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
-                        name="max"
-                        onChange={handleChange}
-                        placeholder={selectedDefinition.max ?? ""}
-                        type="number"
-                        value={form.max}
-                      />
-                    </label>
-                    <label className="space-y-2">
-                      <span className="text-sm text-zinc-300">واحد این دسته‌بندی</span>
-                      <input
-                        className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
-                        name="unit"
-                        onChange={handleChange}
-                        placeholder={selectedDefinition.unit || "GB، تومان، اینچ"}
-                        value={form.unit}
-                      />
-                    </label>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-zinc-300">
-                  <input
-                    checked={form.isRequired}
-                    className="h-4 w-4 accent-white"
-                    name="isRequired"
-                    onChange={handleChange}
-                    type="checkbox"
-                  />
-                  اجباری
-                </label>
-
-                <label className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-zinc-300">
-                  <input
-                    checked={form.isActive}
-                    className="h-4 w-4 accent-white"
-                    name="isActive"
-                    onChange={handleChange}
-                    type="checkbox"
-                  />
-                  فعال
-                </label>
-              </div>
-
-              <div className="border-t border-zinc-800 pt-4">
-                <SendButton
-                  isLoading={isSaving}
-                  label={isEdit ? "ذخیره تغییرات" : "ثبت فیلتر دسته‌بندی"}
-                  loadingLabel="در حال ذخیره..."
-                />
-              </div>
-            </>
-          )}
-        </form>
-      </section>
+      <section className="mx-auto max-w-3xl">{formContent}</section>
     </ControlPanel>
   );
 }
 
 export default CategoryFilterForm;
-

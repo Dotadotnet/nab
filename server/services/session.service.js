@@ -83,6 +83,21 @@ function pickUtm(body = {}) {
   return { source, medium, campaign, term, content };
 }
 
+function pickClick(body = {}) {
+  const click = body.click || {};
+
+  return {
+    tag: click.tag || "",
+    text: click.text || "",
+    href: click.href || "",
+    id: click.id || "",
+    name: click.name || "",
+    type: click.type || "",
+    role: click.role || "",
+    trackingKey: click.trackingKey || ""
+  };
+}
+
 function buildTrackingData(req) {
   const body = req.body || {};
   const headerUserAgent = req.headers["user-agent"] || "";
@@ -123,6 +138,7 @@ function buildTrackingData(req) {
       title: body.title || "",
       referrer: body.referrer || "",
       event: body.event || "pageview",
+      click: pickClick(body),
       navigationType: body.navigationType || "",
       startedAt,
       endedAt,

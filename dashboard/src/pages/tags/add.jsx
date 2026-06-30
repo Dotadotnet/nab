@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { NavLink, useNavigate } from "react-router-dom";
 import StepIndicator from "../categories/steps/StepIndicator";
+import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 
 const totalSteps = 3;
 
@@ -31,6 +32,7 @@ const AddTag = () => {
     handleSubmit,
     formState: { errors },
     trigger,
+    setValue,
     watch
   } = useForm({ mode: "onChange" });
 
@@ -117,6 +119,7 @@ const AddTag = () => {
     const body = new FormData();
     body.append("title", data.title);
     body.append("description", data.description);
+    body.append("translations", JSON.stringify(data.translations || {}));
     body.append("keynotes", JSON.stringify(cleanKeynotes));
     if (thumbnail) body.append("thumbnail", thumbnail);
     addTag(body);
@@ -126,7 +129,32 @@ const AddTag = () => {
     if (currentStep === 1) {
       return (
         <>
-          <label className="w-full flex flex-col gap-y-1" htmlFor="title">
+          <TranslationTabs
+            errors={errors}
+            fields={[
+              {
+                name: "title",
+                label: "عنوان",
+                required: true,
+                minLength: 3,
+                maxLength: 70,
+              },
+              {
+                name: "description",
+                label: "توضیحات",
+                type: "textarea",
+                rows: 4,
+                required: true,
+                minLength: 10,
+                maxLength: 1600,
+              },
+            ]}
+            namespace="translations"
+            register={register}
+            setValue={setValue}
+            watch={watch}
+          />
+          <label className="hidden" htmlFor="title">
             <span className="text-sm">عنوان*</span>
             <input
               className="p-2 rounded border"
@@ -141,7 +169,7 @@ const AddTag = () => {
             {errors.title && <span className="text-xs text-red-500">{errors.title.message}</span>}
           </label>
 
-          <label className="w-full flex flex-col gap-y-1" htmlFor="description">
+          <label className="hidden" htmlFor="description">
             <span className="text-sm">توضیحات*</span>
             <textarea
               className="p-2 rounded border"

@@ -24,6 +24,14 @@ function getFilterValue(filter, values) {
   return values?.[filter.key];
 }
 
+function getFilterLabel(filter) {
+  return filter?.label || filter?.title || filter?.name || filter?.key || "";
+}
+
+function getOptionLabel(option) {
+  return option?.label || option?.title || option?.name || option?.value || "";
+}
+
 function DynamicFilterControl({ filter, value, onChange }) {
   const options = filter.options || [];
 
@@ -59,7 +67,7 @@ function DynamicFilterControl({ filter, value, onChange }) {
                   style={{ backgroundColor: option.value }}
                 />
               ) : null}
-              {option.label}
+              {getOptionLabel(option)}
             </label>
           );
         })}
@@ -77,7 +85,7 @@ function DynamicFilterControl({ filter, value, onChange }) {
         <option value="">همه</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
-            {option.label}
+            {getOptionLabel(option)}
           </option>
         ))}
       </select>
@@ -283,7 +291,7 @@ const FilterSidebar = () => {
               categoryFilters.map((item) => (
                 <div className="flex flex-col gap-y-2.5" key={item._id}>
                   <h2 className="text-lg flex items-baseline gap-x-1">
-                    {item.label}
+                    {getFilterLabel(item)}
                     {item.unit ? (
                       <span className="!text-xs">({item.unit})</span>
                     ) : null}

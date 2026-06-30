@@ -35,6 +35,7 @@ export const nabApi = createApi({
     "Address",
     "FilterDefinition",
     "CategoryFilter",
+    "ProductAttribute",
     "Session"
   ],
   endpoints: () => ({})

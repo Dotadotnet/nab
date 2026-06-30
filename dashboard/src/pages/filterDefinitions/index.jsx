@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import Popup from "@/components/ui/Popup";
 import ControlPanel from "../ControlPanel";
 import AddButton from "@/components/shared/button/AddButton";
 import DeleteModal from "@/components/shared/DeleteModal";
@@ -8,6 +7,8 @@ import DynamicOptionsInput from "@/components/shared/DynamicOptionsInput";
 import Pagination, { usePaginationState } from "@/components/shared/Pagination";
 import SearchBox, { useDebouncedValue } from "@/components/shared/SearchBox";
 import SkeletonItem from "@/components/shared/skeleton/SkeletonItem";
+import Button from "@/components/shared/button/Button";
+import Modal from "@/components/shared/modal/Modal";
 import Pencil from "@/components/icons/Pencil";
 import {
   filterTypes,
@@ -42,18 +43,6 @@ function cleanOptions(options = []) {
     .filter((option) => option.label && option.value);
 }
 
-function ColorOptionPreview({ option }) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span
-        className="h-3 w-3 shrink-0 rounded-full border border-zinc-700"
-        style={{ backgroundColor: option.value }}
-      />
-      <span>{option.label}</span>
-    </span>
-  );
-}
-
 function StatusDot({ active }) {
   return (
     <span
@@ -66,12 +55,6 @@ function StatusDot({ active }) {
 
 function FilterValuePreview({ item }) {
   if (item.options?.length) {
-    if (item.type === "color") {
-      return item.options
-        .map((option) => <ColorOptionPreview key={option.value} option={option} />)
-        .reduce((items, option, index) => (index ? [...items, "، ", option] : [option]), []);
-    }
-
     return item.options.map((option) => option.label).join("، ");
   }
 
@@ -87,40 +70,35 @@ function FilterDefinitionForm({ form, onChange, onOptionsChange }) {
   const showNumbers = numericTypes.includes(form.type);
 
   return (
-    <div className="space-y-5">
+    <div className="w-full flex flex-col gap-y-4 p-4 border rounded">
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2">
-          <span className="text-sm text-zinc-300">عنوان نمایشی</span>
+        <label className="flex flex-col gap-y-1">
+          <span className="text-sm">عنوان نمایشی*</span>
           <input
-            className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
             name="label"
             onChange={onChange}
             placeholder="مثلا گارانتی"
+            required
             value={form.label}
           />
         </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-zinc-300">کلید فنی</span>
+        <label className="flex flex-col gap-y-1">
+          <span className="text-sm">کلید فنی*</span>
           <input
-            className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-left text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white"
             dir="ltr"
             name="key"
             onChange={onChange}
             placeholder="warranty"
+            required
             value={form.key}
           />
         </label>
       </div>
 
-      <label className="block space-y-2">
-        <span className="text-sm text-zinc-300">نوع فیلتر</span>
-        <select
-          className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition focus:border-white"
-          name="type"
-          onChange={onChange}
-          value={form.type}
-        >
+      <label className="flex flex-col gap-y-1">
+        <span className="text-sm">نوع فیلتر*</span>
+        <select name="type" onChange={onChange} required value={form.type}>
           {filterTypes.map((type) => (
             <option key={type.value} value={type.value}>
               {type.label}
@@ -134,7 +112,7 @@ function FilterDefinitionForm({ form, onChange, onOptionsChange }) {
           helperText={
             form.type === "color"
               ? "برای رنگ‌ها مقدار فنی را به شکل کد رنگ مثل #000000 وارد کنید."
-              : "برای گزینه‌هایی مثل گارانتی، هر ردیف یک عنوان و یک مقدار فنی دارد."
+              : "هر ردیف یک عنوان و یک مقدار فنی دارد."
           }
           isColor={form.type === "color"}
           label={form.type === "color" ? "رنگ‌های پیش‌فرض" : "گزینه‌های پیش‌فرض"}
@@ -145,23 +123,23 @@ function FilterDefinitionForm({ form, onChange, onOptionsChange }) {
 
       {showNumbers ? (
         <div className="grid gap-4 md:grid-cols-3">
-          <label className="space-y-2">
-            <span className="text-sm text-zinc-300">حداقل</span>
-            <input className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition focus:border-white" name="min" onChange={onChange} type="number" value={form.min} />
+          <label className="flex flex-col gap-y-1">
+            <span className="text-sm">حداقل</span>
+            <input name="min" onChange={onChange} type="number" value={form.min} />
           </label>
-          <label className="space-y-2">
-            <span className="text-sm text-zinc-300">حداکثر</span>
-            <input className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition focus:border-white" name="max" onChange={onChange} type="number" value={form.max} />
+          <label className="flex flex-col gap-y-1">
+            <span className="text-sm">حداکثر</span>
+            <input name="max" onChange={onChange} type="number" value={form.max} />
           </label>
-          <label className="space-y-2">
-            <span className="text-sm text-zinc-300">واحد</span>
-            <input className="w-full rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-white" name="unit" onChange={onChange} placeholder="GB، تومان، اینچ" value={form.unit} />
+          <label className="flex flex-col gap-y-1">
+            <span className="text-sm">واحد</span>
+            <input name="unit" onChange={onChange} placeholder="GB، تومان، اینچ" value={form.unit} />
           </label>
         </div>
       ) : null}
 
-      <label className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-black px-3 py-3 text-sm text-zinc-300">
-        <input checked={form.isActive} className="h-4 w-4 accent-white" name="isActive" onChange={onChange} type="checkbox" />
+      <label className="flex items-center gap-3 text-sm">
+        <input checked={form.isActive} className="h-4 w-4 accent-green-500" name="isActive" onChange={onChange} type="checkbox" />
         فعال
       </label>
     </div>
@@ -172,7 +150,7 @@ function FilterDefinitions() {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState(initialForm);
   const [selectedFilter, setSelectedFilter] = useState(null);
-  const [popupMode, setPopupMode] = useState(null);
+  const [modalMode, setModalMode] = useState(null);
   const debouncedSearch = useDebouncedValue(search);
   const pagination = usePaginationState(5, debouncedSearch);
 
@@ -190,14 +168,14 @@ function FilterDefinitions() {
   const isSaving = createState.isLoading || updateState.isLoading;
 
   useEffect(() => {
-    if (popupMode === "create") {
+    if (modalMode === "create") {
       setForm(initialForm);
       setSelectedFilter(null);
     }
-  }, [popupMode]);
+  }, [modalMode]);
 
-  const closePopup = () => {
-    setPopupMode(null);
+  const closeModal = () => {
+    setModalMode(null);
     setSelectedFilter(null);
     setForm(initialForm);
   };
@@ -205,10 +183,6 @@ function FilterDefinitions() {
   const handleChange = (event) => {
     const { name, type, checked, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
-  };
-
-  const handleOptionsChange = (options) => {
-    setForm((prev) => ({ ...prev, options }));
   };
 
   const openEdit = (filter) => {
@@ -223,7 +197,7 @@ function FilterDefinitions() {
       unit: filter.unit || "",
       isActive: filter.status !== "inactive",
     });
-    setPopupMode("edit");
+    setModalMode("edit");
   };
 
   const buildBody = () => ({
@@ -237,47 +211,40 @@ function FilterDefinitions() {
     isActive: form.isActive,
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event?.preventDefault();
+
     try {
       const response =
-        popupMode === "edit"
+        modalMode === "edit"
           ? await updateFilter({ id: selectedFilter._id, body: buildBody() }).unwrap()
           : await createFilter(buildBody()).unwrap();
 
-      toast.success(response.description || "تعریف فیلتر ذخیره شد");
-      closePopup();
+      toast.success(response.description || "فیلتر ذخیره شد");
+      closeModal();
     } catch (error) {
-      toast.error(error?.data?.description || "ذخیره تعریف فیلتر انجام نشد");
+      toast.error(error?.data?.description || "ذخیره فیلتر انجام نشد");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!id) return;
-
     try {
       const response = await deleteFilter(id).unwrap();
-      toast.success(response.description || "تعریف فیلتر حذف شد");
+      toast.success(response.description || "فیلتر حذف شد");
     } catch (error) {
-      toast.error(error?.data?.description || "حذف تعریف فیلتر انجام نشد");
+      toast.error(error?.data?.description || "حذف فیلتر انجام نشد");
     }
   };
 
   return (
     <ControlPanel>
-      <SearchBox
-        onChange={setSearch}
-        placeholder="جستجوی عنوان، کلید یا گزینه..."
-        value={search}
-      />
+      <SearchBox onChange={setSearch} placeholder="جستجوی عنوان، کلید یا گزینه..." value={search} />
       <div className="mt-4">
-        <AddButton onClick={() => setPopupMode("create")} />
+        <AddButton onClick={() => setModalMode("create")} />
       </div>
 
       <div className="mt-8 grid w-full grid-cols-12 px-4 text-slate-400">
-        <div className="col-span-8 text-sm lg:col-span-3">
-          <span className="hidden lg:flex">عنوان</span>
-          <span className="flex lg:hidden">عنوان و کلید</span>
-        </div>
+        <div className="col-span-8 text-sm lg:col-span-3">عنوان</div>
         <div className="hidden text-sm lg:col-span-2 lg:flex">کلید</div>
         <div className="hidden text-sm lg:col-span-2 lg:flex">نوع</div>
         <div className="hidden text-sm lg:col-span-4 lg:flex">گزینه‌ها / بازه</div>
@@ -290,7 +257,7 @@ function FilterDefinitions() {
         filters.map((item) => (
           <div
             key={item._id}
-            className="mt-4 grid grid-cols-12 gap-2 rounded-xl border border-gray-200 bg-white px-2 p-1 text-slate-700 transition-all hover:border-slate-100 hover:bg-green-100 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-700 dark:hover:bg-gray-800"
+            className="mt-4 grid grid-cols-12 gap-2 rounded-xl border border-gray-200 bg-white px-2 p-1 text-slate-700 transition-all hover:border-slate-100 hover:bg-green-50/50 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-700 dark:hover:bg-gray-900"
           >
             <div className="col-span-8 flex items-center gap-3 lg:col-span-3">
               <StatusDot active={item.status !== "inactive"} />
@@ -301,24 +268,20 @@ function FilterDefinitions() {
                 </span>
               </article>
             </div>
-
             <div className="hidden items-center text-right lg:col-span-2 lg:flex">
               <span className="line-clamp-1 font-mono text-sm" dir="ltr">{item.key}</span>
             </div>
-
             <div className="hidden items-center text-right lg:col-span-2 lg:flex">
               <span className="line-clamp-1 text-sm">{getTypeLabel(item.type)}</span>
             </div>
-
             <div className="hidden items-center text-right lg:col-span-4 lg:flex">
               <span className="line-clamp-1 text-sm text-slate-600 dark:text-slate-300">
                 <FilterValuePreview item={item} />
               </span>
             </div>
-
             <div className="col-span-4 flex items-center justify-center gap-2 lg:col-span-1">
               <button
-                aria-label="ویرایش تعریف فیلتر"
+                aria-label="ویرایش فیلتر"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-green-400 hover:text-green-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300"
                 onClick={() => openEdit(item)}
                 type="button"
@@ -326,10 +289,10 @@ function FilterDefinitions() {
                 <Pencil className="h-4 w-4" />
               </button>
               <DeleteModal
-                ariaLabel="حذف تعریف فیلتر"
+                ariaLabel="حذف فیلتر"
                 isLoading={deleteState.isLoading}
                 itemTitle={item.label}
-                message="این تعریف فیلتر حذف شود؟"
+                message="این فیلتر حذف شود؟"
                 onDelete={() => handleDelete(item._id)}
               />
             </div>
@@ -339,21 +302,21 @@ function FilterDefinitions() {
 
       <Pagination currentPage={pagination.currentPage} onPageChange={pagination.setCurrentPage} onPageSizeChange={pagination.setPageSize} pageSize={pagination.pageSize} totalItems={meta?.totalItems || filters.length} totalPages={meta?.totalPages} />
 
-      <Popup
-        isOpen={popupMode === "create" || popupMode === "edit"}
-        onClose={closePopup}
-        title={popupMode === "edit" ? "ویرایش تعریف فیلتر" : "افزودن تعریف فیلتر"}
-        footer={
-          <div className="flex items-center justify-end gap-3">
-            <button className="rounded-xl border border-zinc-800 px-4 py-2 text-sm text-zinc-300 transition hover:border-white hover:text-white" onClick={closePopup} type="button">انصراف</button>
-            <button className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50" disabled={isSaving} onClick={handleSubmit} type="button">
-              {isSaving ? "در حال ذخیره..." : "ذخیره"}
-            </button>
-          </div>
-        }
+      <Modal
+        isOpen={modalMode === "create" || modalMode === "edit"}
+        onClose={closeModal}
+        className="lg:w-1/3 md:w-1/2 w-full z-50 p-4 rounded-md overflow-y-hidden"
       >
-        <FilterDefinitionForm form={form} onChange={handleChange} onOptionsChange={handleOptionsChange} />
-      </Popup>
+        <form className="text-sm w-full h-full flex flex-col gap-y-4 mb-3 p-4 overflow-y-auto" onSubmit={handleSubmit}>
+          <h2 className="text-base font-bold">
+            {modalMode === "edit" ? "ویرایش فیلتر" : "افزودن فیلتر"}
+          </h2>
+          <FilterDefinitionForm form={form} onChange={handleChange} onOptionsChange={(options) => setForm((prev) => ({ ...prev, options }))} />
+          <Button type="submit" className="py-2 mt-4 mb-4 bg-black" isLoading={isSaving}>
+            ذخیره
+          </Button>
+        </form>
+      </Modal>
     </ControlPanel>
   );
 }

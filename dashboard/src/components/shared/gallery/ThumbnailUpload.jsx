@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import CloudUpload from "@/components/icons/CloudUpload";
+import ImageCropModal from "./ImageCropModal";
 
 const ThumbnailUpload = ({
   setThumbnail,
@@ -8,21 +9,34 @@ const ThumbnailUpload = ({
   isTitle = true,
   iconSize = 5,
   border = true,
+  cropHeight = 800,
+  cropWidth = 800,
+  enableCrop = true,
   title="انتخاب یک فایل (عکس یا ویدئو)",
   name="thumbnail"
 }) => {
-  const handleThumbnailPreview = (e) => {
-    setThumbnail(e.target.files[0]);
+  const [cropFile, setCropFile] = useState(null);
 
-    const file = e.target.files[0];
-
-    if (file) {
+  const applyThumbnailFile = (file) => {
+    if (!file) return;
+    setThumbnail(file);
+    
       const reader = new FileReader();
       reader.onloadend = () => {
         setThumbnailPreview(reader.result);
       };
       reader.readAsDataURL(file);
+  };
+
+  const handleThumbnailPreview = (e) => {
+    const file = e.target.files[0];
+
+    if (file && enableCrop && file.type.startsWith("image/")) {
+      setCropFile(file);
+      return;
     }
+
+    applyThumbnailFile(file);
   };
 
   return (
@@ -51,6 +65,18 @@ const ThumbnailUpload = ({
         />
         
       </label>
+      {enableCrop && (
+        <ImageCropModal
+          file={cropFile}
+          height={cropHeight}
+          width={cropWidth}
+          onApply={(file) => {
+            applyThumbnailFile(file);
+            setCropFile(null);
+          }}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
     </div>
   );
 };

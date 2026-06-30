@@ -7,6 +7,7 @@ import Modal from "@/components/shared/modal/Modal";
  import Dropdown from "@/components/shared/dropDown/Dropdown";
 import { useGetCategoriesQuery } from "@/services/category/categoryApi";
 import { useForm, Controller } from "react-hook-form";
+import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 
 const AddUnit = ({ isOpen, onClose }) => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -25,6 +26,8 @@ const AddUnit = ({ isOpen, onClose }) => {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm();
   useEffect(() => {
@@ -75,6 +78,7 @@ const AddUnit = ({ isOpen, onClose }) => {
       title: data.title,
       value: data.value,
       description: data.description,
+      translations: data.translations || {},
       category: data.category.id,
     };
     console.log(formData);
@@ -94,8 +98,32 @@ const AddUnit = ({ isOpen, onClose }) => {
       >
         <div className="flex gap-4 flex-col">
           <div className="w-full flex flex-col gap-y-4 p-4 border rounded">
-            {/* title */}
-            <label htmlFor="title" className="w-full flex flex-col gap-y-1">
+            <TranslationTabs
+              errors={errors}
+              fields={[
+                {
+                  name: "title",
+                  label: "عنوان",
+                  required: true,
+                  minLength: 3,
+                  maxLength: 100,
+                },
+                {
+                  name: "description",
+                  label: "توضیحات",
+                  type: "textarea",
+                  rows: 4,
+                  required: true,
+                  minLength: 3,
+                  maxLength: 500,
+                },
+              ]}
+              namespace="translations"
+              register={register}
+              setValue={setValue}
+              watch={watch}
+            />
+            <label htmlFor="title" className="hidden">
               <span className="text-sm">عنوان*</span>
               <input
                 type="text"
@@ -135,7 +163,7 @@ const AddUnit = ({ isOpen, onClose }) => {
             {/* description */}
             <label
               htmlFor="description"
-              className="w-full flex flex-col gap-y-1"
+              className="hidden"
             >
               <span className="text-sm">توضیحات*</span>
               <textarea

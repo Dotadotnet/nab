@@ -21,8 +21,10 @@ const UnitPrice = ({ control, index, remove, errors, units }) => {
                 items={units.map((unit) => ({
                   id: unit._id,
                   value: unit.title,
+                  title: unit.title,
                   description: unit.description,
                 }))}
+                value={value?.value || value?.title || value || ""}
                 placeholder="انتخاب واحد"
                 onChange={onChange}
                 sendId={true} // تغییر به true

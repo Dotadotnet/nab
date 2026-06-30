@@ -10,13 +10,44 @@ const {
   buildTranslationDocs,
   buildTranslationInfos
 } = require("../utils/translationDocs");
+const { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } = require("../utils/languages");
 
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
+
+function parseJsonObject(value, fallback = {}) {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function hasDashboardTranslations(translations) {
+  if (!translations || typeof translations !== "object") return false;
+
+  return SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
+    .some((language) => {
+      const fields = translations[language];
+      return (
+        fields &&
+        typeof fields === "object" &&
+        ["title", "description"].some(
+          (field) => typeof fields[field] === "string" && fields[field].trim()
+        )
+      );
+    });
+}
 
 /* add new unit */
 exports.addUnit = async (req, res) => {
   try {
-    const { title, description, category, value } = req.body;
+    const { title, description, category, value, translations: dashboardTranslations } = req.body;
 console.log("title, description, category, value",title, description, category, value)
     const unit = new Unit({
       title: title,
@@ -30,19 +61,49 @@ console.log("title, description, category, value",title, description, category, 
     const canonicalUrl = `${defaultDomain}/unit/${result.unitId}/${slug}`;
 
     try {
-      const translations = await translateFields(
-        {
-          title,
-          description,
-          slug,
-          canonicalUrl
-        },
-        {
-          stringFields: ["title", "description"],
-          copyFields: ["canonicalUrl"],
-          lowercaseFields: ["slug"]
-        }
-      );
+      const parsedTranslations = parseJsonObject(dashboardTranslations);
+      const translations = hasDashboardTranslations(parsedTranslations)
+        ? {
+            [DEFAULT_LANGUAGE]: {
+              fields: { title, description, slug, canonicalUrl }
+            },
+            ...Object.fromEntries(
+              SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
+                .map((language) => {
+                  const fields = parsedTranslations[language] || {};
+                  return [
+                    language,
+                    {
+                      fields: {
+                        title:
+                          typeof fields.title === "string" && fields.title.trim()
+                            ? fields.title.trim()
+                            : title,
+                        description:
+                          typeof fields.description === "string" && fields.description.trim()
+                            ? fields.description.trim()
+                            : description,
+                        slug,
+                        canonicalUrl
+                      }
+                    }
+                  ];
+                })
+            )
+          }
+        : await translateFields(
+            {
+              title,
+              description,
+              slug,
+              canonicalUrl
+            },
+            {
+              stringFields: ["title", "description"],
+              copyFields: ["canonicalUrl"],
+              lowercaseFields: ["slug"]
+            }
+          );
       const translationDocs = buildTranslationDocs(
         translations,
         "unit",

@@ -7,6 +7,68 @@ import { useLocale, useTranslations } from "next-intl";
 import CustomChat from "./CustomChat";
 import language from "@/app/language";
 
+const CRISP_LAUNCHER_STYLE_ID = "nab-hide-crisp-launcher";
+const CRISP_LAUNCHER_SELECTORS =
+	"#crisp-chatbox > div > a, #crisp-chatbox a.cc-unoo, #crisp-chatbox span.cc-157aw.cc-1kgzy";
+
+function hideCrispLauncher() {
+	if (typeof document === "undefined") return;
+
+	if (!document.getElementById(CRISP_LAUNCHER_STYLE_ID)) {
+		const style = document.createElement("style");
+		style.id = CRISP_LAUNCHER_STYLE_ID;
+		style.textContent = `
+			#crisp-chatbox > div > a,
+			#crisp-chatbox a.cc-unoo,
+			#crisp-chatbox span.cc-157aw.cc-1kgzy {
+				display: none !important;
+				opacity: 0 !important;
+				pointer-events: none !important;
+				visibility: hidden !important;
+			}
+		`;
+		document.head.appendChild(style);
+	}
+
+	document
+		.querySelectorAll(CRISP_LAUNCHER_SELECTORS)
+		.forEach((element) => {
+			element.style.setProperty("display", "none", "important");
+			element.style.setProperty("opacity", "0", "important");
+			element.style.setProperty("pointer-events", "none", "important");
+			element.style.setProperty("visibility", "hidden", "important");
+		});
+}
+
+function watchCrispLauncher() {
+	if (typeof document === "undefined" || typeof MutationObserver === "undefined") {
+		return () => {};
+	}
+
+	let rafId = null;
+	const hideSoon = () => {
+		if (rafId) return;
+		rafId = window.requestAnimationFrame(() => {
+			rafId = null;
+			hideCrispLauncher();
+		});
+	};
+
+	const observer = new MutationObserver(hideSoon);
+	observer.observe(document.body, {
+		attributes: true,
+		attributeFilter: ["class", "style", "data-visible"],
+		childList: true,
+		subtree: true
+	});
+	hideSoon();
+
+	return () => {
+		if (rafId) window.cancelAnimationFrame(rafId);
+		observer.disconnect();
+	};
+}
+
 export default function Chat({ chatState, setChatState }) {
     const lang = useLocale();
     const t = useTranslations("CrispChat");
@@ -15,11 +77,14 @@ export default function Chat({ chatState, setChatState }) {
     const loadedRef = useRef(false);
 
     useEffect(() => {
+		const stopWatchingCrispLauncher = watchCrispLauncher();
+		hideCrispLauncher();
 		Crisp.configure("3eae038f-23ec-4a43-979d-d40ec67706d9", {
 			locale: lang
 		});
 		Crisp.setColorTheme("red");
 		Crisp.chat.hide();
+		hideCrispLauncher();
 
 		const onSessionLoaded = () => {
 			if (!loadedRef.current) {
@@ -27,9 +92,16 @@ export default function Chat({ chatState, setChatState }) {
 				setChatState("close");
 			}
 			Crisp.chat.hide();
+			hideCrispLauncher();
 		};
-		const onChatOpened = () => setChatState("open");
-		const onChatClosed = () => setChatState("close");
+		const onChatOpened = () => {
+			setChatState("open");
+			hideCrispLauncher();
+		};
+		const onChatClosed = () => {
+			setChatState("close");
+			hideCrispLauncher();
+		};
 		try {
 			window.$crisp?.push(["on", "session:loaded", onSessionLoaded]);
 			window.$crisp?.push(["on", "chat:opened", onChatOpened]);
@@ -42,6 +114,7 @@ export default function Chat({ chatState, setChatState }) {
 				loadedRef.current = true;
 				setChatState("close");
 				Crisp.chat.hide();
+				hideCrispLauncher();
 			}
 		}, 5000);
 
@@ -49,6 +122,7 @@ export default function Chat({ chatState, setChatState }) {
 		let interval;
 		pollTimeout = setTimeout(() => {
 			let function_edite = () => {
+				hideCrispLauncher();
                 let button_close = document.querySelector("span.cc-9nfaa.cc-17cww");
                 if (button_close && !button_close.dataset.customChatBound) {
                     button_close.dataset.customChatBound = "true";
@@ -98,7 +172,7 @@ export default function Chat({ chatState, setChatState }) {
 
 
                 if (document.querySelector("span.cc-157aw.cc-1kgzy")) {
-                    document.querySelector("span.cc-157aw.cc-1kgzy").style.cssText = "display : none !important;";
+                    hideCrispLauncher();
                     if (!loadedRef.current) {
                         loadedRef.current = true;
 
@@ -135,6 +209,7 @@ export default function Chat({ chatState, setChatState }) {
 			if (pollTimeout) clearTimeout(pollTimeout);
 			if (interval) clearInterval(interval);
 			clearTimeout(loadingFallback);
+			stopWatchingCrispLauncher();
 		};
 	}, [lang, setChatState, t]);
 
@@ -144,9 +219,14 @@ export default function Chat({ chatState, setChatState }) {
 			if (chatState === "open") {
 				Crisp.chat.show();
 				window.$crisp?.push(["do", "chat:open"]);
+				hideCrispLauncher();
+				setTimeout(hideCrispLauncher, 100);
+				setTimeout(hideCrispLauncher, 500);
 			} else if (chatState === "close") {
 				window.$crisp?.push(["do", "chat:close"]);
 				Crisp.chat.hide();
+				hideCrispLauncher();
+				setTimeout(hideCrispLauncher, 100);
 			}
 		} catch (_) {}
 	}, [chatState]);

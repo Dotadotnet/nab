@@ -45,11 +45,11 @@ addressSchema.pre("save", function (next) {
     this.province,
     this.city,
     this.address,
-    this.plaque,
+    this.plateNumber,
     this.postalCode
   ];
   const allFilled = requiredFields.every(
-    field => typeof field === "string" && field.trim().length > 0
+    field => field !== undefined && field !== null && String(field).trim().length > 0
   );
   this.isComplete = allFilled;
   next();

@@ -94,6 +94,16 @@ const sessionSchema = new mongoose.Schema(
         title: String,
         referrer: String,
         event: String,
+        click: {
+          tag: String,
+          text: String,
+          href: String,
+          id: String,
+          name: String,
+          type: String,
+          role: String,
+          trackingKey: String
+        },
         navigationType: String,
         startedAt: Date,
         endedAt: Date,

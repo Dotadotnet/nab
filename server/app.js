@@ -56,6 +56,7 @@ app.use("/api/tag", require("./routes/tag.route"));
 app.use("/api/category", require("./routes/category.route"));
 app.use("/api/filter-definitions", require("./routes/filterDefinition.route"));
 app.use("/api/category-filters", require("./routes/categoryFilter.route"));
+app.use("/api/product-attributes", require("./routes/productAttribute.route"));
 app.use("/api/product", require("./routes/product.route"));
 app.use("/api/user", require("./routes/user.route"));
 app.use("/api/admin", require("./routes/admin.route"));

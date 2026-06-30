@@ -11,17 +11,43 @@ import { setSession } from "@/features/auth/authSlice";
 import { useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 
-function buildSessionPayload({ event = "pageview", startedAt, durationMs = 0 } = {}) {
+function getClickTargetData(target) {
+  const element = target?.closest?.(
+    "a,button,input,select,textarea,[role='button'],[data-track-click]"
+  );
+
+  if (!element) return null;
+
+  const text = (element.innerText || element.value || element.getAttribute("aria-label") || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+
+  return {
+    tag: element.tagName?.toLowerCase() || "",
+    text,
+    href: element.href || element.getAttribute("href") || "",
+    id: element.id || "",
+    name: element.getAttribute("name") || "",
+    type: element.getAttribute("type") || "",
+    role: element.getAttribute("role") || "",
+    trackingKey: element.getAttribute("data-track-click") || ""
+  };
+}
+
+function buildSessionPayload({ event = "pageview", startedAt, durationMs = 0, click } = {}) {
   if (typeof window === "undefined") return {};
 
   const navigation = performance.getEntriesByType("navigation")?.[0];
   const params = new URLSearchParams(window.location.search);
+  const clickTitle = click?.trackingKey || click?.text || click?.href || "";
 
   return {
     event,
     url: window.location.href,
     path: window.location.pathname + window.location.search,
-    title: document.title,
+    title: event === "click" && clickTitle ? clickTitle : document.title,
+    click,
     referrer: document.referrer,
     navigationType: navigation?.type,
     startedAt: startedAt || new Date().toISOString(),
@@ -110,13 +136,27 @@ const Session = ({ children }) => {
       }
     };
     const handleBeforeUnload = () => flush("beforeunload");
+    const handleClick = (event) => {
+      const click = getClickTargetData(event.target);
+      if (!click) return;
+
+      sendSessionBeacon(
+        buildSessionPayload({
+          event: "click",
+          startedAt: new Date().toISOString(),
+          click
+        })
+      );
+    };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("click", handleClick, true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       flush("route_change");
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("click", handleClick, true);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [pathname, session, trackSession]);

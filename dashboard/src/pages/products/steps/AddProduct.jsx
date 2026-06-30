@@ -8,18 +8,30 @@ import ThumbnailStep from "./Thumbnail";
 import StepIndicator from "./StepIndicator";
 import Title from "./Title";
 import Gallery from "./Gallery";
-import Features from "./Features";
 import Campaign from "./Campaign";
 import ProductStatus from "./ProductStatus";
+import ProductFilters from "./ProductFilters";
+import Ingredients from "./Ingredients";
+import ProductAttributes from "./ProductAttributes";
+
+const requiredTranslationLanguages = ["en", "tr", "ar"];
+
+const isFilled = (value) =>
+  typeof value === "string" && value.trim().length > 0;
 
 const StepAddProduct = () => {
   const [thumbnail, setThumbnail] = useState(null);
-  const [gallery, setGallery] = useState(null);
+  const [gallery, setGallery] = useState([]);
   const [addProduct, { isLoading, data, error }] = useAddProductMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
-  const [features, setFeatures] = useState([{icon:'', title: "", content: [""] }]);
+  const [ingredients, setIngredients] = useState([""]);
+  const [ingredientTranslations, setIngredientTranslations] = useState({});
+  const [attributes, setAttributes] = useState([
+    { attribute: "", key: "", label: "", value: "", isComparable: true }
+  ]);
+  const [attributeTranslations, setAttributeTranslations] = useState({});
   const [selectedTags, setSelectedTags] = useState([]);
   const {
     register,
@@ -33,9 +45,53 @@ const StepAddProduct = () => {
   } = useForm({
     mode: "onChange"
   });
-  const totalSteps = 6;
+  const totalSteps = 8;
+
+  const hasRequiredProductTranslations = () => {
+    const translations = watch("productTranslations") || {};
+    const requiredFields = ["title", "summary", "description"];
+
+    return requiredTranslationLanguages.every((language) =>
+      requiredFields.every((field) => isFilled(translations?.[language]?.[field]))
+    );
+  };
+
+  const hasRequiredIngredientTranslations = () => {
+    const cleanIngredients = ingredients
+      .map((ingredient) => ingredient.trim())
+      .filter(Boolean);
+
+    if (!cleanIngredients.length) return false;
+
+    return requiredTranslationLanguages.every((language) => {
+      const values = ingredientTranslations?.[language] || [];
+      return cleanIngredients.every((_, index) => isFilled(values[index]));
+    });
+  };
+
+  const hasRequiredAttributeTranslations = () => {
+    const cleanAttributes = attributes.filter(
+      (attribute) => attribute.attribute && isFilled(String(attribute.value || ""))
+    );
+
+    if (!cleanAttributes.length) return false;
+
+    return requiredTranslationLanguages.every((language) => {
+      const values = attributeTranslations?.[language] || [];
+      return cleanAttributes.every((_, index) => isFilled(values[index]?.value));
+    });
+  };
 
   const onSubmit = async (data) => {
+    if (
+      !hasRequiredProductTranslations() ||
+      !hasRequiredIngredientTranslations() ||
+      !hasRequiredAttributeTranslations()
+    ) {
+      toast.error("لطفاً همه ترجمه‌های محصول را کامل کنید");
+      return;
+    }
+
     const selectedTags2 = selectedTags.map((tag) => tag.id);
 
     const formData = new FormData();
@@ -44,10 +100,38 @@ const StepAddProduct = () => {
       formData.append("gallery", gallery[i]);
     }
     formData.append("title", data.title);
+    formData.append("titleEn", data.titleEn || "");
     formData.append("summary", data.summary);
     formData.append("description", data.description);
+    formData.append(
+      "productTranslations",
+      JSON.stringify(data.productTranslations || {})
+    );
     formData.append("category", data.category);
-    formData.append("features", JSON.stringify(features));
+    formData.append("filterValues", JSON.stringify(data.filterValues || {}));
+    const cleanIngredients = ingredients
+      .map((ingredient) => ingredient.trim())
+      .filter(Boolean);
+    const cleanAttributes = attributes
+      .map((attribute, index) => ({
+        attribute: attribute.attribute,
+        key: attribute.key,
+        label: attribute.label,
+        value: attribute.value,
+        isComparable: attribute.isComparable !== false,
+        sortOrder: index
+      }))
+      .filter((attribute) => attribute.attribute && attribute.label && attribute.value);
+    const legacyFeatures = cleanAttributes.map((attribute) => ({
+      icon: "",
+      title: attribute.label,
+      content: [String(attribute.value)]
+    }));
+    formData.append("ingredients", JSON.stringify(cleanIngredients));
+    formData.append("attributes", JSON.stringify(cleanAttributes));
+    formData.append("ingredientTranslations", JSON.stringify(ingredientTranslations || {}));
+    formData.append("attributeTranslations", JSON.stringify(attributeTranslations || {}));
+    formData.append("features", JSON.stringify(legacyFeatures));
     formData.append("discountAmount", data.discountAmount ||0);
     formData.append("isFeatured", data.isFeatured);
     formData.append(
@@ -101,7 +185,7 @@ const StepAddProduct = () => {
         valid = true;
         break;
       case 2:
-        valid = await trigger("gallery");
+        valid = gallery.length > 0;
         if (!valid) {
           toast.error("لطفاً گالری محصول  را وارد کنید");
           setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
@@ -113,6 +197,12 @@ const StepAddProduct = () => {
         valid = await trigger("title");
         if (!valid) {
           toast.error("لطفاً عنوان محصول را وارد کنید");
+          setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
+          return;
+        }
+        valid = await trigger("titleEn");
+        if (!valid) {
+          toast.error("لطفاً عنوان انگلیسی محصول را بررسی کنید");
           setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
           return;
         }
@@ -134,17 +224,46 @@ const StepAddProduct = () => {
           setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
           return;
         }
-        break;
-
-      case 4:
-        valid = await trigger("features");
+        valid = hasRequiredProductTranslations();
         if (!valid) {
-          toast.error("لطفاً ویژگی های محصول را وارد کنید");
+          toast.error("لطفاً ترجمه عنوان، خلاصه و توضیحات را برای همه زبان‌ها کامل کنید");
           setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
           return;
         }
         break;
+
+      case 4:
+        valid = true;
+        break;
       case 5:
+        valid = ingredients.some((ingredient) => ingredient.trim());
+        if (!valid) {
+          toast.error("لطفاً حداقل یک ماده سازنده وارد کنید");
+          setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
+          return;
+        }
+        valid = hasRequiredIngredientTranslations();
+        if (!valid) {
+          toast.error("لطفاً ترجمه همه مواد سازنده را برای همه زبان‌ها کامل کنید");
+          setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
+          return;
+        }
+        break;
+      case 6:
+        valid = attributes.some((attribute) => attribute.attribute && attribute.value);
+        if (!valid) {
+          toast.error("لطفاً حداقل یک ویژگی قابل مقایسه وارد کنید");
+          setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
+          return;
+        }
+        valid = hasRequiredAttributeTranslations();
+        if (!valid) {
+          toast.error("لطفاً ترجمه مقدار همه ویژگی‌ها را برای همه زبان‌ها کامل کنید");
+          setInvalidSteps((prev) => ({ ...prev, [currentStep]: true }));
+          return;
+        }
+        break;
+      case 7:
         valid = await trigger("campaignTitle");
         if (!valid) {
           toast.error("لطفاً عنوان کمپین فروش را تعیین کنید");
@@ -187,6 +306,7 @@ const StepAddProduct = () => {
         return (
           <Gallery
             setGallery={setGallery}
+            setValue={setValue}
             nextStep={nextStep}
             prevStep={prevStep}
             register={register}
@@ -200,21 +320,45 @@ const StepAddProduct = () => {
             errors={errors}
             prevStep={prevStep}
             nextStep={nextStep}
+            setValue={setValue}
+            watch={watch}
           />
         );
 
       case 4:
         return (
-          <Features
-            features={features}
-            setFeatures={setFeatures}
-            register={register}
+          <ProductFilters
             errors={errors}
+            nextStep={nextStep}
+            prevStep={prevStep}
+            register={register}
+            setValue={setValue}
+            watch={watch}
+          />
+        );
+      case 5:
+        return (
+          <Ingredients
+            ingredients={ingredients}
+            setIngredients={setIngredients}
+            translations={ingredientTranslations}
+            setTranslations={setIngredientTranslations}
             prevStep={prevStep}
             nextStep={nextStep}
           />
         );
-      case 5:
+      case 6:
+        return (
+          <ProductAttributes
+            attributes={attributes}
+            setAttributes={setAttributes}
+            translations={attributeTranslations}
+            setTranslations={setAttributeTranslations}
+            prevStep={prevStep}
+            nextStep={nextStep}
+          />
+        );
+      case 7:
         return (
           <Campaign
             register={register}
@@ -225,7 +369,7 @@ const StepAddProduct = () => {
             control={control}
           />
         );
-      case 6:
+      case 8:
         return (
           <ProductStatus
           register={register}
@@ -261,7 +405,7 @@ const StepAddProduct = () => {
     <>
       <form
         action=""
-        className="w-full max-w-xl  flex flex-col p-2 gap-y-4  "
+        className="w-full flex flex-col p-2 gap-y-4  "
         onSubmit={handleSubmit(onSubmit)}
       >
         <StepIndicator

@@ -24,6 +24,7 @@ async function verifyAdmin(req, res, next) {
       process.env.TOKEN_SECRET
     );
     req.admin = decoded;
+    req.user = decoded;
 
     next();
   } catch (error) {

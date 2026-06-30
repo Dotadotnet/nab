@@ -5,9 +5,15 @@ const Admin = require("./models/admin.model");
 const Category = require("./models/category.model");
 const CategoryTranslation = require("./models/categoryTranslation.model");
 const FilterDefinition = require("./models/filterDefinition.model");
+const FilterDefinitionTranslation = require("./models/filterDefinitionTranslation.model");
 const CategoryFilter = require("./models/categoryFilter.model");
+const CategoryFilterTranslation = require("./models/categoryFilterTranslation.model");
 const Tag = require("./models/tag.model");
 const TagTranslation = require("./models/tagTranslation.model");
+const Unit = require("./models/unit.model");
+const UnitTranslation = require("./models/unitTranslation.model");
+const ProductAttribute = require("./models/productAttribute.model");
+const ProductAttributeTranslation = require("./models/productAttributeTranslation.model");
 
 const categories = [
   { title: "نقل", sortOrder: 1 },
@@ -21,12 +27,53 @@ const filterDefinitions = [
   {
     key: "flavor",
     label: "طعم",
-    type: "select",
+    type: "multi_select",
     options: [
       { label: "وانیل", value: "vanilla" },
       { label: "زعفران", value: "saffron" },
       { label: "هل", value: "cardamom" },
       { label: "گل محمدی", value: "rose" },
+      { label: "بیدمشک", value: "bidmeshk" },
+    ],
+  },
+  {
+    key: "nut",
+    label: "مغز",
+    type: "multi_select",
+    options: [
+      { label: "بدون مغز", value: "none" },
+      { label: "گردو", value: "walnut" },
+      { label: "بادام", value: "almond" },
+      { label: "پسته", value: "pistachio" },
+      { label: "فندق", value: "hazelnut" },
+      { label: "کنجد", value: "sesame" },
+    ],
+  },
+  {
+    key: "dietary",
+    label: "رژیمی",
+    type: "multi_select",
+    options: [
+      { label: "بدون قند", value: "sugar_free" },
+      { label: "کم‌قند", value: "low_sugar" },
+      { label: "بدون گلوتن", value: "gluten_free" },
+      { label: "بدون لاکتوز", value: "lactose_free" },
+      { label: "وگان", value: "vegan" },
+      { label: "مناسب دیابتی‌ها", value: "diabetic_friendly" },
+    ],
+  },
+  {
+    key: "allergens",
+    label: "حساسیت‌ها",
+    type: "multi_select",
+    options: [
+      { label: "گلوتن", value: "gluten" },
+      { label: "لبنیات", value: "dairy" },
+      { label: "تخم‌مرغ", value: "egg" },
+      { label: "سویا", value: "soy" },
+      { label: "کنجد", value: "sesame" },
+      { label: "بادام‌زمینی", value: "peanut" },
+      { label: "مغزها", value: "tree_nuts" },
     ],
   },
   {
@@ -42,9 +89,10 @@ const filterDefinitions = [
     label: "نوع بسته‌بندی",
     type: "select",
     options: [
-      { label: "جعبه‌ای", value: "box" },
-      { label: "کادویی", value: "gift" },
-      { label: "کیلویی", value: "bulk" },
+      { label: "جعبه پلاستیکی", value: "plastic_box" },
+      { label: "جعبه فلزی", value: "metal_box" },
+      { label: "جعبه کارتنی", value: "carton_box" },
+      { label: "جعبه کادویی", value: "gift_box" },
     ],
   },
   {
@@ -52,10 +100,10 @@ const filterDefinitions = [
     label: "مناسبت",
     type: "multi_select",
     options: [
-      { label: "عروسی", value: "wedding" },
-      { label: "مهمانی", value: "party" },
-      { label: "سوغات", value: "souvenir" },
-      { label: "مراسم مذهبی", value: "religious" },
+      { label: "مصرف خانگی", value: "home_use" },
+      { label: "سوغاتی", value: "souvenir" },
+      { label: "مذهبی", value: "religious" },
+      { label: "کادویی", value: "gift" },
     ],
   },
   {
@@ -77,12 +125,114 @@ const filterDefinitions = [
 ];
 
 const categoryFilterMap = {
-  نقل: ["flavor", "weight", "packaging", "occasion", "color", "fresh_daily"],
-  حلوا: ["flavor", "weight", "packaging", "occasion", "fresh_daily"],
-  کیک: ["flavor", "weight", "packaging", "occasion", "color", "fresh_daily"],
-  عرقیجات: ["flavor", "packaging", "occasion", "color"],
+  نقل: ["flavor", "nut", "dietary", "allergens", "packaging", "occasion", "color", "fresh_daily"],
+  حلوا: ["flavor", "nut", "dietary", "allergens", "packaging", "occasion", "fresh_daily"],
+  کیک: ["flavor", "packaging", "occasion", "color", "fresh_daily"],
+  عرقیجات: ["packaging", "occasion"],
   "شربت و بطری": ["flavor", "packaging", "occasion", "color"],
 };
+
+const units = [
+  {
+    title: "گرم",
+    value: 1,
+    categoryTitle: "نقل",
+    description: "واحد وزن برای محصولات بسته‌بندی‌شده",
+  },
+  {
+    title: "کیلوگرم",
+    value: 1000,
+    categoryTitle: "نقل",
+    description: "واحد وزن برای سفارش‌های سنگین‌تر",
+  },
+  {
+    title: "عدد",
+    value: 1,
+    categoryTitle: "کیک",
+    description: "واحد شمارشی برای محصولات تکی",
+  },
+  {
+    title: "بسته",
+    value: 1,
+    categoryTitle: "نقل",
+    description: "واحد بسته‌بندی آماده فروش",
+  },
+  {
+    title: "جعبه",
+    value: 1,
+    categoryTitle: "نقل",
+    description: "واحد بسته‌بندی جعبه‌ای برای محصولات کادویی و پذیرایی",
+  },
+  {
+    title: "پک",
+    value: 1,
+    categoryTitle: "نقل",
+    description: "واحد پک ترکیبی یا هدیه",
+  },
+  {
+    title: "سینی",
+    value: 1,
+    categoryTitle: "حلوا",
+    description: "واحد سفارش سینی برای حلوا و پذیرایی",
+  },
+  {
+    title: "قالب",
+    value: 1,
+    categoryTitle: "کیک",
+    description: "واحد قالب کامل برای کیک و شیرینی",
+  },
+  {
+    title: "برش",
+    value: 1,
+    categoryTitle: "کیک",
+    description: "واحد برشی برای فروش تکه‌ای",
+  },
+  {
+    title: "کارتن",
+    value: 1,
+    categoryTitle: "شربت و بطری",
+    description: "واحد بسته‌بندی عمده برای چند بطری یا چند بسته",
+  },
+  {
+    title: "میلی‌لیتر",
+    value: 1,
+    categoryTitle: "عرقیجات",
+    description: "واحد حجم برای عرقیجات و شربت",
+  },
+  {
+    title: "لیتر",
+    value: 1000,
+    categoryTitle: "عرقیجات",
+    description: "واحد حجم برای بطری‌های بزرگ‌تر",
+  },
+  {
+    title: "بطری",
+    value: 1,
+    categoryTitle: "شربت و بطری",
+    description: "واحد شمارشی برای محصولات بطری‌شده",
+  },
+  {
+    title: "شیشه",
+    value: 1,
+    categoryTitle: "عرقیجات",
+    description: "واحد بسته‌بندی شیشه‌ای برای عرقیجات و شربت",
+  },
+];
+
+const productAttributes = [
+  { key: "shelf_life", label: "ماندگاری" },
+  { key: "storage_condition", label: "شرایط نگهداری" },
+  { key: "ingredients", label: "مواد تشکیل‌دهنده" },
+  { key: "net_weight", label: "وزن خالص" },
+  { key: "package_dimensions", label: "ابعاد بسته‌بندی" },
+  { key: "serving_count", label: "تعداد سرو" },
+  { key: "sweetness_level", label: "درجه شیرینی" },
+  { key: "texture", label: "بافت" },
+  { key: "origin", label: "محل تولید" },
+  { key: "production_method", label: "روش تولید" },
+  { key: "suitable_for", label: "مناسب برای" },
+  { key: "allergen_notes", label: "توضیحات حساسیت‌زا" },
+];
 
 const tags = [
   {
@@ -652,12 +802,28 @@ function slugify(value) {
 function categoryFilterOverrides(categoryTitle, definition) {
   if (definition.key !== "flavor") return {};
 
+  if (categoryTitle === "نقل") {
+    return {
+      options: [
+        { label: "وانیلی", value: "vanilla" },
+        { label: "زعفرانی", value: "saffron" },
+        { label: "هل‌دار", value: "cardamom" },
+        { label: "گل محمدی", value: "rose" },
+        { label: "گلاب", value: "rose_water" },
+        { label: "بیدمشک", value: "bidemeshk" },
+      ],
+    };
+  }
+
   if (categoryTitle === "حلوا") {
     return {
       options: [
         { label: "زعفرانی", value: "saffron" },
         { label: "دارچینی", value: "cinnamon" },
         { label: "زنجبیلی", value: "ginger" },
+        { label: "هویج", value: "carrot" },
+        { label: "خرمایی", value: "date" },
+        { label: "ارده", value: "sesame_tahini" },
       ],
     };
   }
@@ -732,7 +898,7 @@ async function ensureCategoryTranslation(categoryDoc, categorySeed) {
 }
 
 async function upsertFilterDefinition(definition) {
-  return FilterDefinition.findOneAndUpdate(
+  const doc = await FilterDefinition.findOneAndUpdate(
     { key: definition.key, isDeleted: false },
     {
       $set: {
@@ -745,6 +911,40 @@ async function upsertFilterDefinition(definition) {
     },
     { new: true, upsert: true, runValidators: true }
   );
+
+  await ensureFilterDefinitionTranslation(doc, definition);
+  return doc;
+}
+
+async function ensureFilterDefinitionTranslation(filterDoc, definition) {
+  const translation = await FilterDefinitionTranslation.findOneAndUpdate(
+    { filterDefinition: filterDoc._id, language: "fa" },
+    {
+      $set: {
+        filterDefinition: filterDoc._id,
+        language: "fa",
+        label: definition.label,
+        options: definition.options || [],
+        unit: definition.unit || "",
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  const hasTranslation = (filterDoc.translations || []).some(
+    (item) => String(item.translation) === String(translation._id)
+  );
+
+  if (!hasTranslation) {
+    await FilterDefinition.findByIdAndUpdate(filterDoc._id, {
+      $addToSet: {
+        translations: {
+          translation: translation._id,
+          language: "fa",
+        },
+      },
+    });
+  }
 }
 
 async function upsertCategoryFilter(category, definition, sortOrder) {
@@ -776,10 +976,62 @@ async function upsertCategoryFilter(category, definition, sortOrder) {
     payload.unit = "";
   }
 
-  return CategoryFilter.findOneAndUpdate(
+  const doc = await CategoryFilter.findOneAndUpdate(
     { category: category._id, filter: definition._id, isDeleted: false },
     { $set: payload, $setOnInsert: { createdAt: Date.now() } },
     { new: true, upsert: true, runValidators: true }
+  );
+
+  await ensureCategoryFilterTranslation(doc, payload);
+  return doc;
+}
+
+async function ensureCategoryFilterTranslation(categoryFilterDoc, payload) {
+  const translation = await CategoryFilterTranslation.findOneAndUpdate(
+    { categoryFilter: categoryFilterDoc._id, language: "fa" },
+    {
+      $set: {
+        categoryFilter: categoryFilterDoc._id,
+        language: "fa",
+        label: payload.label,
+        options: payload.options || [],
+        unit: payload.unit || "",
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  const hasTranslation = (categoryFilterDoc.translations || []).some(
+    (item) => String(item.translation) === String(translation._id)
+  );
+
+  if (!hasTranslation) {
+    await CategoryFilter.findByIdAndUpdate(categoryFilterDoc._id, {
+      $addToSet: {
+        translations: {
+          translation: translation._id,
+          language: "fa",
+        },
+      },
+    });
+  }
+}
+
+async function deactivateStaleCategoryFilters(category, activeFilterKeys) {
+  await CategoryFilter.updateMany(
+    {
+      category: category._id,
+      key: { $nin: activeFilterKeys },
+      isDeleted: false,
+    },
+    {
+      $set: {
+        isDeleted: true,
+        status: "inactive",
+        deletedAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    }
   );
 }
 
@@ -794,6 +1046,131 @@ async function getSeedCreator() {
   }
 
   return admin._id;
+}
+
+async function ensureUnitTranslation(unitDoc, unitSeed) {
+  const slug = slugify(unitSeed.title);
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_CLIENT_URL || ""}/unit/${unitDoc.unitId || unitDoc._id}/${slug}`;
+
+  const translation = await UnitTranslation.findOneAndUpdate(
+    { unit: unitDoc._id, language: "fa" },
+    {
+      $set: {
+        unit: unitDoc._id,
+        language: "fa",
+        title: unitSeed.title,
+        description: unitSeed.description || "",
+        slug,
+        canonicalUrl,
+        metaTitle: unitSeed.title,
+        metaDescription: unitSeed.description || "",
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  const hasTranslation = (unitDoc.translations || []).some(
+    (item) => String(item.translation) === String(translation._id)
+  );
+
+  if (!hasTranslation) {
+    await Unit.findByIdAndUpdate(unitDoc._id, {
+      $addToSet: {
+        translations: {
+          translation: translation._id,
+          language: "fa",
+        },
+      },
+    });
+  }
+}
+
+async function upsertUnit(unitSeed, categoriesByTitle, creator) {
+  const category = categoriesByTitle.get(unitSeed.categoryTitle);
+  if (!category) return null;
+
+  const existing = await Unit.findOne({
+    title: unitSeed.title,
+    isDeleted: false,
+  });
+
+  if (existing) {
+    await Unit.findByIdAndUpdate(existing._id, {
+      $set: {
+        title: unitSeed.title,
+        value: unitSeed.value,
+        category: category._id,
+        creator: existing.creator || creator,
+        status: "active",
+        isDeleted: false,
+        updatedAt: Date.now(),
+      },
+    });
+    await ensureUnitTranslation(existing, unitSeed);
+    return existing;
+  }
+
+  const created = await Unit.create({
+    title: unitSeed.title,
+    value: unitSeed.value,
+    category: category._id,
+    creator,
+    status: "active",
+    isDeleted: false,
+  });
+
+  await ensureUnitTranslation(created, unitSeed);
+  return created;
+}
+
+async function ensureProductAttributeTranslation(attributeDoc, attributeSeed) {
+  const translation = await ProductAttributeTranslation.findOneAndUpdate(
+    { productAttribute: attributeDoc._id, language: "fa" },
+    {
+      $set: {
+        productAttribute: attributeDoc._id,
+        language: "fa",
+        label: attributeSeed.label,
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  const hasTranslation = (attributeDoc.translations || []).some(
+    (item) => String(item.translation) === String(translation._id)
+  );
+
+  if (!hasTranslation) {
+    await ProductAttribute.findByIdAndUpdate(attributeDoc._id, {
+      $addToSet: {
+        translations: {
+          translation: translation._id,
+          language: "fa",
+        },
+      },
+    });
+  }
+}
+
+async function upsertProductAttribute(attributeSeed, sortOrder) {
+  const doc = await ProductAttribute.findOneAndUpdate(
+    { key: attributeSeed.key, isDeleted: false },
+    {
+      $set: {
+        key: attributeSeed.key,
+        label: attributeSeed.label,
+        sortOrder,
+        status: "active",
+        isDeleted: false,
+        updatedAt: Date.now(),
+      },
+      $setOnInsert: { createdAt: Date.now() },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  await ensureProductAttributeTranslation(doc, attributeSeed);
+  return doc;
 }
 
 async function ensureTagTranslation(tagDoc, tagSeed) {
@@ -879,6 +1256,18 @@ async function run() {
     createdCategories.set(category.title, doc);
   }
 
+  let unitCount = 0;
+  for (const unit of units) {
+    const doc = await upsertUnit(unit, createdCategories, seedCreator);
+    if (doc) unitCount += 1;
+  }
+
+  let productAttributeCount = 0;
+  for (const [index, attribute] of productAttributes.entries()) {
+    await upsertProductAttribute(attribute, index);
+    productAttributeCount += 1;
+  }
+
   const createdDefinitions = new Map();
   for (const definition of filterDefinitions) {
     const doc = await upsertFilterDefinition(definition);
@@ -889,6 +1278,8 @@ async function run() {
   for (const [categoryTitle, filterKeys] of Object.entries(categoryFilterMap)) {
     const category = createdCategories.get(categoryTitle);
     if (!category) continue;
+
+    await deactivateStaleCategoryFilters(category, filterKeys);
 
     for (const [index, filterKey] of filterKeys.entries()) {
       const definition = createdDefinitions.get(filterKey);
@@ -907,7 +1298,7 @@ async function run() {
   }
 
   console.log(
-    `Seeded ${createdCategories.size} categories, ${createdDefinitions.size} filter definitions, ${categoryFilterCount} category filters, ${tagCount} tags.`
+    `Seeded ${createdCategories.size} categories, ${unitCount} units, ${productAttributeCount} product attributes, ${createdDefinitions.size} filter definitions, ${categoryFilterCount} category filters, ${tagCount} tags.`
   );
 
   await mongoose.disconnect();

@@ -26,6 +26,9 @@ const ThumbnailStep = ({ nextStep, errors ,register,thumbnail,setThumbnail}) => 
         <label htmlFor="thumbnail" className="flex flex-col text-center gap-y-2">
         تصویر اصلی
         <ThumbnailUpload
+          enableCrop
+          cropWidth={1440}
+          cropHeight={1440}
           setThumbnailPreview={setThumbnailPreview}
           setThumbnail={setThumbnail}
           title={"لطفا یک تصویر بند انگشتی انتخاب کنید"}

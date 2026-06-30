@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const Category = require("../models/category.model");
 const CategoryFilter = require("../models/categoryFilter.model");
+const CategoryFilterTranslation = require("../models/categoryFilterTranslation.model");
 const FilterDefinition = require("../models/filterDefinition.model");
+const { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } = require("../utils/languages");
 const {
   buildSearchQuery,
   buildPaginationMeta,
@@ -115,6 +117,61 @@ function buildPayload(body, definition) {
   return payload;
 }
 
+async function upsertOneCategoryFilterTranslation(filter, payload, language) {
+  const translation = await CategoryFilterTranslation.findOneAndUpdate(
+    { categoryFilter: filter._id, language },
+    {
+      $set: {
+        categoryFilter: filter._id,
+        language,
+        label: payload.label,
+        options: payload.options || [],
+        unit: payload.unit || "",
+      },
+    },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  const hasTranslation = (filter.translations || []).some(
+    (item) => String(item.translation) === String(translation._id)
+  );
+
+  if (!hasTranslation) {
+    filter.translations = [
+      ...(filter.translations || []),
+      { translation: translation._id, language },
+    ];
+    await filter.save();
+  }
+}
+
+async function upsertCategoryFilterTranslation(filter, payload, translations = {}) {
+  await upsertOneCategoryFilterTranslation(filter, payload, DEFAULT_LANGUAGE);
+
+  for (const language of SUPPORTED_LANGUAGES) {
+    if (language === DEFAULT_LANGUAGE) continue;
+
+    const fields = translations?.[language];
+    if (!fields || typeof fields !== "object") continue;
+
+    const translatedPayload = {
+      label:
+        typeof fields.label === "string" && fields.label.trim()
+          ? fields.label.trim()
+          : payload.label,
+      options: Array.isArray(fields.options)
+        ? normalizeOptions(fields.options)
+        : payload.options,
+      unit:
+        typeof fields.unit === "string" && fields.unit.trim()
+          ? fields.unit.trim()
+          : payload.unit,
+    };
+
+    await upsertOneCategoryFilterTranslation(filter, translatedPayload, language);
+  }
+}
+
 exports.createCategoryFilter = async (req, res) => {
   await ensureCategoryExists(req.body.category);
   const definition = await ensureFilterExists(req.body.filter);
@@ -122,8 +179,22 @@ exports.createCategoryFilter = async (req, res) => {
   payload.creator = req.admin?._id || null;
 
   const filter = await CategoryFilter.create(payload);
+  await upsertCategoryFilterTranslation(filter, payload, req.body.translations);
+  await filter.populate({
+    path: "translations.translation",
+    match: { language: req.locale },
+    select: "label options unit language",
+  });
   await filter.populate("category", "title");
-  await filter.populate("filter", "key label type options min max unit");
+  await filter.populate({
+    path: "filter",
+    select: "key label type options min max unit translations",
+    populate: {
+      path: "translations.translation",
+      match: { language: req.locale },
+      select: "label options unit language",
+    },
+  });
 
   res.status(201).json({
     acknowledgement: true,
@@ -136,16 +207,26 @@ exports.createCategoryFilter = async (req, res) => {
 function formatCategoryFilter(item) {
   const object = item.toObject ? item.toObject() : item;
   const definition = object.filter || {};
+  const translatedCategoryFilter = Array.isArray(object.translations)
+    ? object.translations.find((item) => item.translation)?.translation || {}
+    : {};
+  const translatedDefinition = Array.isArray(definition.translations)
+    ? definition.translations.find((item) => item.translation)?.translation || {}
+    : {};
 
   return {
     ...object,
     key: definition.key || object.key,
-    label: definition.label || object.label,
+    label: translatedCategoryFilter.label || translatedDefinition.label || definition.label || object.label,
     type: definition.type || object.type,
-    options: object.options || [],
+    options: translatedCategoryFilter.options?.length
+      ? translatedCategoryFilter.options
+      : object.options?.length
+      ? object.options
+      : translatedDefinition.options || definition.options || [],
     min: object.min ?? definition.min ?? null,
     max: object.max ?? definition.max ?? null,
-    unit: object.unit || definition.unit || "",
+    unit: translatedCategoryFilter.unit || translatedDefinition.unit || object.unit || definition.unit || "",
   };
 }
 
@@ -180,8 +261,21 @@ exports.getCategoryFilters = async (req, res) => {
   const { limit, page, skip } = getPaginationOptions(req.query);
   const [filters, totalItems] = await Promise.all([
     CategoryFilter.find(query)
+      .populate({
+        path: "translations.translation",
+        match: { language: req.locale },
+        select: "label options unit language",
+      })
       .populate("category", "title")
-      .populate("filter", "key label type options min max unit")
+      .populate({
+        path: "filter",
+        select: "key label type options min max unit translations",
+        populate: {
+          path: "translations.translation",
+          match: { language: req.locale },
+          select: "label options unit language",
+        },
+      })
       .sort({ sortOrder: 1, createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -247,8 +341,21 @@ exports.getCategoryFilter = async (req, res) => {
   }
 
   const filter = await CategoryFilter.findOne({ _id: id, isDeleted: false })
+    .populate({
+      path: "translations.translation",
+      match: { language: req.locale },
+      select: "label options unit language",
+    })
     .populate("category", "title")
-    .populate("filter", "key label type options min max unit");
+    .populate({
+      path: "filter",
+      select: "key label type options min max unit translations",
+      populate: {
+        path: "translations.translation",
+        match: { language: req.locale },
+        select: "label options unit language",
+      },
+    });
 
   if (!filter) {
     return res.status(404).json({
@@ -293,8 +400,22 @@ exports.updateCategoryFilter = async (req, res) => {
 
   Object.assign(filter, payload);
   await filter.save();
+  await upsertCategoryFilterTranslation(filter, payload, req.body.translations);
+  await filter.populate({
+    path: "translations.translation",
+    match: { language: req.locale },
+    select: "label options unit language",
+  });
   await filter.populate("category", "title");
-  await filter.populate("filter", "key label type options min max unit");
+  await filter.populate({
+    path: "filter",
+    select: "key label type options min max unit translations",
+    populate: {
+      path: "translations.translation",
+      match: { language: req.locale },
+      select: "label options unit language",
+    },
+  });
 
   res.status(200).json({
     acknowledgement: true,

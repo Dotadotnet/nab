@@ -15,6 +15,13 @@ const router = express.Router();
 
 /* router methods integration */
 
+router.post(
+  "/translate",
+  verify,
+  authorize("superAdmin", "admin"),
+  productController.translateText
+);
+
 // add new product
 router.post(
   "/add-product",

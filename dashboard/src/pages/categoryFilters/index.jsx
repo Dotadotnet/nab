@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import ControlPanel from "../ControlPanel";
 import AddButton from "@/components/shared/button/AddButton";
@@ -16,6 +15,7 @@ import {
 import { useGetCategoryTreeQuery } from "../../services/category/categoryApi";
 import renderTreeOptions from "../categories/components/renderTreeOptions";
 import { getTypeLabel } from "./filterOptions";
+import CategoryFilterForm from "./CategoryFilterForm";
 
 function ColorOptionPreview({ option }) {
   return (
@@ -62,6 +62,7 @@ function CategoryFilters() {
   const [search, setSearch] = useState("");
   const [orderedFilters, setOrderedFilters] = useState([]);
   const [draggedId, setDraggedId] = useState(null);
+  const [modalState, setModalState] = useState({ mode: null, id: null });
   const debouncedSearch = useDebouncedValue(search);
   const filtersPagination = usePaginationState(5, `${selectedCategory}-${debouncedSearch}`);
 
@@ -121,6 +122,8 @@ function CategoryFilters() {
     persistOrder(nextItems);
   };
 
+  const closeModal = () => setModalState({ mode: null, id: null });
+
   return (
     <ControlPanel>
       <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -140,7 +143,7 @@ function CategoryFilters() {
       </div>
 
       <div className="mt-4">
-        <AddButton link="/category-filters/add" />
+        <AddButton onClick={() => setModalState({ mode: "create", id: null })} />
       </div>
 
       <div className="mt-8 grid w-full grid-cols-12 px-4 text-slate-400">
@@ -211,13 +214,14 @@ function CategoryFilters() {
             </div>
 
             <div className="col-span-5 flex items-center justify-center gap-2 lg:col-span-1">
-              <Link
+              <button
                 aria-label="ویرایش فیلتر"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-green-400 hover:text-green-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300"
-                to={`/category-filters/edit/${item._id}`}
+                onClick={() => setModalState({ mode: "edit", id: item._id })}
+                type="button"
               >
                 <Pencil className="h-4 w-4" />
-              </Link>
+              </button>
               <DeleteModal
                 ariaLabel="حذف فیلتر"
                 isLoading={isDeleting}
@@ -237,6 +241,14 @@ function CategoryFilters() {
         pageSize={filtersPagination.pageSize}
         totalItems={filtersMeta?.totalItems || filters.length}
         totalPages={filtersMeta?.totalPages}
+      />
+
+      <CategoryFilterForm
+        editId={modalState.id}
+        isOpen={modalState.mode === "create" || modalState.mode === "edit"}
+        mode={modalState.mode === "edit" ? "edit" : "create"}
+        onClose={closeModal}
+        onSuccess={closeModal}
       />
     </ControlPanel>
   );

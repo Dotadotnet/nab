@@ -152,7 +152,7 @@ exports.forgotPassword = async (req, res) => {
 
 exports.persistLogin = async (req, res) => {
   console.log(req.admin)
-  const admin = await Admin.findById(req.admin._id).select("-password -phone");
+  const admin = await Admin.findById(req.admin._id).select("-password");
 
   if (!admin) {
     res.status(404).json({
@@ -231,6 +231,15 @@ exports.getAdmin = async (req, res) => {
 exports.updateAdmin = async (req, res) => {
   const existingAdmin = await Admin.findById(req.admin._id);
   const admin = req.body;
+  let avatar = existingAdmin?.avatar;
+
+  if (!existingAdmin) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "کاربر یافت نشد"
+    });
+  }
 
   // بررسی عدم تغییر نقش superAdmin
   if (admin.role === "superAdmin") {
@@ -248,22 +257,18 @@ exports.updateAdmin = async (req, res) => {
     req.uploadedFiles["avatar"].length > 0
   ) {
     // حذف تصویر قبلی از سرویس ذخیره‌سازی
-    await remove("avatar", existingAdmin.avatar?.public_id);
+    if (existingAdmin.avatar?.public_id && existingAdmin.avatar.public_id !== "N/A") {
+      await remove("avatar", existingAdmin.avatar.public_id);
+    }
 
     // تنظیم تصویر جدید
     avatar = {
       url: req.uploadedFiles["avatar"][0].url,
       public_id: req.uploadedFiles["avatar"][0].key
     };
-  } else if (!req.body.avatarUrl) {
-    // اگر تصویر جدید نیست، حذف تصویر قبلی
-    if (existingAdmin.avatar?.public_id) {
-      await remove("avatar", existingAdmin.avatar.public_id);
-    }
-
-    // در صورت عدم ارسال آدرس جدید برای تصویر، مقدار پیش‌فرض
+  } else if (req.body.avatarUrl) {
     avatar = {
-      url: null,
+      url: req.body.avatarUrl,
       public_id: null
     };
   }

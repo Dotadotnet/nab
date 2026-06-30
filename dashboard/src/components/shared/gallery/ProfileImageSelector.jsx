@@ -2,12 +2,14 @@ import Modal from "@/components/shared/modal/Modal";
 import Avatar from "./Avatar";
 import React, { useState, useEffect } from "react";
 import  CloudUpload  from "@/components/icons/CloudUpload";
+import ImageCropModal from "./ImageCropModal";
 
 const ProfileImageSelector = ({ onImageSelect }) => {
   const [showModal, setShowModal] = useState(false);
   const [isGeneral, setIsGeneral] = useState(true);
   const [avatarUrls, setAvatarUrls] = useState([]); 
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [cropFile, setCropFile] = useState(null);
 
   const maleAvatars = Array.from({ length: 50 }, (_, index) => `/avatar/male/${index + 1}.png`);
   const femaleAvatars = Array.from({ length: 50 }, (_, index) => `/avatar/female/${index + 51}.png`);
@@ -15,11 +17,18 @@ const ProfileImageSelector = ({ onImageSelect }) => {
   const handleDeviceSelection = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setAvatarPreview(imageUrl); 
-      onImageSelect(file);
-      setShowModal(false);
+      setCropFile(file);
     }
+    e.target.value = "";
+  };
+
+  const applyDeviceImage = (file, previewUrl) => {
+    if (!file) return;
+    const imageUrl = previewUrl || URL.createObjectURL(file);
+    setAvatarPreview(imageUrl);
+    onImageSelect(file);
+    setCropFile(null);
+    setShowModal(false);
   };
 
   const handleGenderSelection = (gender) => {
@@ -96,6 +105,15 @@ const ProfileImageSelector = ({ onImageSelect }) => {
           </label>
         </div>
       </Modal>
+
+      <ImageCropModal
+        file={cropFile}
+        height={800}
+        width={800}
+        onApply={applyDeviceImage}
+        onCancel={() => setCropFile(null)}
+        title="ویرایش عکس پروفایل"
+      />
     </>
   );
 };

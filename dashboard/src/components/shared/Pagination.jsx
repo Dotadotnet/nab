@@ -108,18 +108,18 @@ function Pagination({
   }
 
   const buttonBase =
-    "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-40";
+    "inline-flex h-10 min-w-10 items-center justify-center rounded border px-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <div className="mt-5 flex flex-col gap-4 border-t border-zinc-800 pt-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-col gap-3 text-xs text-zinc-500 sm:flex-row sm:items-center">
+    <div className="mt-5 flex flex-col gap-4 border-t border-gray-200 pt-4 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 text-xs text-slate-500 dark:text-slate-300 sm:flex-row sm:items-center">
         <span>
           نمایش {resolvedStartItem} تا {resolvedEndItem} از {totalItems} مورد
         </span>
         <label className="flex items-center gap-2">
           <span>تعداد در صفحه</span>
           <select
-            className="h-10 rounded-lg border border-zinc-800 bg-black px-3 text-sm text-white outline-none transition focus:border-white"
+            className="h-10 rounded border border-gray-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-green-400 dark:border-white/10 dark:bg-slate-800 dark:text-white dark:focus:border-blue-400"
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
             value={resolvedPageSize}
           >
@@ -135,7 +135,7 @@ function Pagination({
       <nav aria-label="صفحه‌بندی" className="flex flex-wrap items-center gap-2">
         <button
           aria-label="صفحه قبلی"
-          className={`${buttonBase} border-zinc-800 text-zinc-300 hover:border-white hover:text-white`}
+          className={`${buttonBase} border-gray-200 text-slate-600 hover:border-green-400 hover:text-green-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300`}
           disabled={isFirstPage}
           onClick={() => onPageChange(resolvedCurrentPage - 1)}
           type="button"
@@ -150,7 +150,7 @@ function Pagination({
               className={
                 page === resolvedCurrentPage
                   ? `${buttonBase} border-green-400 bg-green-500 text-white shadow-lg shadow-green-500/20`
-                  : `${buttonBase} border-zinc-800 text-zinc-300 hover:border-white hover:text-white`
+                  : `${buttonBase} border-gray-200 text-slate-600 hover:border-green-400 hover:text-green-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300`
               }
               key={page}
               onClick={() => onPageChange(page)}
@@ -159,7 +159,7 @@ function Pagination({
               {page}
             </button>
           ) : (
-            <span className="inline-flex h-10 min-w-10 items-center justify-center text-zinc-600" key={page}>
+            <span className="inline-flex h-10 min-w-10 items-center justify-center text-slate-400" key={page}>
               ...
             </span>
           )
@@ -167,7 +167,7 @@ function Pagination({
 
         <button
           aria-label="صفحه بعدی"
-          className={`${buttonBase} border-zinc-800 text-zinc-300 hover:border-white hover:text-white`}
+          className={`${buttonBase} border-gray-200 text-slate-600 hover:border-green-400 hover:text-green-600 dark:border-white/10 dark:text-slate-200 dark:hover:border-blue-400 dark:hover:text-blue-300`}
           disabled={isLastPage}
           onClick={() => onPageChange(resolvedCurrentPage + 1)}
           type="button"
@@ -180,4 +180,3 @@ function Pagination({
 }
 
 export default Pagination;
-

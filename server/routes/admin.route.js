@@ -50,7 +50,7 @@ router.get(
 router.patch(
   "/update-information",
   verify,
-  authorize("superAdmin", "admin"),
+  authorize("superAdmin", "admin", "operator"),
   upload("avatar").single("avatar"),
   adminController.updateAdmin
 );
