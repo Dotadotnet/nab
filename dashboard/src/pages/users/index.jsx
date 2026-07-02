@@ -12,6 +12,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetAdminsQuery, useGetAdminQuery } from "@/services/admin/adminApi";
 import Pagination from "@/components/shared/pagination/Pagination";
 
+function latestSessionOf(user) {
+  return user?.sessions?.[0] || null;
+}
+
+function formatSessionDate(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("fa-IR");
+}
+
 function Users() {
   const [filter, setFilter] = useState("client");
   const [currentPage, setCurrentPage] = useState(1);
@@ -180,6 +189,11 @@ function Users() {
               <div className="col-span-2 lg:col-span-4 text-left flex items-start flex-col justify-center">
                 <span className="text-md">{user?.email}</span>
                 <span className="text-md">{user?.phone}</span>
+                {latestSessionOf(user) && (
+                  <span className="mt-1 line-clamp-1 text-xs text-gray-500 dark:text-gray-400">
+                    IP: {latestSessionOf(user)?.ip || "-"} | {latestSessionOf(user)?.browser?.name || "-"} | {latestSessionOf(user)?.lastPage || "-"}
+                  </span>
+                )}
               </div>
 
               <div className="col-span-2 lg:col-span-1 text-left flex items-start justify-center flex-col">
@@ -192,6 +206,11 @@ function Users() {
                 <span className="text-md">
                   {new Date(user.createdAt).toLocaleDateString("fa-IR")}
                 </span>
+                {latestSessionOf(user) && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    آخرین حضور: {formatSessionDate(latestSessionOf(user)?.lastSeenAt || latestSessionOf(user)?.updatedAt)}
+                  </span>
+                )}
               </div>
 
               {admin?.role === "superAdmin" && (

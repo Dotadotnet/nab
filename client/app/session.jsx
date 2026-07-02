@@ -10,6 +10,7 @@ import {
 import { setSession } from "@/features/auth/authSlice";
 import { useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 function getClickTargetData(target) {
   const element = target?.closest?.(
@@ -73,12 +74,15 @@ function sendSessionBeacon(payload) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseUrl || typeof window === "undefined") return;
 
+  const token = localStorage.getItem("accessToken");
+
   fetch(`${baseUrl}/session/track`, {
     method: "POST",
     credentials: "include",
     keepalive: true,
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
     body: JSON.stringify(payload)
   }).catch(() => {});
@@ -87,6 +91,7 @@ function sendSessionBeacon(payload) {
 const Session = ({ children }) => {
   const locale = useLocale();
   const pathname = usePathname();
+  const { data: nextAuthSession } = useSession();
 
   const dispatch = useDispatch();
   const initializedRef = useRef(false);
@@ -182,6 +187,13 @@ const Session = ({ children }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [pathname, session, trackSession]);
+
+  useEffect(() => {
+    if (!sessionReady || !nextAuthSession?.accessToken) return;
+
+    localStorage.setItem("accessToken", nextAuthSession.accessToken);
+    trackSession(buildSessionPayload({ event: "auth_link" }));
+  }, [nextAuthSession?.accessToken, sessionReady, trackSession]);
 
   return <>{children}</>;
 };

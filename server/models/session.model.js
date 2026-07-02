@@ -12,6 +12,11 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    user: {
+      type: ObjectId,
+      ref: "User",
+      index: true
+    },
     
     reviews: [
       {

@@ -9,8 +9,52 @@ const remove = require("../utils/remove.util");
 const token = require("../utils/token.util");
 const VerificationCode = require("../models/VerificationCode");
 const { sendSms } = require("../utils/smsService");
-const admin = require("../config/firebaseAdmin");
 const  Session = require("../models/session.model");
+const { OAuth2Client } = require("google-auth-library");
+
+const googleOAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+async function verifyGoogleIdToken(idToken) {
+  const ticket = await googleOAuthClient.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID
+  });
+  const payload = ticket.getPayload();
+
+  return {
+    uid: payload.sub,
+    email: payload.email,
+    name: payload.name,
+    picture: payload.picture
+  };
+}
+
+async function attachCurrentSessionToUser(req, user) {
+  if (!req.sessionID || !user?._id) return;
+
+  const sessionData = await Session.findOneAndUpdate(
+    { sessionId: req.sessionID },
+    {
+      $set: {
+        user: user._id,
+        userId: user._id.toString(),
+        role: user.role || "buyer",
+        lastSeenAt: new Date()
+      },
+      $setOnInsert: {
+        sessionId: req.sessionID,
+        firstSeenAt: new Date()
+      }
+    },
+    { new: true, upsert: false }
+  );
+
+  if (sessionData) {
+    await User.findByIdAndUpdate(user._id, {
+      $addToSet: { sessions: sessionData._id }
+    });
+  }
+}
 
 exports.signUpWithPhone = async (req, res) => {
   try {
@@ -117,6 +161,7 @@ exports.verifyPhone = async (req, res) => {
     });
   }
   await user.save();
+  await attachCurrentSessionToUser(req, user);
 
 
 
@@ -144,11 +189,11 @@ exports.signUpWithGoogle = async (req, res) => {
       });
     }
 
-    // تأیید توکن با Firebase
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { uid, email, name, picture } = decodedToken;
+    const { uid, email, name, picture } = await verifyGoogleIdToken(idToken);
 
-    let user = await User.findOne({ googleId: uid });
+    let user = await User.findOne({
+      $or: [{ googleId: uid }, ...(email ? [{ email }] : [])]
+    });
 
     if (!user) {
       user = new User({
@@ -173,7 +218,21 @@ exports.signUpWithGoogle = async (req, res) => {
       }
 
       await user.save();
+    } else {
+      user.googleId = user.googleId || uid;
+      user.email = user.email || email;
+      user.name = user.name || name;
+      user.avatar = {
+        ...user.avatar,
+        url: user.avatar?.url || picture
+      };
+      user.emailVerified = true;
+      user.userLevel = user.userLevel === "basic" ? "verified" : user.userLevel;
+
+      await user.save();
     }
+
+    await attachCurrentSessionToUser(req, user);
 
     const accessToken = token(user);
 
@@ -186,11 +245,11 @@ exports.signUpWithGoogle = async (req, res) => {
       user
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("Google login failed:", error);
+    res.status(401).json({
       acknowledgement: false,
-      message: "خطای سرور",
-      description: "مشکلی در ورود با حساب گوگل پیش آمده است.",
+      message: "خطای ورود با گوگل",
+      description: error?.message || "مشکلی در ورود با حساب گوگل پیش آمده است.",
       isSuccess: false,
       error: error.message 
     });
@@ -218,7 +277,12 @@ exports.getUsers = async (req, res) => {
     const users = await User.find(query)
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "sessions",
+        select: "-pageViews",
+        options: { sort: { lastSeenAt: -1, updatedAt: -1 }, limit: 5 }
+      });
       
     // Get total count for pagination
     const total = await User.countDocuments(query);
@@ -247,7 +311,10 @@ exports.getUsers = async (req, res) => {
 
 /* get single user */
 exports.getUser = async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).populate({
+    path: "sessions",
+    options: { sort: { lastSeenAt: -1, updatedAt: -1 } }
+  });
 
   res.status(200).json({
     acknowledgement: true,
@@ -346,7 +413,12 @@ exports.persistLogin = async (req, res) => {
       path: "purchases",
       populate: ["customer", "products.product"]
     },
-    "products"
+    "products",
+    {
+      path: "sessions",
+      select: "-pageViews",
+      options: { sort: { lastSeenAt: -1, updatedAt: -1 }, limit: 10 }
+    }
   ]);
 
   if (!user) {

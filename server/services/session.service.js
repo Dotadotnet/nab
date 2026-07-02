@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const Session = require("../models/session.model");
+const User = require("../models/user.model");
 
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
@@ -147,6 +149,49 @@ function buildTrackingData(req) {
   };
 }
 
+function getAuthUser(req) {
+  const rawToken = req.headers?.authorization?.split(" ")[1];
+
+  if (!rawToken) return null;
+
+  try {
+    return jwt.verify(rawToken, process.env.TOKEN_SECRET);
+  } catch (error) {
+    return null;
+  }
+}
+
+async function attachSessionToUser(sessionData, authUser) {
+  const userId = authUser?._id;
+
+  if (!sessionData || !userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return sessionData;
+  }
+
+  const user = await User.findById(userId).select("_id name email phone role");
+
+  if (!user) return sessionData;
+
+  const stringUserId = user._id.toString();
+  const needsSave =
+    sessionData.user?.toString() !== stringUserId ||
+    sessionData.userId !== stringUserId ||
+    sessionData.role !== (user.role || sessionData.role);
+
+  if (needsSave) {
+    sessionData.user = user._id;
+    sessionData.userId = stringUserId;
+    sessionData.role = user.role || sessionData.role || "buyer";
+    await sessionData.save();
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    $addToSet: { sessions: sessionData._id }
+  });
+
+  return sessionData;
+}
+
 async function ensureSession(req, extra = {}) {
   let sessionData = await Session.findOne({ sessionId: req.sessionID });
 
@@ -168,6 +213,7 @@ async function ensureSession(req, extra = {}) {
 async function initSession(req, res, next) {
   try {
     const tracking = buildTrackingData(req);
+    const authUser = getAuthUser(req);
     let sessionData = await Session.findOne({ sessionId: req.sessionID });
 
     if (!sessionData) {
@@ -197,6 +243,8 @@ async function initSession(req, res, next) {
       await sessionData.incrementVisitCount();
     }
 
+    sessionData = await attachSessionToUser(sessionData, authUser);
+
     res.json({
       acknowledgement: true,
       sessionId: sessionData.sessionId,
@@ -211,6 +259,7 @@ async function initSession(req, res, next) {
 
 async function getSession(req, res) {
   try {
+    const authUser = getAuthUser(req);
     let sessionData = await Session.findOne({ sessionId: req.sessionID });
 
     if (!sessionData) {
@@ -241,6 +290,8 @@ async function getSession(req, res) {
       });
     }
 
+    sessionData = await attachSessionToUser(sessionData, authUser);
+
     res.status(200).json({
       acknowledgement: true,
       message: "موفق",
@@ -259,6 +310,7 @@ async function getSession(req, res) {
 async function trackSession(req, res, next) {
   try {
     const tracking = buildTrackingData(req);
+    const authUser = getAuthUser(req);
     await ensureSession(req, {
       ip: tracking.ip,
       forwardedFor: tracking.forwardedFor,
@@ -317,11 +369,19 @@ async function trackSession(req, res, next) {
       }
     };
 
-    const sessionData = await Session.findOneAndUpdate(
+    if (authUser?._id && mongoose.Types.ObjectId.isValid(authUser._id)) {
+      update.$set.user = authUser._id;
+      update.$set.userId = authUser._id;
+      update.$set.role = authUser.role || "buyer";
+    }
+
+    let sessionData = await Session.findOneAndUpdate(
       { sessionId: req.sessionID },
       update,
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+
+    sessionData = await attachSessionToUser(sessionData, authUser);
 
     res.status(200).json({
       acknowledgement: true,
@@ -364,6 +424,7 @@ async function getSessions(req, res, next) {
         .skip(skip)
         .limit(limit)
         .select("-pageViews")
+        .populate("user", "name email phone avatar role userLevel")
         .lean(),
       Session.countDocuments(query),
       Session.aggregate([
@@ -411,7 +472,9 @@ async function getSessionDetails(req, res, next) {
     const query = mongoose.Types.ObjectId.isValid(id)
       ? { $or: [{ _id: id }, { sessionId: id }] }
       : { sessionId: id };
-    const sessionData = await Session.findOne(query).lean();
+    const sessionData = await Session.findOne(query)
+      .populate("user", "name email phone avatar role userLevel")
+      .lean();
 
     if (!sessionData) {
       return res.status(404).json({

@@ -50,6 +50,14 @@ function activityPath(view) {
   return view?.path || view?.url || "-";
 }
 
+function userLabel(session) {
+  const user = session?.user;
+
+  if (!user) return session?.userId || "-";
+
+  return user?.name?.fa || user?.name || user?.email || user?.phone || session?.userId || "-";
+}
+
 function DeviceIcon({ type = "" }) {
   const normalizedType = type.toLowerCase();
   if (normalizedType === "mobile") return <Icon name="mobile" />;
@@ -182,8 +190,10 @@ const Sessions = () => {
               className="grid cursor-pointer grid-cols-12 gap-2 rounded-xl border border-gray-200 bg-white p-4 text-sm transition hover:border-green-200 hover:bg-green-50/70 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-gray-900"
             >
               <div className="col-span-4 lg:col-span-2">
-                <p className="line-clamp-1 font-semibold">{session.userId || "-"}</p>
-                <p className="text-xs text-gray-500">{session.role || "buyer"}</p>
+                <p className="line-clamp-1 font-semibold">{userLabel(session)}</p>
+                <p className="line-clamp-1 text-xs text-gray-500">
+                  {session.user?.email || session.user?.phone || session.role || "buyer"}
+                </p>
               </div>
               <div className="hidden lg:block lg:col-span-2">
                 <p className="line-clamp-1">{locationLabel(session)}</p>
@@ -321,7 +331,10 @@ const SessionDetailsModal = ({ isLoading, onClose, session, show }) => (
 
           <DetailSection title="کاربر و موقعیت">
             <DetailBadge label="کاربر" icon={<Icon name="user" />} tone="indigo">
-              {session.userId}
+              {userLabel(session)}
+            </DetailBadge>
+            <DetailBadge label="ایمیل / موبایل" icon={<Icon name="user" />} tone="teal">
+              {session.user?.email || session.user?.phone || "-"}
             </DetailBadge>
             <DetailBadge label="نقش" tone="amber">
               {session.role || "buyer"}

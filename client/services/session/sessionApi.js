@@ -1,5 +1,14 @@
 const { nabApi } = require("../nab");
 
+function authHeaders(extraHeaders = {}) {
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  return {
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
+}
+
 const sessionApi = nabApi.injectEndpoints({
   endpoints: (builder) => ({
     // createSession
@@ -9,9 +18,9 @@ const sessionApi = nabApi.injectEndpoints({
           url: "/session/create",
           method: "POST",
           credentials: "include",
-          headers: {
+          headers: authHeaders({
             "Accept-Language": locale
-          }
+          })
         };
       }
     }),
@@ -23,9 +32,9 @@ const sessionApi = nabApi.injectEndpoints({
         method: "GET",
 
         credentials: "include",
-        headers: {
+        headers: authHeaders({
           "Accept-Language": locale
-        }
+        })
       }),
 
       providesTags: ["Session"]
@@ -37,7 +46,8 @@ const sessionApi = nabApi.injectEndpoints({
         url: "/session/track",
         method: "POST",
         body,
-        credentials: "include"
+        credentials: "include",
+        headers: authHeaders()
       })
     })
   })
