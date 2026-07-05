@@ -40,7 +40,7 @@ function hasDashboardTranslations(translations) {
 
 /* add new category */
 exports.addCategory = async (req, res) => {
-  const { title, description, icon, tags, keynotes, parent, categoryTranslations } = req.body;
+  const { title, description, icon, parent, categoryTranslations } = req.body;
   try {
     const thumbnail = req.uploadedFiles["thumbnail"]
       ? {
@@ -57,8 +57,6 @@ exports.addCategory = async (req, res) => {
       icon: icon
     });
 
-    const parseKeynotes = JSON.parse(keynotes);
-    const parseTags = JSON.parse(tags);
     const parsedCategoryTranslations = parseJsonObject(categoryTranslations);
 
     const result = await category.save();
@@ -70,7 +68,7 @@ exports.addCategory = async (req, res) => {
       const translations = hasDashboardTranslations(parsedCategoryTranslations)
         ? {
             [DEFAULT_LANGUAGE]: {
-              fields: { title, description, slug, canonicalUrl, tags: parseTags, keynotes: parseKeynotes }
+              fields: { title, description, slug, canonicalUrl }
             },
             ...Object.fromEntries(
               SUPPORTED_LANGUAGES.filter((language) => language !== DEFAULT_LANGUAGE)
@@ -92,9 +90,7 @@ exports.addCategory = async (req, res) => {
                         title: translatedTitle,
                         description: translatedDescription,
                         slug,
-                        canonicalUrl,
-                        tags: parseTags,
-                        keynotes: parseKeynotes
+                        canonicalUrl
                       }
                     }
                   ];
@@ -106,16 +102,12 @@ exports.addCategory = async (req, res) => {
               title,
               description,
               slug,
-              canonicalUrl,
-              tags: parseTags,
-              keynotes: parseKeynotes
+              canonicalUrl
             },
             {
               stringFields: ["title", "description"],
               copyFields: ["canonicalUrl"],
-              lowercaseFields: ["slug"],
-
-              arrayStringFields: ["keynotes", "tags"]
+              lowercaseFields: ["slug"]
             }
           );
       const translationDocs = Object.entries(translations).map(
@@ -125,9 +117,7 @@ exports.addCategory = async (req, res) => {
           title: fields.title,
           description: fields.description,
           slug: fields.slug,
-          canonicalUrl: fields.canonicalUrl,
-          tags: fields.tags,
-          keynotes: fields.keynotes
+          canonicalUrl: fields.canonicalUrl
         })
       );
       const insertedTranslations = await CategoryTranslation.insertMany(
@@ -274,8 +264,6 @@ exports.updateCategory = async (req, res) => {
     };
   }
 
-  updatedCategory.keynotes = JSON.parse(req.body.keynotes);
-  updatedCategory.tags = JSON.parse(req.body.tags);
   updatedCategory.parent = req.body.parent || null;
 
   await Category.findByIdAndUpdate(req.params.id, updatedCategory);

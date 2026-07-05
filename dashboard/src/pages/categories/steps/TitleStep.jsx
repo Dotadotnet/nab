@@ -10,6 +10,7 @@ const TitleStep = ({
   nextStep,
   setValue,
   watch,
+  showNext = true,
 }) => {
   return (
     <>
@@ -57,7 +58,7 @@ const TitleStep = ({
       />
 
       <div className="mt-12 flex justify-between">
-        <NavigationButton direction="next" onClick={nextStep} />
+        {showNext ? <NavigationButton direction="next" onClick={nextStep} /> : <span />}
         <NavigationButton direction="prev" onClick={prevStep} />
       </div>
     </>

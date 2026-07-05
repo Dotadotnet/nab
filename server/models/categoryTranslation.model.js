@@ -18,9 +18,7 @@ const categoryTranslationSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
     slug: { type: String, required: true, trim: true },
-    canonicalUrl: { type: String, default: "" },
-    tags: [{ type: String }],
-    keynotes: [{ type: String }]
+    canonicalUrl: { type: String, default: "" }
   },
   { timestamps: true }
 );
