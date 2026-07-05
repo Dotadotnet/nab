@@ -12,7 +12,6 @@ const NewArrivals = async ({ params }) => {
 
   const api = `${process.env.NEXT_PUBLIC_BASE_URL}/product/get-products`;
   let products = [];
-  let error = null;
 
   try {
     const response = await fetch(api, {
@@ -27,9 +26,7 @@ const NewArrivals = async ({ params }) => {
     }
     const res = await response.json();
     products = res.data || [];
-  } catch (err) {
-    error = err.message;
-  }
+  } catch {}
 
   const t = await getTranslations("HomePage");
 
@@ -41,9 +38,7 @@ const NewArrivals = async ({ params }) => {
         </div>
 
         <div>
-          {error ? (
-            <p className="text-red-500">Error: {error}</p>
-          ) : products.length === 0 ? (
+          {products.length === 0 ? (
             <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 md:gap-x-6 gap-y-8">
               {[1, 2, 3, 4].map((_, index) => (
                 <ProductCard key={index} />

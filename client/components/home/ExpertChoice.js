@@ -13,16 +13,26 @@ const ExpertChoice = async ({ params }) => {
   const tools = await getTranslations("Tools");
   const t = await getTranslations("HomePage");
 
-  const api = `${process.env.NEXT_PUBLIC_BASE_URL}` + `/product/get-products`;
-  const response = await fetch(api, {
-    cache: "no-store",
-    next: { tags: ["product", `product`] },
-    headers: {
-      "Accept-Language": locale
-    }
-  });
-  const res = await response.json();
-  const products = res.data;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  let products = [];
+
+  if (baseUrl) {
+    try {
+      const api = `${baseUrl}/product/get-products`;
+      const response = await fetch(api, {
+        cache: "no-store",
+        next: { tags: ["product", `product`] },
+        headers: {
+          "Accept-Language": locale
+        }
+      });
+
+      if (response.ok) {
+        const res = await response.json();
+        products = res.data || [];
+      }
+    } catch {}
+  }
 
   return (
     <Container>
@@ -32,7 +42,7 @@ const ExpertChoice = async ({ params }) => {
         </div>
 
         <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 gap-x-6 gap-y-8">
-          {products?.length === 0 ? (
+          {products.length === 0 ? (
             <>
               {[1, 2, 3, 4].map((_, index) => (
                 <ExpertCard key={index} />

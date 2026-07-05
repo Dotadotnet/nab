@@ -97,9 +97,8 @@ export default function StoriesSectionClient({ banners }) {
     <section className="pt-40 overflow-auto">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex py-2 gap-6 overflow-x-auto scrollbar-hide flex-nowrap px-2 justify-start md:justify-center no-scrollbar">
-          {banners.map((banner) => {
-            const randomGradient =
-              gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
+          {banners.map((banner, index) => {
+            const gradientClass = gradientClasses[index % gradientClasses.length];
 
             return (
               <div
@@ -110,7 +109,7 @@ export default function StoriesSectionClient({ banners }) {
                 <div className="relative w-20 h-20 group">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
-                      className={`w-full h-full rounded-full bg-gradient-to-tr ${randomGradient} transition-transform duration-500 group-hover:scale-[1.04]`}
+                      className={`w-full h-full rounded-full bg-gradient-to-tr ${gradientClass} transition-transform duration-500 group-hover:scale-[1.04]`}
                     ></div>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center p-[4px]">
