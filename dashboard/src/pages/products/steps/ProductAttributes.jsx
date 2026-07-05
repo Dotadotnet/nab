@@ -6,7 +6,7 @@ import NavigationButton from "@/components/shared/button/NavigationButton";
 import {
   TRANSLATION_LANGUAGES,
 } from "@/components/shared/translation/TranslationTabs";
-import { useTranslateProductTextMutation } from "@/services/product/productApi";
+import { useTranslateTextMutation } from "@/services/translation/translationApi";
 import { useGetProductAttributesQuery } from "@/services/productAttribute/productAttributeApi";
 
 const emptyAttribute = () => ({
@@ -26,7 +26,7 @@ const ProductAttributes = ({
   prevStep,
 }) => {
   const [activeLanguage, setActiveLanguage] = useState("fa");
-  const [translateText] = useTranslateProductTextMutation();
+  const [translateText] = useTranslateTextMutation();
   const { data: attributeDefinitionsData, isLoading: isLoadingDefinitions } =
     useGetProductAttributesQuery({ page: 1, limit: 100 });
   const manualFields = useRef({});

@@ -15,7 +15,7 @@ const {
   buildTranslationDocs,
   buildTranslationInfos
 } = require("../utils/translationDocs");
-const { translate } = require("google-translate-api-x");
+const { translateWithFallback } = require("../utils/googleTranslate.util");
 const {
   normalizeLanguage,
   DEFAULT_LANGUAGE,
@@ -346,7 +346,7 @@ exports.translateText = async (req, res) => {
       });
     }
 
-    const result = await translate(text.trim(), {
+    const result = await translateWithFallback(text.trim(), {
       to: targetLanguage === DEFAULT_LANGUAGE ? "en" : targetLanguage
     });
 
@@ -359,6 +359,12 @@ exports.translateText = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("[PRODUCT_TRANSLATE] failed", {
+      message: error.message,
+      status: error.cause?.response?.status,
+      statusText: error.cause?.response?.statusText
+    });
+
     return res.status(500).json({
       acknowledgement: false,
       message: "Translation Error",

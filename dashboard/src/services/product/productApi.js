@@ -16,17 +16,6 @@ const productApi = nabApi.injectEndpoints({
       invalidatesTags: ["Product", "Category", "User"]
     }),
 
-    translateProductText: builder.mutation({
-      query: (body) => ({
-        url: "/product/translate",
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-        },
-        body
-      })
-    }),
-
     // get all products
     getProducts: builder.query({
       query: () => ({
@@ -218,7 +207,6 @@ export const {
   useUpdateProductReviewMutation,
   useUpdateProductStatusMutation,
   useAddProductMutation,
-  useTranslateProductTextMutation,
   useGetProductsQuery,
   useUpdateProductMutation,
   useGetProductQuery,

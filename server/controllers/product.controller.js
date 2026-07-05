@@ -3,16 +3,6 @@
 /* internal import */
 const productService = require("../services/product.service");
 
-exports.translateText = async (req, res, next) => {
-  try {
-    await productService.translateText(req, res);
-  } catch (error) {
-    next(error);
-  } finally {
-    console.log(`Route: ${req.url} || Method: ${req.method}`);
-  }
-};
-
 /* add new product */
 exports.addProduct = async (req, res, next) => {
   try {

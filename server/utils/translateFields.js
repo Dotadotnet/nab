@@ -1,5 +1,5 @@
-const { translate } = require("google-translate-api-x");
 const cheerio = require("cheerio");
+const { translateWithFallback } = require("./googleTranslate.util");
 const {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
@@ -27,7 +27,7 @@ async function translateHTMLContent(html, lang, toLowerCase = false) {
           const chunks = splitText(original);
           const translatedChunks = await Promise.all(
             chunks.map(async (chunk) => {
-              const result = await translate(chunk, { to: lang });
+              const result = await translateWithFallback(chunk, { to: lang });
               return toLowerCase ? result.text.toLowerCase() : result.text;
             })
           );
@@ -117,7 +117,7 @@ const translateFields = async (
       const value = data[field];
       if (typeof value === "string") {
         try {
-          const result = await translate(value, { to: lang });
+          const result = await translateWithFallback(value, { to: lang });
           translations[lang].fields[field] = result.text;
         } catch (err) {
           throw new Error(`خطا در ترجمه فیلد "${field}" به ${lang}: ${err.message}`);
@@ -132,7 +132,7 @@ const translateFields = async (
         translations[lang].fields[field] = await Promise.all(
           value.map(async (item) =>
             typeof item === "string"
-              ? (await translate(item, { to: lang })).text
+              ? (await translateWithFallback(item, { to: lang })).text
               : item
           )
         );
@@ -149,12 +149,12 @@ const translateFields = async (
               const translatedItem = {};
               for (const [key, val] of Object.entries(item)) {
                 if (typeof val === "string") {
-                  translatedItem[key] = (await translate(val, { to: lang })).text;
+                  translatedItem[key] = (await translateWithFallback(val, { to: lang })).text;
                 } else if (Array.isArray(val)) {
                   translatedItem[key] = await Promise.all(
                     val.map(async (subItem) =>
                       typeof subItem === "string"
-                        ? (await translate(subItem, { to: lang })).text
+                        ? (await translateWithFallback(subItem, { to: lang })).text
                         : subItem
                     )
                   );
@@ -188,7 +188,7 @@ const translateFields = async (
       const value = data[field];
       if (typeof value === "string") {
         try {
-          const result = await translate(value, { to: lang });
+          const result = await translateWithFallback(value, { to: lang });
           translations[lang].fields[field] = result.text.toLowerCase();
         } catch (err) {
           throw new Error(`خطا در ترجمه فیلد lowercase "${field}" به ${lang}: ${err.message}`);

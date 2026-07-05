@@ -6,7 +6,7 @@ import NavigationButton from "@/components/shared/button/NavigationButton";
 import {
   TRANSLATION_LANGUAGES,
 } from "@/components/shared/translation/TranslationTabs";
-import { useTranslateProductTextMutation } from "@/services/product/productApi";
+import { useTranslateTextMutation } from "@/services/translation/translationApi";
 
 const Ingredients = ({
   ingredients,
@@ -17,7 +17,7 @@ const Ingredients = ({
   prevStep,
 }) => {
   const [activeLanguage, setActiveLanguage] = useState("fa");
-  const [translateText] = useTranslateProductTextMutation();
+  const [translateText] = useTranslateTextMutation();
   const manualFields = useRef({});
 
   useEffect(() => {

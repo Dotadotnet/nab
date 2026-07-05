@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { useTranslateProductTextMutation } from "@/services/product/productApi";
+import { useTranslateTextMutation } from "@/services/translation/translationApi";
 
 export const TRANSLATION_LANGUAGES = [
   { code: "fa", label: "فارسی", dir: "rtl" },
@@ -62,7 +62,7 @@ const TranslationTabs = ({
   watch,
 }) => {
   const [activeLanguage, setActiveLanguage] = useState("fa");
-  const [translateText] = useTranslateProductTextMutation();
+  const [translateText] = useTranslateTextMutation();
   const manualFields = useRef({});
   const lastAutoValues = useRef({});
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import { useGetCategoriesQuery } from "@/services/category/categoryApi";
-import { useTranslateProductTextMutation } from "@/services/product/productApi";
+import { useTranslateTextMutation } from "@/services/translation/translationApi";
 import { toast } from "react-hot-toast";
 
 const languages = [
@@ -18,7 +18,7 @@ const getFieldName = (language, field) =>
 
 const TitleStep = ({ register, errors, prevStep, nextStep, setValue, watch }) => {
   const [activeLanguage, setActiveLanguage] = useState("fa");
-  const [translateProductText] = useTranslateProductTextMutation();
+  const [translateProductText] = useTranslateTextMutation();
   const manualFields = useRef({});
   const lastAutoValues = useRef({});
 
