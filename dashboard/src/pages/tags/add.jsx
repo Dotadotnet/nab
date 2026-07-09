@@ -15,6 +15,24 @@ import StepIndicator from "../categories/steps/StepIndicator";
 import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 
 const totalSteps = 3;
+const tagTranslationFields = [
+  {
+    name: "title",
+    label: "عنوان",
+    required: true,
+    minLength: 3,
+    maxLength: 70,
+  },
+  {
+    name: "description",
+    label: "توضیحات",
+    type: "textarea",
+    rows: 4,
+    required: true,
+    minLength: 10,
+    maxLength: 1600,
+  },
+];
 
 const AddTag = () => {
   const navigate = useNavigate();
@@ -131,60 +149,12 @@ const AddTag = () => {
         <>
           <TranslationTabs
             errors={errors}
-            fields={[
-              {
-                name: "title",
-                label: "عنوان",
-                required: true,
-                minLength: 3,
-                maxLength: 70,
-              },
-              {
-                name: "description",
-                label: "توضیحات",
-                type: "textarea",
-                rows: 4,
-                required: true,
-                minLength: 10,
-                maxLength: 1600,
-              },
-            ]}
+            fields={tagTranslationFields}
             namespace="translations"
             register={register}
             setValue={setValue}
             watch={watch}
           />
-          <label className="hidden" htmlFor="title">
-            <span className="text-sm">عنوان*</span>
-            <input
-              className="p-2 rounded border"
-              id="title"
-              type="text"
-              {...register("title", {
-                required: "وارد کردن عنوان الزامی است",
-                minLength: { value: 3, message: "عنوان باید حداقل ۳ کاراکتر باشد" },
-                maxLength: { value: 70, message: "عنوان نمی‌تواند بیشتر از ۷۰ کاراکتر باشد" }
-              })}
-            />
-            {errors.title && <span className="text-xs text-red-500">{errors.title.message}</span>}
-          </label>
-
-          <label className="hidden" htmlFor="description">
-            <span className="text-sm">توضیحات*</span>
-            <textarea
-              className="p-2 rounded border"
-              id="description"
-              rows="4"
-              {...register("description", {
-                required: "وارد کردن توضیحات الزامی است",
-                minLength: { value: 10, message: "توضیحات باید حداقل ۱۰ کاراکتر باشد" },
-                maxLength: { value: 1600, message: "توضیحات نمی‌تواند بیشتر از ۱۶۰۰ کاراکتر باشد" }
-              })}
-            />
-            {errors.description && (
-              <span className="text-xs text-red-500">{errors.description.message}</span>
-            )}
-          </label>
 
           <div className="flex justify-end mt-8">
             <NavigationButton direction="next" onClick={nextStep} />
