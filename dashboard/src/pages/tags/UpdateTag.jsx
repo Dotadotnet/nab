@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import StepIndicator from "../categories/steps/StepIndicator";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const totalSteps = 3;
 
@@ -21,6 +22,7 @@ const UpdateTag = () => {
   const navigate = useNavigate();
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [keynotes, setKeynotes] = useState([""]);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -81,6 +83,11 @@ const UpdateTag = () => {
   }, [hasValidKeynotes, thumbnail, thumbnailPreview, watchedFields.description, watchedFields.title]);
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     if (currentStep === 1) {
       const valid = await trigger(["title", "description"]);
       if (!valid) {
@@ -119,7 +126,7 @@ const UpdateTag = () => {
     formData.append("description", data.description);
     formData.append("keynotes", JSON.stringify(cleanKeynotes));
     formData.append("status", data.status ? "active" : "inactive");
-    if (thumbnail) formData.append("thumbnail", thumbnail);
+    appendMediaFields(formData, { thumbnail });
     updateTag({ id, body: formData });
   };
 
@@ -183,6 +190,9 @@ const UpdateTag = () => {
                 setThumbnail={setThumbnail}
                 setThumbnailPreview={setThumbnailPreview}
                 title="برای تغییر تصویر، فایل جدید انتخاب کنید"
+                folder="tag"
+                uploadOnSelect
+                onUploadStateChange={setIsUploadingMedia}
               />
             </label>
           </div>
@@ -221,7 +231,7 @@ const UpdateTag = () => {
           ))}
         </label>
         <div className="flex justify-between mt-8">
-          <SendButton isLoading={isUpdating} />
+          <SendButton isLoading={isUpdating || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       </>

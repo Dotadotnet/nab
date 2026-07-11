@@ -30,7 +30,10 @@ const Signin = () => {
   const handleSignin = async (e) => {
     e.preventDefault();
 
-    signin({ email: e.target.email.value, password: e.target.password.value });
+    signin({
+      email: e.target.email.value.trim().toLowerCase(),
+      password: e.target.password.value,
+    });
     e.target.reset();
   };
 

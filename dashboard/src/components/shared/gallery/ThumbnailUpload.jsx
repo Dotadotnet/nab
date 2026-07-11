@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import CloudUpload from "@/components/icons/CloudUpload";
-import ImageCropModal from "./ImageCropModal";
+import ImageEditorModal from "./ImageEditorModal";
+import { uploadFilesToArvan } from "@/utils/directUpload";
 
 const ThumbnailUpload = ({
   setThumbnail,
@@ -12,24 +13,60 @@ const ThumbnailUpload = ({
   cropHeight = 800,
   cropWidth = 800,
   enableCrop = true,
-  title="انتخاب یک فایل (عکس یا ویدئو)",
-  name="thumbnail"
+  title = "انتخاب یک فایل (عکس یا ویدئو)",
+  name = "thumbnail",
+  accept = "image/*",
+  folder,
+  uploadOnSelect = false,
+  onUploadStateChange,
 }) => {
   const [cropFile, setCropFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const applyThumbnailFile = (file) => {
-    if (!file) return;
-    setThumbnail(file);
-    
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const setUploading = (value) => {
+    setIsUploading(value);
+    onUploadStateChange?.(value);
   };
 
-  const handleThumbnailPreview = (e) => {
-    const file = e.target.files[0];
+  const applyThumbnailFile = async (file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setThumbnailPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    if (!uploadOnSelect) {
+      setThumbnail(file);
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const uploadedFiles = await uploadFilesToArvan({
+        files: file,
+        fieldName: name,
+        folder: folder || name,
+        options: {
+          width: cropWidth,
+          height: cropHeight,
+          fit: "cover",
+        },
+      });
+
+      setThumbnail(uploadedFiles[0] || null);
+    } catch (error) {
+      setThumbnail(null);
+      setThumbnailPreview(null);
+      console.error("[DIRECT_UPLOAD] thumbnail upload failed", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleThumbnailPreview = (event) => {
+    const file = event.target.files[0];
 
     if (file && enableCrop && file.type.startsWith("image/")) {
       setCropFile(file);
@@ -41,32 +78,43 @@ const ThumbnailUpload = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <label htmlFor="thumbnail" className="relative">
+      <label htmlFor={name} className="relative">
         <button
           type="button"
-          className={`py-1 px-4 flex flex-row gap-x-2 bg-green-100 dark:bg-blue-100 
-            ${border ? "border border-green-900 cursor-pointer rounded-secondary" : "rounded-md"} dark:border-blue-900 text-green-900 dark:text-blue-900 w-fit`}
+          className={`py-1 px-4 flex flex-row gap-x-2 bg-green-100 dark:bg-blue-100 ${
+            border
+              ? "border border-green-900 cursor-pointer rounded-secondary"
+              : "rounded-md"
+          } dark:border-blue-900 text-green-900 dark:text-blue-900 w-fit disabled:cursor-not-allowed disabled:opacity-60`}
+          disabled={isUploading}
         >
           <CloudUpload className={`h-${iconSize} w-${iconSize}`} />
-          {isTitle && title}
+          {isTitle && (isUploading ? "در حال آپلود..." : title)}
         </button>
         <input
           type="file"
           name={name}
           id={name}
-          accept="image/*"
-          className="absolute top-0 left-0 h-full w-full opacity-0 cursor-pointer"
+          accept={accept}
+          className="absolute top-0 left-0 h-full w-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           {...register}
           multiple={false}
+          disabled={isUploading}
           onChange={(event) => {
-            register.onChange(event); 
-            handleThumbnailPreview(event); 
+            register?.onChange?.(event);
+            handleThumbnailPreview(event);
           }}
         />
-        
       </label>
+
+      {isUploading && (
+        <span className="text-xs text-green-700 dark:text-blue-300">
+          در حال آپلود تصویر...
+        </span>
+      )}
+
       {enableCrop && (
-        <ImageCropModal
+        <ImageEditorModal
           file={cropFile}
           height={cropHeight}
           width={cropWidth}

@@ -5,7 +5,69 @@ const translateFields = require("../utils/translateFields");
 const ArticleTranslation = require("../models/articleTranslation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
 const NewsType = require("../models/newsType.model");
+const { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } = require("../utils/languages");
 const defaultDomain = process.env.NEXT_PUBLIC_CLIENT_URL;
+
+function parseJsonObject(value, fallback = {}) {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function buildNewsTranslationDocs({
+  newsId,
+  title,
+  summary,
+  content,
+  slug,
+  metaTitle,
+  metaDescription,
+  canonicalUrl,
+  manualTranslations = {},
+}) {
+  const autoTranslations = await translateFields(
+    {
+      title,
+      summary,
+      content,
+      slug,
+      metaTitle,
+      metaDescription,
+      canonicalUrl
+    },
+    {
+      stringFields: ["title", "summary", "metaTitle", "metaDescription"],
+      copyFields: ["canonicalUrl"],
+      lowercaseFields: ["slug"],
+      longTextFields: ["content"]
+    }
+  );
+
+  return SUPPORTED_LANGUAGES.map((language) => {
+    const manual = language === DEFAULT_LANGUAGE ? {} : manualTranslations?.[language] || {};
+    const auto = autoTranslations?.[language]?.fields || {};
+
+    return {
+      language,
+      article: newsId,
+      title: manual.title || auto.title || title,
+      summary: manual.summary || auto.summary || summary,
+      content: manual.content || auto.content || content,
+      slug: manual.slug || auto.slug || slug,
+      metaTitle: manual.metaTitle || auto.metaTitle || metaTitle,
+      metaDescription: manual.metaDescription || auto.metaDescription || metaDescription,
+      canonicalUrl: manual.canonicalUrl || auto.canonicalUrl || canonicalUrl
+    };
+  });
+}
 
 exports.addNews = async (req, res) => {
   try {
@@ -21,7 +83,8 @@ exports.addNews = async (req, res) => {
       visibility,
       readTime,
       source,
-      country
+      country,
+      newsTranslations
     } = req.body;
     let thumbnail = null;
     if (req.uploadedFiles["thumbnail"].length) {
@@ -56,41 +119,17 @@ exports.addNews = async (req, res) => {
     const canonicalUrl = `${defaultDomain}/news/${slug}`;
 
     try {
-      const translations = await translateFields(
-        {
-          title,
-          summary,
-          content,
-          slug,
-          metaTitle,
-          metaDescription,
-          canonicalUrl
-        },
-        {
-          stringFields: [
-            "title",
-            "summary",
-            "metaTitle",
-            "metaDescription"
-          ],
-          copyFields: ["canonicalUrl"],
-          lowercaseFields: ["slug"],
-          longTextFields: ["content"]
-        }
-      );
-      const translationDocs = Object.entries(translations).map(
-        ([lang, { fields }]) => ({
-          language: lang,
-          article: result._id,
-          title: fields.title,
-          summary: fields.summary,
-          content: fields.content,
-          slug: fields.slug,
-          metaTitle: fields.metaTitle,
-          metaDescription: fields.metaDescription,
-          canonicalUrl: fields.canonicalUrl
-        })
-      );
+      const translationDocs = await buildNewsTranslationDocs({
+        newsId: result._id,
+        title,
+        summary,
+        content,
+        slug,
+        metaTitle,
+        metaDescription,
+        canonicalUrl,
+        manualTranslations: parseJsonObject(newsTranslations)
+      });
       const savedTranslations = await ArticleTranslation.insertMany(translationDocs);
 
       const translationInfos = savedTranslations.map((t) => ({
@@ -268,6 +307,62 @@ exports.updateNews = async (req, res) => {
         acknowledgement: false,
         message: "Not Found",
         description: "اخبار مورد نظر برای بروزرسانی یافت نشد"
+      });
+    }
+
+    const {
+      title,
+      summary,
+      content,
+      newsTranslations,
+      metaTitle,
+      metaDescription
+    } = req.body;
+
+    if (title || summary || content || newsTranslations) {
+      const fallbackTranslation = await ArticleTranslation.findOne({
+        article: result._id,
+        language: DEFAULT_LANGUAGE
+      });
+      const finalTitle = title || fallbackTranslation?.title || "";
+      const finalSummary = summary || fallbackTranslation?.summary || "";
+      const finalContent = content || fallbackTranslation?.content || "";
+      const slug = await generateSlug(finalTitle);
+      const newsType = await NewsType.findById(result.type).select("title");
+      const seo = generateSeoFields({
+        title: finalTitle,
+        summary: finalSummary,
+        categoryTitle: newsType?.title
+      });
+      const canonicalUrl = `${defaultDomain}/news/${slug}`;
+      const translationDocs = await buildNewsTranslationDocs({
+        newsId: result._id,
+        title: finalTitle,
+        summary: finalSummary,
+        content: finalContent,
+        slug,
+        metaTitle: metaTitle || seo.metaTitle,
+        metaDescription: metaDescription || seo.metaDescription,
+        canonicalUrl,
+        manualTranslations: parseJsonObject(newsTranslations)
+      });
+      const savedTranslations = await Promise.all(
+        translationDocs.map((translationDoc) =>
+          ArticleTranslation.findOneAndUpdate(
+            { article: result._id, language: translationDoc.language },
+            translationDoc,
+            { upsert: true, new: true }
+          )
+        )
+      );
+
+      await News.findByIdAndUpdate(result._id, {
+        $set: {
+          translations: savedTranslations.map((translation) => ({
+            translation: translation._id,
+            language: translation.language
+          }))
+        }
       });
     }
 

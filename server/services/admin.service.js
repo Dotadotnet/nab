@@ -77,7 +77,8 @@ exports.signUp = async (req, res) => {
 
 /* sign in an admin */
 exports.signIn = async (req, res) => {
-  const admin = await Admin.findOne({ email: req.body.email });
+  const email = req.body.email?.trim().toLowerCase();
+  const admin = await Admin.findOne({ email });
   if (!admin) {
     res.status(404).json({
       acknowledgement: false,

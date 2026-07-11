@@ -8,6 +8,7 @@ import Modal from "@/components/shared/modal/Modal";
 import AddButton from "@/components/shared/button/AddButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const AddBanner = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,8 @@ const AddBanner = () => {
   const [addBanner, { isLoading: isAdding, data: addData, error: addError }] =
     useAddBannerMutation();
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [thumbnail, setThumbnail] = useState({});
+  const [thumbnail, setThumbnail] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   useEffect(() => {
     if (isAdding) {
       toast.loading("در حال افزودن  برچسب...", { id: "add-Banner" });
@@ -35,7 +37,7 @@ const AddBanner = () => {
 
   const onSubmit = async (data) => {
     const formData = new FormData();
-    formData.append("thumbnail", thumbnail);
+    appendMediaFields(formData, { thumbnail });
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("position", data.position || 1);
@@ -80,6 +82,9 @@ const AddBanner = () => {
                 <ThumbnailUpload
                   setThumbnailPreview={setThumbnailPreview}
                   setThumbnail={setThumbnail}
+                  folder="banner"
+                  uploadOnSelect
+                  onUploadStateChange={setIsUploadingMedia}
                   maxFiles={1}
                   register={register("Thumbnail")}
                 />
@@ -121,7 +126,7 @@ const AddBanner = () => {
                 />
               </label>
 
-              <Button type="submit" className="py-2 mt-4">
+              <Button type="submit" className="py-2 mt-4" isLoading={isAdding || isUploadingMedia}>
                 ایجاد کردن{" "}
               </Button>
             </div>

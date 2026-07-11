@@ -11,7 +11,8 @@ const Step3 = ({
   galleryPreview,
   gallery,
   nextStep,
-  prevStep
+  prevStep,
+  onUploadStateChange
 }) => {
   return (
     <>
@@ -19,6 +20,9 @@ const Step3 = ({
         <GalleryUpload
           setGallery={setGallery}
           setGalleryPreview={setGalleryPreview}
+          folder="magazine"
+          uploadOnSelect
+          onUploadStateChange={onUploadStateChange}
           maxFiles={5}
           register={register("gallery", {
             required: "آپلود حداقل یک تصویر الزامی است",

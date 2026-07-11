@@ -10,6 +10,13 @@ import Step6 from "./Step6";
 import SendButton from "@/components/shared/button/SendButton";
 import { toast } from "react-hot-toast";
 import { useAddMagazineMutation } from "@/services/magazine/magazineApi";
+import { appendMediaFields } from "@/utils/directUpload";
+
+const requiredTranslationLanguages = ["en", "tr", "ar"];
+
+const isFilled = (value) =>
+  typeof value === "string" && value.trim().length > 0;
+
 const AddMagazine = ({
   totalSteps,
   currentStep,
@@ -25,6 +32,8 @@ const AddMagazine = ({
   handleSubmit,
   register,
   trigger,
+  setValue,
+  watch,
   setSelectedTags,
   selectedTags,
   control,
@@ -33,22 +42,38 @@ const AddMagazine = ({
 }) => {
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
-  const [thumbnail, setThumbnail] = useState({});
+  const [thumbnail, setThumbnail] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [whatYouWillLearn, setWhatYouWillLearn] = useState([""]);
   const [addMagazine, { isLoading, data, error }] = useAddMagazineMutation();
 
+  const hasRequiredMagazineTranslations = (formData) => {
+    const translations = formData.magazineTranslations || {};
+    const fields = ["title", "summary", "content"];
+
+    return requiredTranslationLanguages.every((language) =>
+      fields.every((field) => isFilled(translations?.[language]?.[field]))
+    );
+  };
+
   const onSubmit = async (data) => {
+    if (!hasRequiredMagazineTranslations(data)) {
+      toast.error("لطفا ترجمه عنوان، خلاصه و محتوا را برای همه زبان‌ها کامل کنید");
+      return;
+    }
+
     const selectedTags2 = selectedTags.map((tag) => tag.id);
 
     const formData = new FormData();
     console.log(data)
-    formData.append("thumbnail", thumbnail);
-    for (let i = 0; i < gallery.length; i++) {
-      formData.append("gallery", gallery[i]);
-    }
+    appendMediaFields(formData, { thumbnail, gallery });
     formData.append("title", data.title);
     formData.append("summary", data.summary);
     formData.append("content", data.content);
+    formData.append(
+      "magazineTranslations",
+      JSON.stringify(data.magazineTranslations || {})
+    );
     formData.append("publishDate", data.publishDate);
     formData.append("category", data.category);
     formData.append("isFeatured", data.isFeatured);
@@ -94,6 +119,8 @@ const AddMagazine = ({
             publishDate={publishDate}
             register={register}
             errors={errors}
+            setValue={setValue}
+            watch={watch}
             nextStep={nextStep}
           />
         );
@@ -102,6 +129,7 @@ const AddMagazine = ({
           <Step2
             setThumbnailPreview={setThumbnailPreview}
             setThumbnail={setThumbnail}
+            onUploadStateChange={setIsUploadingMedia}
             register={register}
             errors={errors}
             nextStep={nextStep}
@@ -109,6 +137,8 @@ const AddMagazine = ({
             control={control}
             editorData={editorData}
             setEditorData={setEditorData}
+            setValue={setValue}
+            watch={watch}
           />
         );
       case 3:
@@ -116,6 +146,7 @@ const AddMagazine = ({
           <Step3
             setGalleryPreview={setGalleryPreview}
             setGallery={setGallery}
+            onUploadStateChange={setIsUploadingMedia}
             galleryPreview={galleryPreview}
             gallery={gallery}
             register={register}
@@ -162,6 +193,11 @@ const AddMagazine = ({
 
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     let valid = false;
     switch (currentStep) {
       case 1:
@@ -244,7 +280,7 @@ const AddMagazine = ({
 
       {currentStep === totalSteps && (
         <div className="flex justify-between mt-12 right-0 absolute bottom-2 w-full px-8">
-          <SendButton />
+          <SendButton isLoading={isLoading || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       )}

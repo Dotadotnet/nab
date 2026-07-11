@@ -9,9 +9,11 @@ import StepIndicator from "./StepIndicator";
 import TitleStep from "./TitleStep";
 import { useNavigate } from "react-router-dom";
 import { useGetCategoriesQuery } from "@/services/category/categoryApi";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const StepAddCategory = () => {
   const [thumbnail, setThumbnail] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [addCategory, { isLoading, data, error }] = useAddCategoryMutation();
   const { data: categoriesData } = useGetCategoriesQuery();
   const [currentStep, setCurrentStep] = useState(1);
@@ -48,7 +50,7 @@ const StepAddCategory = () => {
     }
 
     const formData = new FormData();
-    formData.append("thumbnail", thumbnail);
+    appendMediaFields(formData, { thumbnail });
     formData.append("title", formValues.title);
     formData.append("description", formValues.description);
     formData.append(
@@ -76,6 +78,11 @@ const StepAddCategory = () => {
   }, [isLoading, data, error, navigate]);
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     if (!thumbnail) {
       toast.error("لطفا تصویر دسته بندی را وارد کنید");
       setInvalidSteps((prev) => ({ ...prev, 1: true }));
@@ -101,6 +108,7 @@ const StepAddCategory = () => {
             nextStep={nextStep}
             register={register}
             errors={errors.thumbnail}
+            onUploadStateChange={setIsUploadingMedia}
           />
         );
       case 2:
@@ -155,7 +163,7 @@ const StepAddCategory = () => {
 
       {currentStep === totalSteps && (
         <div className="flex justify-between mt-12">
-          <SendButton isLoading={isLoading} />
+          <SendButton isLoading={isLoading || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       )}

@@ -2,6 +2,21 @@ const crypto = require("crypto");
 const path = require("path");
 const sharp = require("sharp");
 
+const imageContentTypes = {
+  avif: "image/avif",
+  jfif: "image/jpeg",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+const compressibleImageExtensions = new Set(["jpg", "jpeg", "jfif", "png", "webp"]);
+const resizeWebpQuality = 78;
+const compressionTargetRatio = 0.35;
+const compressionQualities = [82, 78, 74, 70, 66, 62, 58, 54, 50];
+const defaultMaxImageDimension = 1920;
+
 const getDateFolder = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -9,56 +24,168 @@ const getDateFolder = () => {
   return `${year}-${month}`;
 };
 
-const getExtensionFromMime = (mimetype = "") => {
-  const extensions = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "image/gif": "gif",
-    "image/svg+xml": "svg",
-    "video/mp4": "mp4",
-    "application/pdf": "pdf",
-  };
-
-  return extensions[mimetype] || "bin";
+const getBaseFolder = (customFolder) => {
+  return customFolder ? `${customFolder}/${getDateFolder()}` : getDateFolder();
 };
 
-const getResourceType = (contentType = "") => {
-  if (contentType.startsWith("image/")) return "image";
-  if (contentType.startsWith("video/")) return "video";
-  return "raw";
+const getOriginalExtension = (file) => {
+  const filenameExtension = path.extname(file.originalname).replace(".", "").toLowerCase();
+
+  if (filenameExtension) return filenameExtension;
+  if (file.mimetype === "image/jpeg") return "jpg";
+  if (file.mimetype === "image/png") return "png";
+  if (file.mimetype === "image/webp") return "webp";
+  if (file.mimetype === "image/avif") return "avif";
+
+  return "bin";
 };
 
-const makeObjectName = (customFolder = null, extension = "bin") => {
-  const hashedName = crypto.randomBytes(16).toString("hex");
-  const cleanExtension = extension.replace(/^\./, "").toLowerCase();
-  const filename = `${hashedName}.${cleanExtension}`;
-  const folder = customFolder ? `${customFolder}/${getDateFolder()}` : getDateFolder();
+const normalizeResizeOptions = (options = {}) => {
+  const width = Number(options.width || options.resizeWidth);
+  const height = Number(options.height || options.resizeHeight);
+
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
 
   return {
-    filename,
-    key: `${folder}/${filename}`,
+    fit: ["contain", "cover", "fill", "inside", "outside"].includes(options.fit)
+      ? options.fit
+      : "cover",
+    height: Math.round(height),
+    width: Math.round(width),
   };
 };
 
-const prepareFile = async (file) => {
-  const originalExtension = path.extname(file.originalname || "").replace(".", "").toLowerCase();
-  let extension = originalExtension || getExtensionFromMime(file.mimetype);
-  let fileBuffer = file.buffer;
-  let contentType = file.mimetype || "application/octet-stream";
+const shouldAutoResize = (metadata) => {
+  return metadata.width > defaultMaxImageDimension || metadata.height > defaultMaxImageDimension;
+};
 
-  if (["jpg", "jpeg", "png"].includes(extension)) {
-    fileBuffer = await sharp(file.buffer)
-      .toFormat("webp", {
-        quality: 80,
-        lossless: extension === "png",
-      })
-      .toBuffer();
+const resizeImage = async (file, extension, options) => {
+  const resizeOptions = normalizeResizeOptions(options);
+  if (!resizeOptions || !compressibleImageExtensions.has(extension)) {
+    return null;
+  }
+
+  const metadata = await sharp(file.buffer, { animated: true }).metadata();
+  if (metadata.pages && metadata.pages > 1) {
+    return null;
+  }
+
+  return sharp(file.buffer)
+    .rotate()
+    .resize({
+      fit: resizeOptions.fit,
+      height: resizeOptions.height,
+      position: "center",
+      width: resizeOptions.width,
+      withoutEnlargement: true,
+    })
+    .webp({
+      alphaQuality: 80,
+      effort: 6,
+      quality: resizeWebpQuality,
+      smartSubsample: true,
+    })
+    .toBuffer();
+};
+
+const pickCompressedBuffer = (buffers, originalSize) => {
+  const usableBuffers = buffers.filter((buffer) => buffer && buffer.length < originalSize);
+  if (!usableBuffers.length) {
+    return null;
+  }
+
+  const targetSize = originalSize * compressionTargetRatio;
+  const targetBuffer = usableBuffers
+    .filter((buffer) => buffer.length <= targetSize)
+    .sort((a, b) => b.length - a.length)[0];
+
+  return targetBuffer || usableBuffers.sort((a, b) => a.length - b.length)[0];
+};
+
+const compressImage = async (file, extension) => {
+  if (!compressibleImageExtensions.has(extension)) {
+    return null;
+  }
+
+  const metadata = await sharp(file.buffer, { animated: true }).metadata();
+  if (metadata.pages && metadata.pages > 1) {
+    return null;
+  }
+
+  const normalizedImage = sharp(file.buffer).rotate();
+  const imagePipeline = () => {
+    const pipeline = normalizedImage.clone();
+
+    if (shouldAutoResize(metadata)) {
+      return pipeline.resize({
+        fit: "inside",
+        height: defaultMaxImageDimension,
+        width: defaultMaxImageDimension,
+        withoutEnlargement: true,
+      });
+    }
+
+    return pipeline;
+  };
+
+  const candidates = await Promise.all(
+    [
+      imagePipeline().webp({ lossless: true, effort: 6 }).toBuffer(),
+      ...compressionQualities.map((quality) =>
+        imagePipeline()
+          .webp({
+            alphaQuality: 80,
+            effort: 6,
+            quality,
+            smartSubsample: true,
+          })
+          .toBuffer()
+      ),
+    ].map((task) => task.catch(() => null))
+  );
+
+  return pickCompressedBuffer(candidates, file.buffer.length);
+};
+
+const prepareFile = async (file, options = {}) => {
+  const originalExtension = getOriginalExtension(file);
+  let extension = originalExtension;
+  let fileBuffer = file.buffer;
+  let contentType = file.mimetype || imageContentTypes[extension] || "application/octet-stream";
+
+  const resizedBuffer = await resizeImage(file, extension, options);
+
+  if (resizedBuffer) {
+    fileBuffer = resizedBuffer;
+    extension = "webp";
+    contentType = "image/webp";
+    return { extension, fileBuffer, contentType };
+  }
+
+  const compressedBuffer = await compressImage(file, extension);
+
+  if (compressedBuffer && compressedBuffer.length < file.buffer.length) {
+    fileBuffer = compressedBuffer;
     extension = "webp";
     contentType = "image/webp";
   }
 
   return { extension, fileBuffer, contentType };
+};
+
+const makeObjectName = (customFolder, extension) => {
+  const filename = `${crypto.randomBytes(16).toString("hex")}.${extension}`;
+  const key = `${getBaseFolder(customFolder)}/${filename}`;
+
+  return { filename, key };
+};
+
+const getResourceType = (mimetype) => {
+  if (mimetype?.startsWith("video/")) return "video";
+  if (mimetype?.startsWith("image/")) return "image";
+  return "raw";
 };
 
 module.exports = {

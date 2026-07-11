@@ -8,6 +8,7 @@ import Step4 from "./Step4";
 import SendButton from "@/components/shared/button/SendButton";
 import { toast } from "react-hot-toast";
 import { useAddBlogMutation } from "@/services/blog/blogApi";
+import { appendMediaFields } from "@/utils/directUpload";
 const AddBlog = ({
   totalSteps,
   currentStep,
@@ -28,7 +29,8 @@ const AddBlog = ({
 }) => {
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
-  const [thumbnail, setThumbnail] = useState({});
+  const [thumbnail, setThumbnail] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [addBlog, { isLoading, data, error }] = useAddBlogMutation();
 
   const onSubmit = async (data) => {
@@ -36,7 +38,7 @@ const AddBlog = ({
 
     const formData = new FormData();
     console.log(data)
-    formData.append("thumbnail", thumbnail);
+    appendMediaFields(formData, { thumbnail });
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("content", data.content);
@@ -98,6 +100,7 @@ const AddBlog = ({
             prevStep={prevStep}
             setThumbnailPreview={setThumbnailPreview}
             setThumbnail={setThumbnail}
+            onUploadStateChange={setIsUploadingMedia}
           />
         );
    
@@ -130,6 +133,11 @@ const AddBlog = ({
 
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     let valid = false;
     switch (currentStep) {
       case 1:
@@ -198,7 +206,7 @@ const AddBlog = ({
 
       {currentStep === totalSteps && (
         <div className="flex justify-between mt-12 right-0 absolute bottom-2 w-full px-8">
-          <SendButton />
+          <SendButton isLoading={isLoading || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       )}

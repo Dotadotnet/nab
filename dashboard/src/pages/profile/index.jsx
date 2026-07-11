@@ -8,6 +8,7 @@ import ProfileImageSelector from "@/components/shared/gallery/ProfileImageSelect
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import SendButton from "@/components/shared/button/SendButton";
+import { appendMediaFields, isUploadedArvanFile } from "@/utils/directUpload";
 
 const initialProfile = {
   name: "",
@@ -41,6 +42,7 @@ function Profile() {
   const [profile, setProfile] = useState(initialProfile);
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
@@ -109,7 +111,13 @@ function Profile() {
     setProfile((current) => ({ ...current, [name]: value }));
   };
 
-  const handleImageSelect = (imageOrUrl) => {
+  const handleImageSelect = (imageOrUrl, previewUrl) => {
+    if (isUploadedArvanFile(imageOrUrl)) {
+      setAvatar(imageOrUrl);
+      setAvatarPreview(previewUrl || imageOrUrl.url);
+      return;
+    }
+
     if (imageOrUrl instanceof File) {
       setAvatar(imageOrUrl);
       setAvatarPreview(URL.createObjectURL(imageOrUrl));
@@ -217,6 +225,11 @@ function Profile() {
       return;
     }
 
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", profile.name.trim());
     formData.append("email", profile.email.trim());
@@ -231,7 +244,7 @@ function Profile() {
     formData.append("bio", profile.bio.trim());
 
     if (avatar) {
-      formData.append("avatar", avatar);
+      appendMediaFields(formData, { avatar });
     } else if (avatarPreview && avatarPreview !== admin?.avatar?.url) {
       formData.append("avatarUrl", avatarPreview);
     }
@@ -337,6 +350,7 @@ function Profile() {
                   profile={profile}
                   avatarPreview={shownAvatar}
                   handleImageSelect={handleImageSelect}
+                  onUploadStateChange={setIsUploadingMedia}
                   handleChange={handleChange}
                   errors={stepErrors}
                   nextStep={nextStep}
@@ -359,7 +373,7 @@ function Profile() {
                   handleChange={handleChange}
                   errors={stepErrors}
                   prevStep={prevStep}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isUploadingMedia}
                 />
               )}
             </form>
@@ -374,6 +388,7 @@ function InitialStep({
   profile,
   avatarPreview,
   handleImageSelect,
+  onUploadStateChange,
   handleChange,
   errors,
   nextStep
@@ -392,7 +407,11 @@ function InitialStep({
             <SkeletonImage />
           )}
         </div>
-        <ProfileImageSelector onImageSelect={handleImageSelect} />
+        <ProfileImageSelector
+          onImageSelect={handleImageSelect}
+          onUploadStateChange={onUploadStateChange}
+          uploadOnSelect
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

@@ -12,7 +12,8 @@ const Step2 = ({
   errors,
   nextStep,
   prevStep,
-  control
+  control,
+  onUploadStateChange
 }) => {
   const [editorData, setEditorData] = useState(``);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +36,9 @@ const Step2 = ({
             setThumbnailPreview={setThumbnailPreview}
             setThumbnail={setThumbnail}
             title="مجاز به انتخاب یک تصویر هستین"
+            folder="blog"
+            uploadOnSelect
+            onUploadStateChange={onUploadStateChange}
             register={register("Thumbnail", {
               required: "آپلود تصویر عنوان الزامی است"
             })}

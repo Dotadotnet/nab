@@ -1,80 +1,67 @@
-// Step1.js
-import React from 'react';
-import NavigationButton from '@/components/shared/button/NavigationButton';
+import React from "react";
+import NavigationButton from "@/components/shared/button/NavigationButton";
+import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 
-const Step1 = ({publishDate,register,errors,nextStep}) => {
+const magazineIntroFields = [
+  {
+    name: "title",
+    label: "عنوان مجله",
+    required: true,
+    minLength: 3,
+    maxLength: 100,
+  },
+  {
+    name: "summary",
+    label: "خلاصه",
+    type: "textarea",
+    rows: 4,
+    required: true,
+    minLength: 20,
+    maxLength: 300,
+  },
+];
 
-
+const Step1 = ({
+  publishDate,
+  register,
+  errors,
+  nextStep,
+  setValue,
+  watch,
+}) => {
   return (
     <>
-      <label htmlFor="title" className="flex flex-col gap-y-1 w-full">
-        <span className="text-sm">عنوان مجله را وارد کنید</span>
+      <TranslationTabs
+        errors={errors}
+        fields={magazineIntroFields}
+        namespace="magazineTranslations"
+        register={register}
+        setValue={setValue}
+        watch={watch}
+      />
+
+      <label htmlFor="publishDate" className="flex flex-col gap-y-2 w-full">
+        تاریخ انتشار
         <input
-          type="text"
-          name="title"
-          id="title"
-          {...register("title", {
-            required: "وارد کردن عنوان الزامی است",
-            minLength: {
-              value: 3,
-              message: "عنوان باید حداقل ۳ حرف داشته باشد",
-            },
-            maxLength: {
-              value: 45,
-              message: "عنوان نباید بیشتر از ۴۵ حرف باشد",
-            },
+          type="date"
+          name="publishDate"
+          id="publishDate"
+          className="rounded p-2 border w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          {...register("publishDate", {
+            required: "تاریخ انتشار الزامی است",
           })}
-          placeholder="عنوان مجله" 
-          maxLength="45"
-          className="p-2 rounded border w-full"
+          defaultValue={publishDate}
         />
-        {errors.title && (
-          <span className="text-red-500 text-sm">{errors.title.message}</span>
+        {errors.publishDate && (
+          <span className="text-red-500 text-sm">
+            {errors.publishDate.message}
+          </span>
         )}
       </label>
-      <label htmlFor="summary" className="flex flex-col gap-y-2 w-full">
-    خلاصه
-    <textarea
-      name="summary"
-      id="summary"
-      maxLength={225}
-      placeholder="خلاصه مجله را وارد کنید..."
-      className="p-2 rounded h-[170px]
-       border w-full form-textarea"
-       {...register("summary", { // اصلاح نام فیلد
-        required: "خلاصه الزامی است",
-        minLength: {
-          value: 20,
-          message: "خلاصه باید حداقل 20 کاراکتر باشد",
-        },
-        maxLength: {
-          value: 225,
-          message: "خلاصه نباید بیشتر از ۲۲۵ کاراکتر باشد",
-        },
-      })}
-    />
-     {errors.summary && ( // اصلاح نام فیلد
-          <span className="text-red-500 text-sm">{errors.summary.message}</span>
-        )}
-  </label>
-  <label htmlFor="publishDate" className="flex flex-col gap-y-2 w-full">
-  تاریخ انتشار
-  <input
-    type="date"
-    name="publishDate"
-    id="publishDate"
-    className="rounded p-2 border w-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    {...register("publishDate", { required: "تاریخ انتشار الزامی است" })}
-    defaultValue={publishDate}
-  />
-  {errors.publishDate && ( 
-    <span className="text-red-500 text-sm">{errors.publishDate.message}</span>
-  )}
-</label>
-<div className="flex justify-between mt-12 right-0 absolute bottom-2 w-full px-8">
-<NavigationButton direction="next" onClick={nextStep} />
 
-      </div>  
+      <div className="flex justify-between mt-12 right-0 absolute bottom-2 w-full px-8">
+        <NavigationButton direction="next" onClick={nextStep} />
+      </div>
     </>
   );
 };

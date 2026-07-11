@@ -9,9 +9,11 @@ import StepIndicator from "./StepIndicator";
 import TitleStep from "./TitleStep";
 import KeynotesStep from "./BannerStep";
 import { useNavigate } from "react-router-dom";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const StepAddStory = () => {
   const [media, setThumbnail] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [addStory, { isLoading, data, error }] = useAddStoryMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -40,7 +42,7 @@ const StepAddStory = () => {
 
     const formData = new FormData();
 console.log("Form Data:", data.banners);
-    formData.append("media", media);
+    appendMediaFields(formData, { media });
     formData.append("promoBanner",data.banners.id);
     formData.append("tags", extractIds(data.tags));
     formData.append("title", data.title);
@@ -68,6 +70,11 @@ console.log("Form Data:", data.banners);
   }, [isLoading, data, error]);
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     let valid = false;
     switch (currentStep) {
       case 1:
@@ -121,6 +128,7 @@ console.log("Form Data:", data.banners);
             nextStep={nextStep}
             register={register}
             errors={errors.media}
+            onUploadStateChange={setIsUploadingMedia}
           />
         );
       case 2:
@@ -234,7 +242,7 @@ console.log("Form Data:", data.banners);
 
       {currentStep === totalSteps && (
         <div className="flex justify-between mt-12">
-          <SendButton />
+          <SendButton isLoading={isLoading || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       )}

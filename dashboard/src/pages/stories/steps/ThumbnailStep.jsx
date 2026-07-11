@@ -3,9 +3,15 @@ import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
 
-const ThumbnailStep = ({ nextStep, errors, register, media, setThumbnail }) => {
+const ThumbnailStep = ({
+  nextStep,
+  errors,
+  register,
+  setThumbnail,
+  onUploadStateChange,
+}) => {
   const [mediaPreview, setThumbnailPreview] = useState(null);
-  const [mediaType, setMediaType] = useState(null); // برای تشخیص نوع فایل
+  const [mediaType, setMediaType] = useState(null);
 
   return (
     <>
@@ -33,19 +39,27 @@ const ThumbnailStep = ({ nextStep, errors, register, media, setThumbnail }) => {
         </div>
 
         <label htmlFor="media" className="flex flex-col text-center gap-y-2">
-          تصویر یا ویدئو عنوان دسته بندی
+          تصویر یا ویدئو استوری
           <ThumbnailUpload
             setThumbnailPreview={setThumbnailPreview}
             setThumbnail={(file) => {
               setThumbnail(file);
-              if (file && file.type) {
+              if (file?.type) {
                 setMediaType(file.type);
+              } else if (file?.resource_type === "video") {
+                setMediaType("video");
+              } else if (file?.resource_type === "image") {
+                setMediaType("image");
               }
             }}
-            title={"لطفا یک تصویر یا ویدئو انتخاب کنید"}
+            title="لطفا یک تصویر یا ویدئو انتخاب کنید"
             maxFiles={1}
             register={register("media")}
-            accept="image/*,video/*" // اجازه آپلود عکس و ویدئو
+            name="media"
+            folder="story"
+            accept="image/*,video/*"
+            uploadOnSelect
+            onUploadStateChange={onUploadStateChange}
           />
         </label>
 

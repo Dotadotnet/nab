@@ -24,6 +24,7 @@ function Add() {
     trigger,
     control,
     getValues,
+    setValue,
   } = useForm({
     mode: "onChange",
   });
@@ -64,6 +65,8 @@ function Add() {
               register={register}
               errors={errors}
               trigger={trigger}
+              setValue={setValue}
+              watch={watch}
               control={control}
               getValues={getValues}
               setSelectedTags={setSelectedTags}

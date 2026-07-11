@@ -40,6 +40,8 @@ import CategoryFilterForm from "./pages/categoryFilters/CategoryFilterForm";
 import FilterDefinitions from "./pages/filterDefinitions";
 import ProductAttributes from "./pages/productAttributes";
 import Sessions from "./pages/sessions";
+import News from "./pages/news";
+import AddNews from "./pages/news/add";
 
 function App() {
   const location = useLocation();
@@ -90,6 +92,8 @@ function App() {
           <Route exact path="/stories/add" element={<AddStory />} />
           <Route exact path="/stories" element={<Stories />} />
           <Route exact path="/banners" element={<Banners />} />
+          <Route exact path="/news" element={<News />} />
+          <Route exact path="/news/add" element={<AddNews />} />
         </Routes>
       </Auth>
     </Providers>

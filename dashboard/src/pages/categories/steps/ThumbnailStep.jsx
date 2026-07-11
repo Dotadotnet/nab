@@ -1,12 +1,17 @@
-import React ,{useState} from "react";
+import React, { useState } from "react";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
 
-const ThumbnailStep = ({ nextStep, errors ,register,thumbnail,setThumbnail}) => {
+const ThumbnailStep = ({
+  nextStep,
+  errors,
+  register,
+  setThumbnail,
+  onUploadStateChange,
+}) => {
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
-  
   return (
     <>
       <div className="flex flex-col items-center">
@@ -24,19 +29,21 @@ const ThumbnailStep = ({ nextStep, errors ,register,thumbnail,setThumbnail}) => 
           )}
         </div>
         <label htmlFor="thumbnail" className="flex flex-col text-center gap-y-2">
-        تصویر عنوان دسته بندی
-        <ThumbnailUpload
-          setThumbnailPreview={setThumbnailPreview}
-          setThumbnail={setThumbnail}
-          title={"لطفا یک تصویر بند انگشتی انتخاب کنید"}
-          maxFiles={1}
-          register={register('thumbnail')}
-
-        />
-      </label>
-      {errors?.thumbnail && (
-        <span className="text-red-500 text-sm">{errors?.thumbnail.message}</span>
-      )}
+          تصویر عنوان دسته بندی
+          <ThumbnailUpload
+            setThumbnailPreview={setThumbnailPreview}
+            setThumbnail={setThumbnail}
+            title="لطفا یک تصویر بند انگشتی انتخاب کنید"
+            maxFiles={1}
+            register={register("thumbnail")}
+            folder="category"
+            uploadOnSelect
+            onUploadStateChange={onUploadStateChange}
+          />
+        </label>
+        {errors?.thumbnail && (
+          <span className="text-red-500 text-sm">{errors?.thumbnail.message}</span>
+        )}
       </div>
 
       <div className="flex justify-start mt-12">

@@ -2,14 +2,20 @@ import Modal from "@/components/shared/modal/Modal";
 import Avatar from "./Avatar";
 import React, { useState, useEffect } from "react";
 import  CloudUpload  from "@/components/icons/CloudUpload";
-import ImageCropModal from "./ImageCropModal";
+import ImageEditorModal from "./ImageEditorModal";
+import { uploadFilesToArvan } from "@/utils/directUpload";
 
-const ProfileImageSelector = ({ onImageSelect }) => {
+const ProfileImageSelector = ({
+  onImageSelect,
+  onUploadStateChange,
+  uploadOnSelect = false,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [isGeneral, setIsGeneral] = useState(true);
   const [avatarUrls, setAvatarUrls] = useState([]); 
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [cropFile, setCropFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const maleAvatars = Array.from({ length: 50 }, (_, index) => `/avatar/male/${index + 1}.png`);
   const femaleAvatars = Array.from({ length: 50 }, (_, index) => `/avatar/female/${index + 51}.png`);
@@ -22,13 +28,40 @@ const ProfileImageSelector = ({ onImageSelect }) => {
     e.target.value = "";
   };
 
-  const applyDeviceImage = (file, previewUrl) => {
+  const setUploading = (value) => {
+    setIsUploading(value);
+    onUploadStateChange?.(value);
+  };
+
+  const applyDeviceImage = async (file, previewUrl) => {
     if (!file) return;
     const imageUrl = previewUrl || URL.createObjectURL(file);
     setAvatarPreview(imageUrl);
-    onImageSelect(file);
-    setCropFile(null);
-    setShowModal(false);
+    if (!uploadOnSelect) {
+      onImageSelect(file);
+      setCropFile(null);
+      setShowModal(false);
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const uploadedFiles = await uploadFilesToArvan({
+        files: file,
+        fieldName: "avatar",
+        folder: "avatar",
+        options: {
+          width: 800,
+          height: 800,
+          fit: "cover",
+        },
+      });
+      onImageSelect(uploadedFiles[0] || null, imageUrl);
+      setCropFile(null);
+      setShowModal(false);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleGenderSelection = (gender) => {
@@ -97,6 +130,7 @@ const ProfileImageSelector = ({ onImageSelect }) => {
               accept="image/png, image/jpg, image/jpeg"
               className="hidden"
               onChange={handleDeviceSelection}
+              disabled={isUploading}
             />
             <span className="py-1 px-4 flex flex-row gap-x-2 dark:bg-blue-100 bg-green-100 border dark:text-blue-700 dark:border-blue-900 border-green-900 text-green-900 rounded-secondary w-fit text-sm cursor-pointer">
               <CloudUpload className="h-5 w-5 dark:!text-blue-700" />
@@ -106,7 +140,7 @@ const ProfileImageSelector = ({ onImageSelect }) => {
         </div>
       </Modal>
 
-      <ImageCropModal
+      <ImageEditorModal
         file={cropFile}
         height={800}
         width={800}

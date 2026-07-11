@@ -56,12 +56,18 @@ function FieldControl({ config, dir, error, registerProps, language, namespace }
 const TranslationTabs = ({
   errors = {},
   fields,
+  includeSource = true,
   namespace = "translations",
   register,
   setValue,
   watch,
 }) => {
-  const [activeLanguage, setActiveLanguage] = useState("fa");
+  const availableLanguages = includeSource
+    ? TRANSLATION_LANGUAGES
+    : TRANSLATION_LANGUAGES.filter((language) => language.code !== "fa");
+  const [activeLanguage, setActiveLanguage] = useState(
+    availableLanguages[0]?.code || "fa"
+  );
   const [translateText] = useTranslateTextMutation();
   const manualFields = useRef({});
   const lastAutoValues = useRef({});
@@ -112,13 +118,14 @@ const TranslationTabs = ({
   }, [fields, namespace, setValue, translateText, ...Object.values(sourceValues)]);
 
   const activeConfig =
-    TRANSLATION_LANGUAGES.find((language) => language.code === activeLanguage) ||
+    availableLanguages.find((language) => language.code === activeLanguage) ||
+    availableLanguages[0] ||
     TRANSLATION_LANGUAGES[0];
 
   return (
     <div className="flex flex-col gap-4 rounded border p-4">
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3 dark:border-gray-700">
-        {TRANSLATION_LANGUAGES.map((language) => (
+        {availableLanguages.map((language) => (
           <button
             key={language.code}
             type="button"

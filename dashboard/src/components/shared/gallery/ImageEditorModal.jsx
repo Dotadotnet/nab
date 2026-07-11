@@ -14,14 +14,37 @@ const filterPresets = {
   vivid: { label: "زنده", css: "contrast(110%) saturate(125%)" },
 };
 
-function fitSquareCrop(width, height) {
-  const size = Math.min(width, height) * 0.8;
+const cropPresets = [
+  { key: "1:1", label: "1:1", ratio: 1 },
+  { key: "4:5", label: "4:5", ratio: 4 / 5 },
+  { key: "3:4", label: "3:4", ratio: 3 / 4 },
+  { key: "4:3", label: "4:3", ratio: 4 / 3 },
+  { key: "16:9", label: "16:9", ratio: 16 / 9 },
+];
+
+const resolutionPresets = [
+  { label: "800", width: 800, height: 800 },
+  { label: "1080", width: 1080, height: 1080 },
+  { label: "1440", width: 1440, height: 1440 },
+  { label: "1920", width: 1920, height: 1920 },
+];
+
+function fitCropToRatio(width, height, ratio = 1) {
+  const maxWidth = width * 0.8;
+  const maxHeight = height * 0.8;
+  let cropWidth = maxWidth;
+  let cropHeight = cropWidth / ratio;
+
+  if (cropHeight > maxHeight) {
+    cropHeight = maxHeight;
+    cropWidth = cropHeight * ratio;
+  }
 
   return {
-    height: size,
-    width: size,
-    x: (width - size) / 2,
-    y: (height - size) / 2,
+    height: cropHeight,
+    width: cropWidth,
+    x: (width - cropWidth) / 2,
+    y: (height - cropHeight) / 2,
   };
 }
 
@@ -74,6 +97,16 @@ function SizeIcon(props) {
   );
 }
 
+function ResolutionIcon(props) {
+  return (
+    <svg {...props} fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+      <rect height="14" rx="2" width="18" x="3" y="5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 9h8M8 13h5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 21h10" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function SaveIcon(props) {
   return (
     <svg {...props} fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
@@ -99,7 +132,7 @@ function FlipIcon(props) {
   );
 }
 
-const ImageCropModal = ({
+const ImageEditorModal = ({
   file,
   height = 1440,
   onApply,
@@ -114,15 +147,19 @@ const ImageCropModal = ({
   const [source, setSource] = useState("");
   const [imageBox, setImageBox] = useState({ width: 0, height: 0 });
   const [crop, setCrop] = useState({ x: 40, y: 40, width: 260, height: 260 });
+  const [cropRatio, setCropRatio] = useState(1);
+  const [outputSize, setOutputSize] = useState({ width, height });
   const [activePanel, setActivePanel] = useState("edit");
   const [compare, setCompare] = useState(50);
   const [contrast, setContrast] = useState(100);
   const [filterPreset, setFilterPreset] = useState("none");
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [flipX, setFlipX] = useState(false);
   const [flipY, setFlipY] = useState(false);
   const [quality, setQuality] = useState(92);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [sizeCompareUrl, setSizeCompareUrl] = useState("");
   const [previewSize, setPreviewSize] = useState(0);
 
   const cssFilter = useMemo(() => {
@@ -149,6 +186,10 @@ const ImageCropModal = ({
       return undefined;
     }
 
+    setCropRatio(width / height || 1);
+    setOutputSize({ width, height });
+    setCompare(50);
+
     const url = URL.createObjectURL(file);
     setSource(url);
     return () => URL.revokeObjectURL(url);
@@ -157,6 +198,10 @@ const ImageCropModal = ({
   useEffect(() => () => {
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
   }, []);
+
+  useEffect(() => () => {
+    if (sizeCompareUrl) URL.revokeObjectURL(sizeCompareUrl);
+  }, [sizeCompareUrl]);
 
   useEffect(() => {
     const handlePointerMove = (event) => {
@@ -184,23 +229,25 @@ const ImageCropModal = ({
           return next;
         }
 
-        const deltas = {
-          "bottom-right": Math.max(dx, dy),
-          "bottom-left": Math.max(-dx, dy),
-          "top-right": Math.max(dx, -dy),
-          "top-left": Math.max(-dx, -dy),
-        };
-        const delta = deltas[drag.type] || 0;
-        const maxSize = Math.min(
-          drag.type.includes("left") ? drag.startCrop.x + drag.startCrop.width : imageBox.width - drag.startCrop.x,
-          drag.type.includes("top") ? drag.startCrop.y + drag.startCrop.height : imageBox.height - drag.startCrop.y
+        const widthDelta = drag.type.includes("left") ? -dx : dx;
+        const maxWidthByEdge = drag.type.includes("left")
+          ? drag.startCrop.x + drag.startCrop.width
+          : imageBox.width - drag.startCrop.x;
+        const maxHeightByEdge = drag.type.includes("top")
+          ? drag.startCrop.y + drag.startCrop.height
+          : imageBox.height - drag.startCrop.y;
+        const maxWidth = Math.min(maxWidthByEdge, maxHeightByEdge * cropRatio);
+        const nextWidth = clamp(
+          drag.startCrop.width + widthDelta,
+          MIN_CROP_SIZE,
+          maxWidth
         );
-        const size = clamp(drag.startCrop.width + delta, MIN_CROP_SIZE, maxSize);
+        const nextHeight = nextWidth / cropRatio;
 
-        if (drag.type.includes("left")) next.x = drag.startCrop.x + drag.startCrop.width - size;
-        if (drag.type.includes("top")) next.y = drag.startCrop.y + drag.startCrop.height - size;
-        next.width = size;
-        next.height = size;
+        if (drag.type.includes("left")) next.x = drag.startCrop.x + drag.startCrop.width - nextWidth;
+        if (drag.type.includes("top")) next.y = drag.startCrop.y + drag.startCrop.height - nextHeight;
+        next.width = nextWidth;
+        next.height = nextHeight;
 
         return next;
       });
@@ -218,7 +265,7 @@ const ImageCropModal = ({
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [imageBox]);
+  }, [cropRatio, imageBox]);
 
   const handleImageLoad = () => {
     const image = imageRef.current;
@@ -226,7 +273,25 @@ const ImageCropModal = ({
 
     const { width: boxWidth, height: boxHeight } = image.getBoundingClientRect();
     setImageBox({ width: boxWidth, height: boxHeight });
-    setCrop(fitSquareCrop(boxWidth, boxHeight));
+    setCrop(fitCropToRatio(boxWidth, boxHeight, cropRatio));
+  };
+
+  const applyCropPreset = (preset) => {
+    setCropRatio(preset.ratio);
+    if (imageBox.width && imageBox.height) {
+      setCrop(fitCropToRatio(imageBox.width, imageBox.height, preset.ratio));
+    }
+    setOutputSize({
+      width: Math.round(height * preset.ratio),
+      height,
+    });
+  };
+
+  const applyResolutionPreset = (preset) => {
+    setOutputSize({
+      height: preset.height,
+      width: preset.width,
+    });
   };
 
   const startDrag = (event, type) => {
@@ -240,19 +305,21 @@ const ImageCropModal = ({
     };
   };
 
-  const createOutputBlob = (callback) => {
+  const createOutputBlob = (callback, outputQuality = quality) => {
     const image = imageRef.current;
     if (!image || !imageBox.width || !imageBox.height) return;
 
     const scaleX = image.naturalWidth / imageBox.width;
     const scaleY = image.naturalHeight / imageBox.height;
     const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    const canvasWidth = Math.max(1, Math.round(outputSize.width));
+    const canvasHeight = Math.max(1, Math.round(outputSize.height));
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     const context = canvas.getContext("2d");
     context.filter = cssFilter || "none";
-    context.translate(width / 2, height / 2);
+    context.translate(canvasWidth / 2, canvasHeight / 2);
     context.rotate((rotation * Math.PI) / 180);
     context.scale(flipX ? -1 : 1, flipY ? -1 : 1);
     context.drawImage(
@@ -261,13 +328,13 @@ const ImageCropModal = ({
       crop.y * scaleY,
       crop.width * scaleX,
       crop.height * scaleY,
-      -width / 2,
-      -height / 2,
-      width,
-      height
+      -canvasWidth / 2,
+      -canvasHeight / 2,
+      canvasWidth,
+      canvasHeight
     );
 
-    canvas.toBlob(callback, "image/webp", quality / 100);
+    canvas.toBlob(callback, "image/webp", outputQuality / 100);
   };
 
   useEffect(() => {
@@ -282,16 +349,24 @@ const ImageCropModal = ({
         setPreviewUrl(url);
         setPreviewSize(blob.size);
       });
+
+      createOutputBlob((blob) => {
+        if (!blob) return;
+        setSizeCompareUrl((currentUrl) => {
+          if (currentUrl) URL.revokeObjectURL(currentUrl);
+          return URL.createObjectURL(blob);
+        });
+      }, 100);
     }, 200);
 
     return () => clearTimeout(timer);
-  }, [contrast, crop, cssFilter, flipX, flipY, imageBox.width, quality, rotation]);
+  }, [contrast, crop, cssFilter, flipX, flipY, imageBox.width, outputSize, quality, rotation]);
 
   const handleCrop = () => {
     createOutputBlob((blob) => {
       if (!blob) return;
       const name = (file?.name || "image").replace(/\.[^.]+$/, "");
-      const croppedFile = new File([blob], `crop-${width}x${height}-${name}.webp`, {
+      const croppedFile = new File([blob], `crop-${outputSize.width}x${outputSize.height}-${name}.webp`, {
         type: "image/webp",
         lastModified: Date.now(),
       });
@@ -349,8 +424,44 @@ const ImageCropModal = ({
                   <Icon className="h-5 w-5" />
                 </button>
               ))}
+              <button
+                aria-label="Resolution"
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-lg border transition ${
+                  activePanel === "resolution"
+                    ? "border-red-500 bg-red-500 text-white"
+                    : "border-gray-300 text-gray-700 hover:border-gray-900 hover:text-gray-900"
+                }`}
+                title="Resolution"
+                type="button"
+                onClick={() => setActivePanel("resolution")}
+              >
+                <ResolutionIcon className="h-5 w-5" />
+              </button>
 
             <span className="mx-1 h-8 w-px bg-gray-200" />
+
+            {activePanel === "crop" && (
+              <div className="flex min-h-10 flex-wrap items-center gap-1 rounded-lg border border-gray-300 bg-white p-1">
+                {cropPresets.map((preset) => {
+                  const isActive = Math.abs(cropRatio - preset.ratio) < 0.001;
+
+                  return (
+                    <button
+                      className={`h-8 min-w-12 rounded-md px-2 text-xs transition ${
+                        isActive
+                          ? "bg-red-500 text-white shadow-sm"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-950"
+                      }`}
+                      key={preset.key}
+                      type="button"
+                      onClick={() => applyCropPreset(preset)}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {activePanel === "edit" && (
               <>
@@ -367,9 +478,85 @@ const ImageCropModal = ({
                   />
                   <span className="text-xs">{contrast}%</span>
                 </div>
+                <div className="relative">
+                  <button
+                    aria-expanded={isFilterMenuOpen}
+                    aria-haspopup="true"
+                    className={`inline-flex h-10 min-w-28 items-center justify-between gap-2 rounded-lg border px-3 text-xs transition ${
+                      filterPreset !== "none"
+                        ? "border-red-500 bg-red-500 !text-white shadow-sm [&_*]:!text-white"
+                        : "border-gray-300 bg-white text-gray-800 hover:border-gray-900 hover:text-gray-950"
+                    }`}
+                    type="button"
+                    onClick={() => setIsFilterMenuOpen((isOpen) => !isOpen)}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-4 w-4 rounded-full border border-gray-300"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #f97316 0%, #facc15 38%, #38bdf8 39%, #2563eb 100%)",
+                        filter: filterPresets[filterPreset]?.css || "none",
+                      }}
+                    />
+                    <span>{filterPresets[filterPreset]?.label}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`text-[10px] transition ${isFilterMenuOpen ? "rotate-180" : ""}`}
+                    >
+                      ▼
+                    </span>
+                  </button>
+
+                  {isFilterMenuOpen && (
+                    <div
+                      aria-label="filter"
+                      className="absolute right-0 top-11 z-40 grid w-64 grid-cols-2 gap-1 rounded-lg border border-gray-200 bg-white p-2 text-xs shadow-xl"
+                      role="radiogroup"
+                    >
+                      {Object.entries(filterPresets).map(([key, preset]) => {
+                        const isActive = filterPreset === key;
+
+                        return (
+                          <button
+                            aria-checked={isActive}
+                            className={`inline-flex h-9 items-center gap-2 rounded-md px-2 text-right transition ${
+                              isActive
+                                ? "bg-red-500 !text-white shadow-sm [&_*]:!text-white"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-gray-950"
+                            }`}
+                            key={key}
+                            role="radio"
+                            title={preset.label}
+                            type="button"
+                            onClick={() => {
+                              setFilterPreset(key);
+                              setIsFilterMenuOpen(false);
+                            }}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`h-5 w-5 shrink-0 rounded-full border ${
+                                isActive ? "border-white/80" : "border-gray-300"
+                              }`}
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #f97316 0%, #facc15 38%, #38bdf8 39%, #2563eb 100%)",
+                                filter: preset.css || "none",
+                              }}
+                            />
+                            <span className={`truncate ${isActive ? "!text-white" : ""}`}>
+                              {preset.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
                 <select
                   aria-label="فیلتر"
-                  className="h-10 rounded-lg border border-gray-300 bg-white px-2 text-xs text-gray-900"
+                  className="sr-only"
                   value={filterPreset}
                   onChange={(event) => setFilterPreset(event.target.value)}
                 >
@@ -444,6 +631,67 @@ const ImageCropModal = ({
               </div>
             )}
 
+            {activePanel === "resolution" && (
+              <div className="flex min-h-10 flex-wrap items-center gap-2 rounded-lg border border-gray-300 bg-white px-2 py-1 text-gray-700">
+                <ResolutionIcon className="h-4 w-4" />
+                <div className="flex items-center gap-1">
+                  {resolutionPresets.map((preset) => {
+                    const isActive =
+                      outputSize.width === preset.width && outputSize.height === preset.height;
+
+                    return (
+                      <button
+                        className={`h-8 rounded-md px-2 text-xs transition ${
+                          isActive
+                            ? "bg-red-500 text-white shadow-sm"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-950"
+                        }`}
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyResolutionPreset(preset)}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="h-6 w-px bg-gray-200" />
+                <label className="flex items-center gap-1 text-xs">
+                  W
+                  <input
+                    className="h-8 w-20 rounded-md border border-gray-300 px-2 text-left text-xs"
+                    min="1"
+                    type="number"
+                    value={outputSize.width}
+                    onChange={(event) =>
+                      setOutputSize((current) => ({
+                        ...current,
+                        width: Math.max(1, Number(event.target.value) || 1),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="flex items-center gap-1 text-xs">
+                  H
+                  <input
+                    className="h-8 w-20 rounded-md border border-gray-300 px-2 text-left text-xs"
+                    min="1"
+                    type="number"
+                    value={outputSize.height}
+                    onChange={(event) =>
+                      setOutputSize((current) => ({
+                        ...current,
+                        height: Math.max(1, Number(event.target.value) || 1),
+                      }))
+                    }
+                  />
+                </label>
+                <span className="text-xs text-gray-500">
+                  {outputSize.width}x{outputSize.height}
+                </span>
+              </div>
+            )}
+
             <span className="mx-1 h-8 w-px bg-gray-200" />
 
             <button
@@ -466,11 +714,20 @@ const ImageCropModal = ({
                 ref={imageRef}
                 src={source}
                 style={{
-                  filter: activePanel === "edit" ? cssFilter : "none",
+                  filter: activePanel === "edit" && !shouldShowCompare ? cssFilter : "none",
+                  opacity: activePanel === "size" && sizeCompareUrl ? 0 : 1,
                   transform: activePanel === "edit" ? cssTransform : "none",
                   transformOrigin: "center",
                 }}
               />
+              {activePanel === "size" && sizeCompareUrl && (
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 block h-full w-full object-fill"
+                  src={sizeCompareUrl}
+                />
+              )}
               <img
                 alt=""
                 aria-hidden="true"
@@ -546,4 +803,4 @@ const ImageCropModal = ({
   return createPortal(page, document.body);
 };
 
-export default ImageCropModal;
+export default ImageEditorModal;

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import Edit from "../icons/Edit";
 import { toast } from "react-hot-toast";
-import ImageCropModal from "./gallery/ImageCropModal";
+import ImageEditorModal from "./gallery/ImageEditorModal";
 
 const EditableImage = ({ 
   src, 
@@ -96,7 +96,7 @@ const EditableImage = ({
         className="hidden"
       />
 
-      <ImageCropModal
+      <ImageEditorModal
         file={cropFile}
         height={1440}
         width={1440}

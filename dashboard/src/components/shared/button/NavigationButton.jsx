@@ -2,13 +2,14 @@
 import Next from "@/components/icons/Next"
 import Prev from "@/components/icons/Prev"
 
-const NavigationButton = ({ direction = "next", onClick }) => {
+const NavigationButton = ({ direction = "next", onClick, disabled = false }) => {
     const isNext = direction === "next";
     return (
       <button
         type="button"
         onClick={onClick}
-        className="group inline-flex items-center border border-green-300 dark:border-blue-600 px-4 py-2 rounded-md text-green-500 dark:text-blue-500 hover:bg-green-50 dark:hover:bg-gray-900"
+        disabled={disabled}
+        className="group inline-flex items-center border border-green-300 dark:border-blue-600 px-4 py-2 rounded-md text-green-500 dark:text-blue-500 hover:bg-green-50 dark:hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isNext ? (
           <>

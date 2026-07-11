@@ -34,15 +34,75 @@ const getPublicUrl = (key) => {
   return `${baseUrl.replace(/\/$/, "")}/${key.split("/").map(encodeURIComponent).join("/")}`;
 };
 
+const parseUploadedFiles = (value) => {
+  if (!value) return {};
+  if (typeof value === "object") return value;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const normalizeUploadedFile = (file) => {
+  if (!file || typeof file !== "object") return null;
+
+  const key = file.key || file.public_id;
+  const url = file.url || file.secure_url;
+
+  if (!key || !url) return null;
+
+  return {
+    url,
+    public_id: key,
+    key,
+    filename: file.filename || key.split("/").pop(),
+    format: file.format || key.split(".").pop(),
+    resource_type: file.resource_type || getResourceType(file.contentType || file.mimetype),
+    storage: file.storage || "arvan",
+  };
+};
+
+const mergePreUploadedFiles = (req, fieldConfig = []) => {
+  const preUploaded = parseUploadedFiles(req.body?.uploadedFiles);
+  const fieldNames = new Set(fieldConfig.map((field) => field.name));
+
+  Object.entries(preUploaded).forEach(([field, files]) => {
+    const normalizedFiles = (Array.isArray(files) ? files : [files])
+      .map(normalizeUploadedFile)
+      .filter(Boolean);
+
+    if (!normalizedFiles.length) return;
+
+    req.uploadedFiles[field] = [
+      ...(req.uploadedFiles[field] || []),
+      ...normalizedFiles,
+    ];
+    fieldNames.add(field);
+  });
+
+  fieldNames.forEach((field) => {
+    if (!req.uploadedFiles[field]) {
+      req.uploadedFiles[field] = [];
+    }
+  });
+};
+
 const uploadArvan = (customFolder = null) => {
   const multerInstance = multer({ storage: multer.memoryStorage() });
 
-  const arvanUploadMiddleware = (fieldConfig) => async (req, res, next) => {
-    multerInstance.fields(fieldConfig)(req, res, async (err) => {
+  const arvanUploadMiddleware = (fieldConfig, multerHandler = multerInstance.fields(fieldConfig)) => async (req, res, next) => {
+    multerHandler(req, res, async (err) => {
       console.log("[ARVAN_UPLOAD] multer callback start", {
         fieldConfig,
         hasFiles: Boolean(req.files),
-        fileKeys: req.files ? Object.keys(req.files) : [],
+        fileKeys: Array.isArray(req.files)
+          ? req.files.map((file) => file.fieldname)
+          : req.files
+            ? Object.keys(req.files)
+            : [],
         bodyKeys: Object.keys(req.body || {}),
       });
 
@@ -54,12 +114,19 @@ const uploadArvan = (customFolder = null) => {
       req.uploadedFiles = {};
 
       try {
-        const fileFields = Object.keys(req.files || {});
+        mergePreUploadedFiles(req, fieldConfig);
+        const filesByField = Array.isArray(req.files)
+          ? req.files.reduce((fields, file) => {
+              fields[file.fieldname] = [...(fields[file.fieldname] || []), file];
+              return fields;
+            }, {})
+          : req.files || {};
+        const fileFields = Object.keys(filesByField);
 
         for (const field of fileFields) {
-          req.uploadedFiles[field] = [];
+          req.uploadedFiles[field] = req.uploadedFiles[field] || [];
 
-          for (const file of req.files[field]) {
+          for (const file of filesByField[field]) {
             console.log("[ARVAN_UPLOAD] processing file", {
               field,
               originalname: file.originalname,
@@ -68,7 +135,7 @@ const uploadArvan = (customFolder = null) => {
               customFolder,
             });
 
-            const { extension, fileBuffer, contentType } = await prepareFile(file);
+            const { extension, fileBuffer, contentType } = await prepareFile(file, req.body);
             const { filename, key } = makeObjectName(customFolder, extension);
 
             console.log("[ARVAN_UPLOAD] prepared file", {
@@ -124,6 +191,7 @@ const uploadArvan = (customFolder = null) => {
   return {
     single: (fieldName) => arvanUploadMiddleware([{ name: fieldName, maxCount: 1 }]),
     fields: (fieldsConfig) => arvanUploadMiddleware(fieldsConfig),
+    any: () => arvanUploadMiddleware([], multerInstance.any()),
   };
 };
 

@@ -13,6 +13,7 @@ import ProductStatus from "./ProductStatus";
 import ProductFilters from "./ProductFilters";
 import Ingredients from "./Ingredients";
 import ProductAttributes from "./ProductAttributes";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const requiredTranslationLanguages = ["en", "tr", "ar"];
 
@@ -22,6 +23,10 @@ const isFilled = (value) =>
 const StepAddProduct = () => {
   const [thumbnail, setThumbnail] = useState(null);
   const [gallery, setGallery] = useState([]);
+  const [mediaUploading, setMediaUploading] = useState({
+    thumbnail: false,
+    gallery: false
+  });
   const [addProduct, { isLoading, data, error }] = useAddProductMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -95,10 +100,7 @@ const StepAddProduct = () => {
     const selectedTags2 = selectedTags.map((tag) => tag.id);
 
     const formData = new FormData();
-    formData.append("thumbnail", thumbnail);
-    for (let i = 0; i < gallery.length; i++) {
-      formData.append("gallery", gallery[i]);
-    }
+    appendMediaFields(formData, { thumbnail, gallery });
     formData.append("title", data.title);
     formData.append("titleEn", data.titleEn || "");
     formData.append("summary", data.summary);
@@ -173,6 +175,11 @@ const StepAddProduct = () => {
   }, [isLoading, data, error]);
 
   const nextStep = async () => {
+    if (mediaUploading.thumbnail || mediaUploading.gallery) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     let valid = false;
     switch (currentStep) {
       case 1:
@@ -300,6 +307,9 @@ const StepAddProduct = () => {
             nextStep={nextStep}
             register={register}
             errors={errors.thumbnail}
+            onUploadStateChange={(value) =>
+              setMediaUploading((prev) => ({ ...prev, thumbnail: value }))
+            }
           />
         );
       case 2:
@@ -311,6 +321,9 @@ const StepAddProduct = () => {
             prevStep={prevStep}
             register={register}
             errors={errors.gallery}
+            onUploadStateChange={(value) =>
+              setMediaUploading((prev) => ({ ...prev, gallery: value }))
+            }
           />
         );
       case 3:
@@ -420,7 +433,7 @@ const StepAddProduct = () => {
 
         {currentStep === totalSteps && (
           <div className="flex justify-between mt-12">
-            <SendButton />
+            <SendButton isLoading={isLoading || mediaUploading.thumbnail || mediaUploading.gallery} />
             <NavigationButton direction="prev" onClick={prevStep} />
           </div>
         )}

@@ -4,6 +4,17 @@ import { Controller } from "react-hook-form";
 import Modal from "@/components/shared/modal/Modal";
 import RTEditor from "@/components/shared/editor/RTEditor";
 import NavigationButton from "@/components/shared/button/NavigationButton";
+import TranslationTabs from "@/components/shared/translation/TranslationTabs";
+
+const magazineContentFields = [
+  {
+    name: "content",
+    label: "محتوا",
+    type: "textarea",
+    rows: 8,
+    maxLength: 12000,
+  },
+];
 
 const Step2 = ({
   setThumbnailPreview,
@@ -14,7 +25,10 @@ const Step2 = ({
   nextStep,
   prevStep,
   editorData,
-  setEditorData
+  setEditorData,
+  onUploadStateChange,
+  setValue,
+  watch
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -37,6 +51,9 @@ const Step2 = ({
             <ThumbnailUpload
               setThumbnailPreview={setThumbnailPreview}
               setThumbnail={setThumbnail}
+              folder="magazine"
+              uploadOnSelect
+              onUploadStateChange={onUploadStateChange}
               register={register("thumbnail", {
                 required: "آپلود تصویر بند انگشتی الزامی است",
               })}
@@ -92,6 +109,16 @@ const Step2 = ({
               )}
           />
         </label>
+
+        <TranslationTabs
+          errors={errors}
+          fields={magazineContentFields}
+          includeSource={false}
+          namespace="magazineTranslations"
+          register={register}
+          setValue={setValue}
+          watch={watch}
+        />
       </div>
       
       <div className="flex justify-between mt-12 right-0 absolute bottom-2 w-full px-8">

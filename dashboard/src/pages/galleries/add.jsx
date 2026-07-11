@@ -7,11 +7,13 @@ import { useForm } from "react-hook-form";
 import GalleryUpload from "@/components/shared/gallery/GalleryUpload";
 import DisplayImages from "@/components/shared/gallery/DisplayImages";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import { appendMediaFields } from "@/utils/directUpload";
 const AddGallery = ({ isOpen, onClose }) => {
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
-  const [thumbnail, setThumbnail] = useState({});
-  const [gallery, setGallery] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [gallery, setGallery] = useState([]);
   const [galleryPreview, setGalleryPreview] = useState([]);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const {
     register,
     handleSubmit,
@@ -41,11 +43,7 @@ const AddGallery = ({ isOpen, onClose }) => {
   
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("thumbnail", thumbnail); 
-  
-    for (let i = 0; i < gallery.length; i++) {
-      formData.append("gallery", gallery[i]);
-    }
+    appendMediaFields(formData, { thumbnail, gallery });
   
     addGallery(formData); 
   }
@@ -110,6 +108,9 @@ const AddGallery = ({ isOpen, onClose }) => {
               <ThumbnailUpload
               setThumbnailPreview={setThumbnailPreview}
               setThumbnail={setThumbnail}
+              folder="gallery"
+              uploadOnSelect
+              onUploadStateChange={setIsUploadingMedia}
               register={register("Thumbnail", {
                 required: "آپلود تصویر عنوان الزامی است"
               })}
@@ -130,6 +131,9 @@ const AddGallery = ({ isOpen, onClose }) => {
            <GalleryUpload
               setGallery={setGallery}
               setGalleryPreview={setGalleryPreview}
+              folder="gallery"
+              uploadOnSelect
+              onUploadStateChange={setIsUploadingMedia}
               maxFiles={100}
               register={register("gallery", {
                 required: "آپلود حداقل یک تصویر الزامی است"
@@ -142,7 +146,7 @@ const AddGallery = ({ isOpen, onClose }) => {
             />
 
           </div>
-          <Button type="submit" className="py-2 mt-4 mb-4 bg-black">
+          <Button type="submit" className="py-2 mt-4 mb-4 bg-black" isLoading={isAdding || isUploadingMedia}>
             ایجاد کردن
           </Button>
         </div>

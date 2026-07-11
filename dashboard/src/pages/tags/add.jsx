@@ -13,6 +13,7 @@ import { toast } from "react-hot-toast";
 import { NavLink, useNavigate } from "react-router-dom";
 import StepIndicator from "../categories/steps/StepIndicator";
 import TranslationTabs from "@/components/shared/translation/TranslationTabs";
+import { appendMediaFields } from "@/utils/directUpload";
 
 const totalSteps = 3;
 const tagTranslationFields = [
@@ -38,6 +39,7 @@ const AddTag = () => {
   const navigate = useNavigate();
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [keynotes, setKeynotes] = useState([""]);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -79,6 +81,11 @@ const AddTag = () => {
   }, [hasValidKeynotes, thumbnail, watchedFields.description, watchedFields.title]);
 
   const nextStep = async () => {
+    if (isUploadingMedia) {
+      toast.error("لطفا تا پایان آپلود تصویر صبر کنید");
+      return;
+    }
+
     if (currentStep === 1) {
       const valid = await trigger(["title", "description"]);
       if (!valid) {
@@ -139,7 +146,7 @@ const AddTag = () => {
     body.append("description", data.description);
     body.append("translations", JSON.stringify(data.translations || {}));
     body.append("keynotes", JSON.stringify(cleanKeynotes));
-    if (thumbnail) body.append("thumbnail", thumbnail);
+    appendMediaFields(body, { thumbnail });
     addTag(body);
   };
 
@@ -185,6 +192,9 @@ const AddTag = () => {
                 setThumbnail={setThumbnail}
                 setThumbnailPreview={setThumbnailPreview}
                 title="لطفاً یک تصویر برای تگ انتخاب کنید"
+                folder="tag"
+                uploadOnSelect
+                onUploadStateChange={setIsUploadingMedia}
               />
             </label>
           </div>
@@ -231,7 +241,7 @@ const AddTag = () => {
           ))}
         </label>
         <div className="flex justify-between mt-8">
-          <SendButton isLoading={isAdding} />
+          <SendButton isLoading={isAdding || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
         </div>
       </>
