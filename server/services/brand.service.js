@@ -8,15 +8,18 @@ const remove = require("../utils/remove.util");
 
 /* add new brand */
 exports.addBrand = async (req, res) => {
-  const { body, file } = req;
+  const { body } = req;
+  const uploadedLogo = req.uploadedFiles?.logo?.[0];
 
   const brand = new Brand({
     title: body.title,
     description: body.description,
-    logo: {
-      url: file.path,
-      public_id: file.filename,
-    },
+    logo: uploadedLogo
+      ? {
+          url: uploadedLogo.url,
+          public_id: uploadedLogo.key,
+        }
+      : null,
     keynotes: JSON.parse(body.keynotes),
     tags: JSON.parse(body.tags),
     creator: req.user._id,
@@ -68,14 +71,24 @@ exports.getBrand = async (req, res) => {
 /* update brand */
 exports.updateBrand = async (req, res) => {
   const brand = await Brand.findById(req.params.id);
+  if (!brand) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "Brand not found",
+    });
+  }
+
   let updatedBrand = req.body;
 
-  if (!req.body.logo && req.file) {
-    await remove(brand.logo.public_id);
+  if (req.uploadedFiles?.logo?.length) {
+    if (brand.logo?.public_id) {
+      await remove(brand.logo.public_id);
+    }
 
     updatedBrand.logo = {
-      url: req.file.path,
-      public_id: req.file.filename,
+      url: req.uploadedFiles.logo[0].url,
+      public_id: req.uploadedFiles.logo[0].key,
     };
   }
 

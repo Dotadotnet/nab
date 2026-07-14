@@ -5,6 +5,7 @@ import ControlPanel from "../ControlPanel";
 import StepIndicator from "../auth/signup/steps/StepIndicator";
 import { useUpdateAdminMutation } from "@/services/admin/adminApi";
 import ProfileImageSelector from "@/components/shared/gallery/ProfileImageSelector";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import SendButton from "@/components/shared/button/SendButton";
@@ -260,7 +261,7 @@ function Profile() {
             <div className="flex flex-col items-center text-center">
               <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
                 {shownAvatar ? (
-                  <img
+                  <PreviewableMedia
                     src={shownAvatar}
                     alt="avatar"
                     className="h-[112px] w-[112px] profile-pic rounded-full"
@@ -398,7 +399,7 @@ function InitialStep({
       <div className="mb-5 flex flex-col items-center rounded border p-4 dark:border-gray-700">
         <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
           {avatarPreview ? (
-            <img
+            <PreviewableMedia
               src={avatarPreview}
               alt="avatar"
               className="h-[100px] w-[100px] profile-pic rounded-full"

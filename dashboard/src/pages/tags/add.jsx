@@ -1,9 +1,12 @@
 import Minus from "@/components/icons/Minus";
+import Pencil from "@/components/icons/Pencil";
 import Plus from "@/components/icons/Plus";
+import Trash from "@/components/icons/Trash";
 import ChevronRight from "@/components/icons/ChevronRight";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import SendButton from "@/components/shared/button/SendButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAddTagMutation } from "@/services/tag/tagApi";
@@ -51,6 +54,7 @@ const AddTag = () => {
     register,
     handleSubmit,
     formState: { errors },
+    resetField,
     trigger,
     setValue,
     watch
@@ -107,6 +111,28 @@ const AddTag = () => {
   };
 
   const prevStep = () => setCurrentStep((step) => Math.max(step - 1, 1));
+
+  const handleEditThumbnail = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = document.getElementById("tag-thumbnail");
+    if (!input) return;
+
+    input.value = "";
+    input.click();
+  };
+
+  const handleRemoveThumbnail = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setThumbnail(null);
+    setThumbnailPreview(null);
+    resetField("thumbnail");
+
+    const input = document.getElementById("tag-thumbnail");
+    if (input) input.value = "";
+  };
 
   const handleStepClick = (step) => {
     if (step <= currentStep) {
@@ -174,13 +200,33 @@ const AddTag = () => {
       return (
         <>
           <div className="flex flex-col items-center gap-y-4">
-            <div className="profile-container shine-effect rounded-full flex justify-center">
+            <div className="profile-container shine-effect group rounded-full flex justify-center">
               {thumbnailPreview ? (
-                <img
-                  alt="tag"
-                  className="h-[100px] w-[100px] profile-pic rounded-full object-cover"
-                  src={thumbnailPreview}
-                />
+                <>
+                  <PreviewableMedia
+                    alt="tag"
+                    className="h-[100px] w-[100px] profile-pic rounded-full object-cover"
+                    src={thumbnailPreview}
+                  />
+                  <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-between rounded-full bg-black/45 px-4 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      aria-label="Edit thumbnail"
+                      className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-800 shadow transition hover:bg-green-100 hover:text-green-700"
+                      onClick={handleEditThumbnail}
+                    >
+                      <Pencil />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Remove thumbnail"
+                      className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white text-red-600 shadow transition hover:bg-red-100"
+                      onClick={handleRemoveThumbnail}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </div>
+                </>
               ) : (
                 <SkeletonImage />
               )}
@@ -193,6 +239,7 @@ const AddTag = () => {
                 setThumbnailPreview={setThumbnailPreview}
                 title="لطفاً یک تصویر برای تگ انتخاب کنید"
                 folder="tag"
+                inputId="tag-thumbnail"
                 uploadOnSelect
                 onUploadStateChange={setIsUploadingMedia}
               />

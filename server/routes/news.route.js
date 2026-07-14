@@ -43,6 +43,9 @@ router.patch(
   "/update-news/:id",
   verify,
   authorize("admin", "superAdmin"),
+  upload('news').fields([
+    { name: "thumbnail", maxCount: 1 },
+  ]),
   newsController.updateNews
 );
 

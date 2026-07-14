@@ -383,6 +383,10 @@ const ImageEditorModal = ({
     setCompare(50);
   };
 
+  const adjustQuality = (amount) => {
+    setQuality((currentQuality) => clamp(currentQuality + amount, 10, 100));
+  };
+
   const toolButtons = [
     { key: "crop", label: "برش", icon: CropIcon },
     { key: "edit", label: "ویرایش تصویر", icon: EditIcon },
@@ -612,6 +616,16 @@ const ImageEditorModal = ({
             {activePanel === "size" && (
               <div className="flex h-10 items-center gap-2 rounded-lg border border-gray-300 px-3 text-gray-700">
                 <SizeIcon className="h-4 w-4" />
+                <button
+                  aria-label="Decrease quality"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-base leading-none transition hover:border-gray-900 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={quality <= 10}
+                  title="کاهش کیفیت"
+                  type="button"
+                  onClick={() => adjustQuality(-5)}
+                >
+                  -
+                </button>
                 <input
                   aria-label="کیفیت خروجی"
                   className="w-32 accent-red-500"
@@ -621,7 +635,17 @@ const ImageEditorModal = ({
                   value={quality}
                   onChange={(event) => setQuality(Number(event.target.value))}
                 />
-                <span className="text-xs">{quality}%</span>
+                <button
+                  aria-label="Increase quality"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-base leading-none transition hover:border-gray-900 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={quality >= 100}
+                  title="افزایش کیفیت"
+                  type="button"
+                  onClick={() => adjustQuality(5)}
+                >
+                  +
+                </button>
+                <span className="min-w-9 text-center text-xs">{quality}%</span>
                 <span className="text-xs text-gray-500">{formatBytes(previewSize || file.size)}</span>
                 {previewSize ? (
                   <span className="text-xs text-red-600">

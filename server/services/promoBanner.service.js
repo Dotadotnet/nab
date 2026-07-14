@@ -180,13 +180,13 @@ exports.updatePromoBanner = async (req, res) => {
     let updated = req.body;
 
     // حذف تصویر قبلی در صورت آپلود جدید
-    if (!req.body.thumbnail && req.file) {
+    if (req.uploadedFiles?.thumbnail?.length) {
       if (promoBanner.thumbnail?.public_id) {
         await remove(promoBanner.thumbnail.public_id);
       }
       updated.thumbnail = {
-        url: req.file.path,
-        public_id: req.file.filename
+        url: req.uploadedFiles.thumbnail[0].url,
+        public_id: req.uploadedFiles.thumbnail[0].key
       };
     }
 

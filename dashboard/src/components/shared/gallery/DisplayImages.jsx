@@ -1,34 +1,25 @@
 import React from "react";
+import PreviewableMedia from "./PreviewableMedia";
 
 const DisplayImages = ({ galleryPreview, imageSize = 600 }) => {
   return (
     <div className="flex flex-row overflow-x-auto gap-x-2 mt-4">
       {galleryPreview?.length > 0 &&
         galleryPreview.map((item, index) => {
-          // بررسی اینکه فایل تصویر است یا ویدیو
-          const isVideo = item.type === "video" || /\.(mp4|webm|ogg)$/i.test(item.url);
+          const src = typeof item === "string" ? item : item.url;
+          const type = typeof item === "string" ? "image" : item.type;
+          const isVideo = type === "video" || /\.(mp4|webm|ogg|mov)$/i.test(src);
 
           return (
             <div key={index} className="flex-shrink-0 mb-2">
-              {isVideo ? (
-                <video
-                  controls
-                  src={item.url}
-                  height={imageSize}
-                  width={imageSize}
-                  className="rounded object-cover"
-                >
-                  مرورگر شما از پخش این نوع فایل پشتیبانی نمی‌کند.
-                </video>
-              ) : (
-                <img
-                  src={item.url}
-                  alt="gallery"
-                  height={imageSize}
-                  width={imageSize}
-                  className="rounded object-cover"
-                />
-              )}
+              <PreviewableMedia
+                alt="gallery"
+                className="rounded object-cover"
+                height={imageSize}
+                src={src}
+                type={isVideo ? "video" : "image"}
+                width={imageSize}
+              />
             </div>
           );
         })}

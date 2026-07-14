@@ -238,6 +238,16 @@ exports.getMagazine = async (req, res) => {
 };
 
 exports.updateMagazine = async (req, res) => {
+  const magazine = await Magazine.findById(req.params.id);
+
+  if (!magazine) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "Magazine not found",
+    });
+  }
+
   const {
     tags,
     socialLinks,
@@ -259,9 +269,19 @@ exports.updateMagazine = async (req, res) => {
   }
 
   if (req.uploadedFiles?.thumbnail?.length) {
+    if (magazine.thumbnail?.public_id) {
+      await remove(magazine.thumbnail.public_id);
+    }
     updateData.thumbnail = getUploadedImage(req.uploadedFiles.thumbnail[0]);
   }
   if (req.uploadedFiles?.gallery?.length) {
+    if (magazine.gallery?.length) {
+      for (const image of magazine.gallery) {
+        if (image.public_id) {
+          await remove(image.public_id);
+        }
+      }
+    }
     updateData.gallery = req.uploadedFiles.gallery.map(getUploadedImage);
   }
 

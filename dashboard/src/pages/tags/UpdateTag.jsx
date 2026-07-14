@@ -6,6 +6,7 @@ import SendButton from "@/components/shared/button/SendButton";
 import StatusSwitch from "@/components/shared/button/StatusSwitch";
 import ThemeToggle from "@/components/ThemeToggle";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import { useGetTagQuery, useUpdateTagMutation } from "@/services/tag/tagApi";
 import { useEffect, useMemo, useState } from "react";
@@ -178,7 +179,7 @@ const UpdateTag = () => {
           <div className="flex flex-col items-center gap-y-4">
             <div className="profile-container shine-effect rounded-full flex justify-center">
               {thumbnailPreview ? (
-                <img alt="tag" className="h-[100px] w-[100px] profile-pic rounded-full object-cover" src={thumbnailPreview} />
+                <PreviewableMedia alt="tag" className="h-[100px] w-[100px] profile-pic rounded-full object-cover" src={thumbnailPreview} />
               ) : (
                 <SkeletonImage />
               )}

@@ -6,6 +6,7 @@ import Instagram from "@/components/icons/Instagram";
 import Telegram from "@/components/icons/Telegram";
 import Whatsapp from "@/components/icons/Whatsapp";
 import Tag from "@/components/icons/Tag";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 
 const BlogsContent = ({
   title = "",
@@ -39,7 +40,7 @@ const BlogsContent = ({
           />
         )}
         {thumbnailPreview && (
-          <img
+          <PreviewableMedia
             src={thumbnailPreview}
             alt="Feature Image"
             width={1200}

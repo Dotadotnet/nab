@@ -2,6 +2,7 @@
 const Tag = require("../models/tag.model");
 const TagTranslation = require("../models/tagTranslation.model");
 const { generateSlug, generateSeoFields } = require("../utils/seoUtils");
+const remove = require("../utils/remove.util");
 const translateFields = require("../utils/translateFields");
 const Product = require("../models/product.model");
 const {
@@ -303,10 +304,23 @@ exports.getTags = async (req, res) => {
 
 /* update tag */
 exports.updateTag = async (req, res) => {
+  const tag = await Tag.findById(req.params.id);
+
+  if (!tag) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "Tag not found"
+    });
+  }
+
   let updatedTag = req.body;
 
   updatedTag.keynotes = JSON.parse(req.body.keynotes);
   if (req.uploadedFiles?.thumbnail?.length) {
+    if (tag.thumbnail?.public_id) {
+      await remove(tag.thumbnail.public_id);
+    }
     updatedTag.thumbnail = {
       url: req.uploadedFiles.thumbnail[0].url,
       public_id: req.uploadedFiles.thumbnail[0].key

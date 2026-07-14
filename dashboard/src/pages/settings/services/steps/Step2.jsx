@@ -9,6 +9,7 @@ import Plus from "@/components/icons/Plus";
 import Dropdown from "@/components/shared/dropDown/Dropdown";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import toast from "react-hot-toast";
 import Tag from "@/components/icons/Tag";
@@ -103,7 +104,7 @@ const Step2 = ({
       <div className="flex flex-col items-center ">
         <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
           {thumbnailPreview ? (
-            <img
+            <PreviewableMedia
               src={thumbnailPreview}
               alt="standard"
               height={100}

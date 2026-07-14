@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import Modal from "@/components/shared/modal/Modal";
 import AddButton from "@/components/shared/button/AddButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import { appendMediaFields } from "@/utils/directUpload";
 
@@ -62,7 +63,7 @@ const AddBanner = () => {
           >
             <div className="profile-container  shine-effect rounded-full flex justify-center  ">
               {thumbnailPreview ? (
-                <img
+                <PreviewableMedia
                   src={thumbnailPreview}
                   alt="thumbnail"
                   height={100}

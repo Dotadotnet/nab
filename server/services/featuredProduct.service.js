@@ -148,13 +148,23 @@ exports.getFeaturedProduct = async (req, res) => {
 /* update featuredProduct */
 exports.updateFeaturedProduct = async (req, res) => {
   const featuredProduct = await FeaturedProduct.findById(req.params.id);
+  if (!featuredProduct) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "FeaturedProduct not found"
+    });
+  }
+
   let updatedFeaturedProduct = req.body;
-  if (!req.body.thumbnail && req.file) {
-    await remove(featuredProduct.thumbnail.public_id);
+  if (req.uploadedFiles?.thumbnail?.length) {
+    if (featuredProduct.thumbnail?.public_id) {
+      await remove(featuredProduct.thumbnail.public_id);
+    }
 
     updatedFeaturedProduct.thumbnail = {
-      url: req.file.path,
-      public_id: req.file.filename
+      url: req.uploadedFiles.thumbnail[0].url,
+      public_id: req.uploadedFiles.thumbnail[0].key
     };
   }
 

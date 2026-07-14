@@ -254,13 +254,23 @@ exports.getCategory = async (req, res) => {
 /* update category */
 exports.updateCategory = async (req, res) => {
   const category = await Category.findById(req.params.id);
+  if (!category) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "Category not found"
+    });
+  }
+
   let updatedCategory = req.body;
-  if (!req.body.thumbnail && req.file) {
-    await remove(category.thumbnail.public_id);
+  if (req.uploadedFiles?.thumbnail?.length) {
+    if (category.thumbnail?.public_id) {
+      await remove(category.thumbnail.public_id);
+    }
 
     updatedCategory.thumbnail = {
-      url: req.file.path,
-      public_id: req.file.filename
+      url: req.uploadedFiles.thumbnail[0].url,
+      public_id: req.uploadedFiles.thumbnail[0].key
     };
   }
 

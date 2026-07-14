@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import CloudUpload from "@/components/icons/CloudUpload";
 import ImageEditorModal from "./ImageEditorModal";
 import { uploadFilesToArvan } from "@/utils/directUpload";
+
+const getUploadedPreviewSrc = (file) => {
+  if (!file) return null;
+  if (typeof file === "string") return file;
+
+  return file.url || file.src || file.location || file.path || null;
+};
 
 const ThumbnailUpload = ({
   setThumbnail,
@@ -15,6 +22,7 @@ const ThumbnailUpload = ({
   enableCrop = true,
   title = "انتخاب یک فایل (عکس یا ویدئو)",
   name = "thumbnail",
+  inputId = name,
   accept = "image/*",
   folder,
   uploadOnSelect = false,
@@ -22,6 +30,7 @@ const ThumbnailUpload = ({
 }) => {
   const [cropFile, setCropFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const uploadRequestId = useRef(0);
 
   const setUploading = (value) => {
     setIsUploading(value);
@@ -31,8 +40,14 @@ const ThumbnailUpload = ({
   const applyThumbnailFile = async (file) => {
     if (!file) return;
 
+    const requestId = uploadRequestId.current + 1;
+    uploadRequestId.current = requestId;
+    setThumbnail(null);
+    setThumbnailPreview(null);
+
     const reader = new FileReader();
     reader.onloadend = () => {
+      if (uploadRequestId.current !== requestId) return;
       setThumbnailPreview(reader.result);
     };
     reader.readAsDataURL(file);
@@ -55,18 +70,31 @@ const ThumbnailUpload = ({
         },
       });
 
-      setThumbnail(uploadedFiles[0] || null);
+      if (uploadRequestId.current !== requestId) return;
+
+      const uploadedFile = uploadedFiles[0] || null;
+      setThumbnail(uploadedFile);
+
+      const uploadedPreview = getUploadedPreviewSrc(uploadedFile);
+      if (uploadedPreview) {
+        setThumbnailPreview(uploadedPreview);
+      }
     } catch (error) {
+      if (uploadRequestId.current !== requestId) return;
       setThumbnail(null);
       setThumbnailPreview(null);
       console.error("[DIRECT_UPLOAD] thumbnail upload failed", error);
     } finally {
-      setUploading(false);
+      if (uploadRequestId.current === requestId) {
+        setUploading(false);
+      }
     }
   };
 
   const handleThumbnailPreview = (event) => {
     const file = event.target.files[0];
+
+    if (!file) return;
 
     if (file && enableCrop && file.type.startsWith("image/")) {
       setCropFile(file);
@@ -78,7 +106,7 @@ const ThumbnailUpload = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <label htmlFor={name} className="relative">
+      <label htmlFor={inputId} className="relative">
         <button
           type="button"
           className={`py-1 px-4 flex flex-row gap-x-2 bg-green-100 dark:bg-blue-100 ${
@@ -94,7 +122,7 @@ const ThumbnailUpload = ({
         <input
           type="file"
           name={name}
-          id={name}
+          id={inputId}
           accept={accept}
           className="absolute top-0 left-0 h-full w-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           {...register}

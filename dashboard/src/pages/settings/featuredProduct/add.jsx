@@ -11,6 +11,7 @@ import Dropdown from "@/components/shared/dropDown/Dropdown";
 import Plus from "@/components/icons/Plus";
 import { Controller } from "react-hook-form";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 
 const AddFeaturedProduct = () => {
@@ -126,7 +127,7 @@ const AddFeaturedProduct = () => {
                   <div className="flex justify-between">
                     <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
                       {thumbnailPreview ? (
-                        <img
+                        <PreviewableMedia
                           src={thumbnailPreview}
                           alt="thumbnail"
                           height={100}
@@ -139,7 +140,7 @@ const AddFeaturedProduct = () => {
                     </div>
                     <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
                       {carouselPreview ? (
-                        <img
+                        <PreviewableMedia
                           src={carouselPreview}
                           alt="carousel-thumbnail"
                           height={100}

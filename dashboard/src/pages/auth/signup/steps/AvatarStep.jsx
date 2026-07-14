@@ -1,6 +1,7 @@
 import React from "react";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import ProfileImageSelector from "@/components/shared/gallery/ProfileImageSelector";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 
 const AvatarStep = ({
@@ -14,7 +15,7 @@ const AvatarStep = ({
       <div className="flex flex-col items-center">
         <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
           {avatarPreview ? (
-            <img
+            <PreviewableMedia
               src={avatarPreview}
               alt="avatar"
               height={100}

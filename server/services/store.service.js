@@ -8,15 +8,18 @@ const remove = require("../utils/remove.util");
 
 /* add new store */
 exports.addStore = async (req, res) => {
-  const { body, file } = req;
+  const { body } = req;
+  const uploadedThumbnail = req.uploadedFiles?.thumbnail?.[0];
 
   const store = new Store({
     title: body.title,
     description: body.description,
-    thumbnail: {
-      url: file.path,
-      public_id: file.filename,
-    },
+    thumbnail: uploadedThumbnail
+      ? {
+          url: uploadedThumbnail.url,
+          public_id: uploadedThumbnail.key,
+        }
+      : null,
     keynotes: JSON.parse(body.keynotes),
     tags: JSON.parse(body.tags),
     owner: req.user._id,
@@ -67,15 +70,25 @@ exports.getStore = async (req, res) => {
 
 /* update store */
 exports.updateStore = async (req, res) => {
-  const store = await Store.findByIdAndUpdate(req.params.id, req.body);
+  const store = await Store.findById(req.params.id);
+  if (!store) {
+    return res.status(404).json({
+      acknowledgement: false,
+      message: "Not Found",
+      description: "Store not found",
+    });
+  }
+
   const updatedStore = req.body;
 
-  if (!req.body.thumbnail && req.file) {
-    await remove(store.thumbnail.public_id);
+  if (req.uploadedFiles?.thumbnail?.length) {
+    if (store.thumbnail?.public_id) {
+      await remove(store.thumbnail.public_id);
+    }
 
     updatedStore.thumbnail = {
-      url: req.file.path,
-      public_id: req.file.filename,
+      url: req.uploadedFiles.thumbnail[0].url,
+      public_id: req.uploadedFiles.thumbnail[0].key,
     };
   }
 

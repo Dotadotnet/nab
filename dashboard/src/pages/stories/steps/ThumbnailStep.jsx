@@ -2,6 +2,7 @@ import { useState } from "react";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 
 const ThumbnailStep = ({
   nextStep,
@@ -19,13 +20,13 @@ const ThumbnailStep = ({
         <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
           {mediaPreview ? (
             mediaType?.startsWith("video") ? (
-              <video
+              <PreviewableMedia
                 src={mediaPreview}
-                controls
+                type="video"
                 className="h-full w-full rounded-full object-cover"
               />
             ) : (
-              <img
+              <PreviewableMedia
                 src={mediaPreview}
                 alt="media"
                 height={100}

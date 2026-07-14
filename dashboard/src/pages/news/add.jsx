@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 import TranslationTabs from "@/components/shared/translation/TranslationTabs";
 import { appendMediaFields } from "@/utils/directUpload";
 import { useGetCategoriesQuery } from "@/services/category/categoryApi";
@@ -129,7 +130,7 @@ const AddNews = () => {
 
         <div className="flex flex-col items-center gap-3 rounded border p-4">
           {thumbnailPreview ? (
-            <img
+            <PreviewableMedia
               alt="news"
               className="h-32 w-32 rounded object-cover"
               src={thumbnailPreview}

@@ -924,27 +924,27 @@ exports.updateProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
   const updatedProduct = req.body;
 
-  if (!req.body.thumbnail && req.files && req.files.thumbnail?.length > 0) {
-    remove(product.thumbnail.public_id);
+  if (req.uploadedFiles?.thumbnail?.length) {
+    if (product.thumbnail?.public_id) {
+      await remove(product.thumbnail.public_id);
+    }
 
     updatedProduct.thumbnail = {
-      url: req.files.thumbnail[0].path,
-      public_id: req.files.thumbnail[0].filename
+      url: req.uploadedFiles.thumbnail[0].url,
+      public_id: req.uploadedFiles.thumbnail[0].key
     };
   }
 
-  if (
-    !req.body.gallery?.length > 0 &&
-    req.files &&
-    req.files.gallery?.length > 0
-  ) {
+  if (req.uploadedFiles?.gallery?.length) {
     for (let i = 0; i < product.gallery.length; i++) {
-      await remove(product.gallery[i].public_id);
+      if (product.gallery[i].public_id) {
+        await remove(product.gallery[i].public_id);
+      }
     }
 
-    updatedProduct.gallery = req.files.gallery.map((file) => ({
-      url: file.path,
-      public_id: file.filename
+    updatedProduct.gallery = req.uploadedFiles.gallery.map((file) => ({
+      url: file.url,
+      public_id: file.key
     }));
   }
 
@@ -1229,26 +1229,26 @@ exports.updateProductImages = async (req, res) => {
     const updateData = { updatedAt: Date.now() };
 
     // Update thumbnail if provided
-    if (req.files && req.files.thumbnail && req.files.thumbnail.length > 0) {
+    if (req.uploadedFiles?.thumbnail?.length) {
       if (product.thumbnail && product.thumbnail.public_id) {
         await remove(product.thumbnail.public_id);
       }
       updateData.thumbnail = {
-        url: req.files.thumbnail[0].path,
-        public_id: req.files.thumbnail[0].filename
+        url: req.uploadedFiles.thumbnail[0].url,
+        public_id: req.uploadedFiles.thumbnail[0].key
       };
     }
 
     // Update gallery if provided
-    if (req.files && req.files.gallery && req.files.gallery.length > 0) {
+    if (req.uploadedFiles?.gallery?.length) {
       if (product.gallery && product.gallery.length > 0) {
         for (let i = 0; i < product.gallery.length; i++) {
           await remove(product.gallery[i].public_id);
         }
       }
-      updateData.gallery = req.files.gallery.map((file) => ({
-        url: file.path,
-        public_id: file.filename
+      updateData.gallery = req.uploadedFiles.gallery.map((file) => ({
+        url: file.url,
+        public_id: file.key
       }));
     }
 

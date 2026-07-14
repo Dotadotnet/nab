@@ -294,9 +294,29 @@ exports.getNews = async (req, res) => {
 /* 📌 بروزرسانی اخبار */
 exports.updateNews = async (req, res) => {
   try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({
+        acknowledgement: false,
+        message: "Not Found",
+        description: "News not found"
+      });
+    }
+
     const updatedNews = req.body;
     console.log("Updated News:", updatedNews);
     console.log("News ID:", req.params.id);
+
+    if (req.uploadedFiles?.thumbnail?.length) {
+      if (news.thumbnail?.public_id) {
+        await remove(news.thumbnail.public_id);
+      }
+
+      updatedNews.thumbnail = {
+        url: req.uploadedFiles.thumbnail[0].url,
+        public_id: req.uploadedFiles.thumbnail[0].key
+      };
+    }
 
     const result = await News.findByIdAndUpdate(req.params.id, updatedNews, {
       new: true

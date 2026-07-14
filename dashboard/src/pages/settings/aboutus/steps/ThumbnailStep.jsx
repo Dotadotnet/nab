@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import SkeletonImage from "@/components/shared/skeleton/SkeletonImage";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import ThumbnailUpload from "@/components/shared/gallery/ThumbnailUpload";
+import PreviewableMedia from "@/components/shared/gallery/PreviewableMedia";
 
 const ThumbnailStep = ({ nextStep, errors, register, setThumbnail }) => {
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
@@ -10,7 +11,7 @@ const ThumbnailStep = ({ nextStep, errors, register, setThumbnail }) => {
       <div className="flex flex-col items-center ">
         <div className="profile-container shine-effect rounded-full flex justify-center mb-4">
           {thumbnailPreview ? (
-            <img
+            <PreviewableMedia
               src={thumbnailPreview}
               alt="standard"
               height={100}

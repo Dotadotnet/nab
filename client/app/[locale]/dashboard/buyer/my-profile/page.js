@@ -24,6 +24,7 @@ const Page = () => {
   const [profile, setProfile] = useState(initialProfile);
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [updateUserInformation, { isLoading, data, error }] =
     useUpdateUserMutation();
 
@@ -113,15 +114,20 @@ const Page = () => {
           <aside className="col-span-12 lg:col-span-4 flex flex-col gap-4">
             <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
               <div className="flex flex-col items-center gap-4">
-                <div className="relative h-32 w-32 overflow-hidden rounded-full border border-slate-200 bg-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  className="relative h-32 w-32 overflow-hidden rounded-full border border-slate-200 bg-slate-100 dark:border-slate-700"
+                  onClick={() => setIsAvatarOpen(true)}
+                  aria-label="Preview profile image"
+                >
                   <Image
                     src={avatarSrc}
                     alt={userInfo?.avatar?.public_id || "تصویر پروفایل"}
                     fill
                     sizes="128px"
-                    className="object-cover"
+                    className="cursor-zoom-in object-cover"
                   />
-                </div>
+                </button>
 
                 <div className="flex flex-col items-center gap-1 text-center">
                   <h1 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -267,6 +273,30 @@ const Page = () => {
           </div>
         </div>
       </section>
+
+      {isAvatarOpen && (
+        <section
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsAvatarOpen(false)}
+        >
+          <button
+            type="button"
+            aria-label="Close preview"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl text-slate-900 shadow"
+            onClick={() => setIsAvatarOpen(false)}
+          >
+            x
+          </button>
+          <img
+            src={avatarSrc}
+            alt={userInfo?.avatar?.public_id || "avatar"}
+            className="max-h-[92vh] max-w-[96vw] rounded object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </section>
+      )}
     </Dashboard>
   );
 };
