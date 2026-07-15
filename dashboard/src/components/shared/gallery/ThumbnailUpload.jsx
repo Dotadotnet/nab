@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
 import CloudUpload from "@/components/icons/CloudUpload";
 import ImageEditorModal from "./ImageEditorModal";
-import { uploadFilesToArvan } from "@/utils/directUpload";
+import { toast } from "react-hot-toast";
+import { getUploadErrorMessage, uploadFilesToArvan } from "@/utils/directUpload";
 
 const getUploadedPreviewSrc = (file) => {
   if (!file) return null;
@@ -83,6 +84,7 @@ const ThumbnailUpload = ({
       if (uploadRequestId.current !== requestId) return;
       setThumbnail(null);
       setThumbnailPreview(null);
+      toast.error(getUploadErrorMessage(error));
       console.error("[DIRECT_UPLOAD] thumbnail upload failed", error);
     } finally {
       if (uploadRequestId.current === requestId) {

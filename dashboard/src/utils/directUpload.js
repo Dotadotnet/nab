@@ -1,3 +1,15 @@
+export const getUploadErrorMessage = (error) => {
+  if (!error) return "Upload failed";
+  if (typeof error === "string") return error;
+  return (
+    error.description ||
+    error.error ||
+    error.message ||
+    error.details ||
+    "Upload failed"
+  );
+};
+
 export const uploadFilesToArvan = async ({
   files,
   fieldName,
@@ -26,10 +38,21 @@ export const uploadFilesToArvan = async ({
     body: formData,
   });
 
-  const result = await response.json().catch(() => ({}));
+  const responseText = await response.text();
+  let result = {};
+
+  try {
+    result = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    result = { description: responseText };
+  }
 
   if (!response.ok || !result?.acknowledgement) {
-    throw new Error(result?.description || result?.error || "Upload failed");
+    const message = getUploadErrorMessage(result);
+    const uploadError = new Error(message);
+    uploadError.status = response.status;
+    uploadError.payload = result;
+    throw uploadError;
   }
 
   return result.data?.[fieldName] || [];

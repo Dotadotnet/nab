@@ -27,6 +27,20 @@ const s3Client = new S3Client({
 
 const getObjectAcl = () => process.env.ARVAN_S3_ACL || "public-read";
 
+const getUploadErrorDetails = (error) => {
+  const metadata = error?.$metadata || {};
+  const parts = [
+    error?.name,
+    error?.Code || error?.code,
+    error?.message,
+    metadata.httpStatusCode ? `HTTP ${metadata.httpStatusCode}` : "",
+    metadata.requestId ? `requestId: ${metadata.requestId}` : "",
+    metadata.extendedRequestId ? `extendedRequestId: ${metadata.extendedRequestId}` : "",
+  ].filter(Boolean);
+
+  return [...new Set(parts)].join(" | ") || "Unknown upload error";
+};
+
 const getPublicUrl = (key) => {
   const baseUrl =
     process.env.ARVAN_PUBLIC_BASE_URL ||
@@ -108,7 +122,14 @@ const uploadArvan = (customFolder = null) => {
 
       if (err) {
         console.error("[ARVAN_UPLOAD] multer error", err);
-        return res.status(400).json({ error: err.message || "File upload error" });
+        const details = getUploadErrorDetails(err);
+        return res.status(400).json({
+          acknowledgement: false,
+          message: "Upload Error",
+          description: `خطا در دریافت فایل: ${details}`,
+          error: err.message || "File upload error",
+          details,
+        });
       }
 
       req.uploadedFiles = {};
@@ -178,10 +199,17 @@ const uploadArvan = (customFolder = null) => {
 
         next();
       } catch (error) {
-        console.error("[ARVAN_UPLOAD] upload failed", error);
+        const details = getUploadErrorDetails(error);
+        console.error("[ARVAN_UPLOAD] upload failed", {
+          details,
+          name: error?.name,
+          code: error?.Code || error?.code,
+          message: error?.message,
+          metadata: error?.$metadata,
+        });
         res.status(500).json({
           acknowledgement: false,
-          message: "Internal Server Error",
+          message: "Upload Error",
           description: `خطا در بارگذاری فایل‌ها روی Arvan Cloud: ${error.message}`,
         });
       }

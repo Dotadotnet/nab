@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CloudUpload from "@/components/icons/CloudUpload";
 import { toast } from "react-hot-toast";
 import ImageEditorModal from "./ImageEditorModal";
-import { uploadFilesToArvan } from "@/utils/directUpload";
+import { getUploadErrorMessage, uploadFilesToArvan } from "@/utils/directUpload";
 
 const GalleryUpload = ({
   setGalleryPreview,
@@ -53,7 +53,7 @@ const GalleryUpload = ({
     } catch (error) {
       setGallery([]);
       setGalleryPreview([]);
-      toast.error("آپلود گالری ناموفق بود");
+      toast.error(getUploadErrorMessage(error));
       console.error("[DIRECT_UPLOAD] gallery upload failed", error);
     } finally {
       setUploading(false);
