@@ -28,6 +28,27 @@ function parseJsonObject(value, fallback = {}) {
   }
 }
 
+function parseKeynotes(value, fallback = []) {
+  if (!value) return fallback;
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parseKeynotes(parsed, fallback);
+    } catch {
+      return value
+        .split(/[\n,،]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+  }
+
+  return fallback;
+}
+
 function hasDashboardTranslations(translations) {
   if (!translations || typeof translations !== "object") return false;
 
@@ -37,8 +58,9 @@ function hasDashboardTranslations(translations) {
       return (
         fields &&
         typeof fields === "object" &&
-        ["title", "description"].some(
+        ["title", "description", "keynotes"].some(
           (field) => typeof fields[field] === "string" && fields[field].trim()
+            || Array.isArray(fields[field]) && fields[field].some((item) => String(item || "").trim())
         )
       );
     });
@@ -54,7 +76,7 @@ exports.addTag = async (req, res) => {
   try {
     const { title, description, keynotes, translations: dashboardTranslations } = req.body;
 
-    const parsedKeynotes = JSON.parse(keynotes);
+    const parsedKeynotes = parseKeynotes(keynotes);
     const parsedTranslations = parseJsonObject(dashboardTranslations);
     const thumbnail = req.uploadedFiles?.thumbnail?.length
       ? {
@@ -101,8 +123,9 @@ exports.addTag = async (req, res) => {
                       : title;
                   const translatedDescription =
                     typeof fields.description === "string" && fields.description.trim()
-                      ? fields.description.trim()
-                      : description;
+                  ? fields.description.trim()
+                  : description;
+                  const translatedKeynotes = parseKeynotes(fields.keynotes, parsedKeynotes);
 
                   return [
                     language,
@@ -113,7 +136,7 @@ exports.addTag = async (req, res) => {
                         metaTitle: translatedTitle,
                         slug,
                         metaDescription: translatedDescription,
-                        keynotes: parsedKeynotes,
+                        keynotes: translatedKeynotes,
                         canonicalUrl
                       }
                     }
@@ -185,8 +208,7 @@ exports.getTag = async (req, res) => {
   const tag = await Tag.findOne({ _id: req.params.id, isDeleted: false })
     .populate([
       {
-        path: "translations.translation",
-        match: { language: req.locale }
+        path: "translations.translation"
       },
       {
         path: "creator",
@@ -203,7 +225,10 @@ exports.getTag = async (req, res) => {
   }
 
   const object = tag.toObject();
-  const fields = object.translations?.find((item) => item.translation)?.translation || {};
+  const fields =
+    object.translations?.find((item) => item.language === req.locale && item.translation)?.translation ||
+    object.translations?.find((item) => item.translation)?.translation ||
+    {};
 
   res.status(200).json({
     acknowledgement: true,
@@ -320,13 +345,16 @@ exports.updateTag = async (req, res) => {
     });
   }
 
-  let updatedTag = req.body;
+  const updatedTag = { ...req.body };
+  const parsedKeynotes = parseKeynotes(req.body.keynotes);
+  const parsedTranslations = parseJsonObject(req.body.translations);
 
-  updatedTag.keynotes = JSON.parse(req.body.keynotes);
-  if (updatedTag.title || updatedTag.translations) {
-    const updatedTranslations = parseJsonObject(updatedTag.translations);
+  delete updatedTag.keynotes;
+  delete updatedTag.translations;
+
+  if (updatedTag.title || req.body.translations) {
     updatedTag.slug = await generateSlug(
-      getEnglishTitle(updatedTranslations) || updatedTag.title || tag.title
+      getEnglishTitle(parsedTranslations) || updatedTag.title || tag.title
     );
   }
   if (req.uploadedFiles?.thumbnail?.length) {
@@ -340,6 +368,70 @@ exports.updateTag = async (req, res) => {
   }
 
   await Tag.findByIdAndUpdate(req.params.id, updatedTag);
+
+  if (updatedTag.title || updatedTag.description || parsedKeynotes.length || req.body.translations) {
+    const existingDefaultTranslation = await TagTranslation.findOne({
+      tag: req.params.id,
+      language: DEFAULT_LANGUAGE
+    });
+    const title = updatedTag.title || tag.title;
+    const description = updatedTag.description || existingDefaultTranslation?.description || "";
+    const defaultKeynotes = parsedKeynotes.length
+      ? parsedKeynotes
+      : parseKeynotes(existingDefaultTranslation?.keynotes);
+    const slug = updatedTag.slug || tag.slug || await generateSlug(title);
+    const canonicalUrl = `${defaultDomain}/tag/${tag.tagId}/${slug}`;
+    const { metaTitle, metaDescription } = generateSeoFields({
+      title,
+      summary: description
+    });
+    const translationInfos = [];
+
+    for (const language of SUPPORTED_LANGUAGES) {
+      const fields = parsedTranslations[language] || {};
+      const translatedTitle =
+        language === DEFAULT_LANGUAGE
+          ? title
+          : typeof fields.title === "string" && fields.title.trim()
+            ? fields.title.trim()
+            : title;
+      const translatedDescription =
+        language === DEFAULT_LANGUAGE
+          ? description
+          : typeof fields.description === "string" && fields.description.trim()
+            ? fields.description.trim()
+            : description;
+      const translatedKeynotes =
+        language === DEFAULT_LANGUAGE
+          ? defaultKeynotes
+          : parseKeynotes(fields.keynotes, defaultKeynotes);
+
+      const translation = await TagTranslation.findOneAndUpdate(
+        { tag: req.params.id, language },
+        {
+          $set: {
+            title: translatedTitle,
+            description: translatedDescription,
+            metaTitle: translatedTitle || metaTitle,
+            slug,
+            metaDescription: translatedDescription || metaDescription,
+            keynotes: translatedKeynotes,
+            canonicalUrl
+          }
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+
+      translationInfos.push({
+        translation: translation._id,
+        language
+      });
+    }
+
+    await Tag.findByIdAndUpdate(req.params.id, {
+      $set: { translations: translationInfos }
+    });
+  }
 
   res.status(200).json({
     acknowledgement: true,

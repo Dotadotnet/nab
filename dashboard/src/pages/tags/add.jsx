@@ -15,10 +15,14 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { NavLink, useNavigate } from "react-router-dom";
 import StepIndicator from "../categories/steps/StepIndicator";
-import TranslationTabs from "@/components/shared/translation/TranslationTabs";
+import TranslationTabs, {
+  TRANSLATION_LANGUAGES,
+} from "@/components/shared/translation/TranslationTabs";
 import { appendMediaFields } from "@/utils/directUpload";
+import { useTranslateTextMutation } from "@/services/translation/translationApi";
 
 const totalSteps = 3;
+const requiredTranslationLanguages = ["en", "tr", "ar"];
 const tagTranslationFields = [
   {
     name: "title",
@@ -38,17 +42,55 @@ const tagTranslationFields = [
   },
 ];
 
+const splitKeynotes = (value) =>
+  String(value || "")
+    .split(/[\n,،]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const normalizeKeynotes = (value) =>
+  (Array.isArray(value) ? value : String(value || "").split(/[\n,،]+/))
+    .flatMap((item) => String(item || "").split(/[\n,،]+/))
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const isFilled = (value) => typeof value === "string" && value.trim().length > 0;
+
+const areMainTranslationsComplete = (translations = {}) =>
+  requiredTranslationLanguages.every((language) =>
+    ["title", "description"].every((field) => isFilled(translations?.[language]?.[field]))
+  );
+
+const areKeynoteTranslationsComplete = (keynotes, translations = {}) =>
+  requiredTranslationLanguages.every((language) => {
+    const values = normalizeKeynotes(translations?.[language]?.keynotes);
+    return values.length >= keynotes.length && keynotes.every((_, index) => isFilled(values[index]));
+  });
+
+const withKeynoteTranslations = (translations = {}) =>
+  Object.fromEntries(
+    Object.entries(translations).map(([language, fields]) => [
+      language,
+      {
+        ...fields,
+        keynotes: normalizeKeynotes(fields?.keynotes),
+      },
+    ])
+  );
+
 const AddTag = () => {
   const navigate = useNavigate();
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [keynotes, setKeynotes] = useState([""]);
+  const [activeKeynoteLanguage, setActiveKeynoteLanguage] = useState("fa");
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState({});
   const [invalidSteps, setInvalidSteps] = useState({});
   const [addTag, { isLoading: isAdding, data: addData, error: addError }] =
     useAddTagMutation();
+  const [translateText] = useTranslateTextMutation();
 
   const {
     register,
@@ -57,7 +99,8 @@ const AddTag = () => {
     resetField,
     trigger,
     setValue,
-    watch
+    watch,
+    getValues
   } = useForm({ mode: "onChange" });
 
   const watchedFields = watch();
@@ -76,13 +119,56 @@ const AddTag = () => {
   }, [addData, addError, isAdding, navigate]);
 
   useEffect(() => {
+    const cleanKeynotes = keynotes.map((keynote) => keynote.trim()).filter(Boolean);
+
     setCompletedSteps((prev) => ({
       ...prev,
-      1: Boolean(watchedFields.title && watchedFields.description),
+      1:
+        Boolean(watchedFields.title && watchedFields.description) &&
+        areMainTranslationsComplete(watchedFields.translations),
       2: Boolean(thumbnail),
-      3: hasValidKeynotes
+      3:
+        hasValidKeynotes &&
+        areKeynoteTranslationsComplete(cleanKeynotes, watchedFields.translations)
     }));
-  }, [hasValidKeynotes, thumbnail, watchedFields.description, watchedFields.title]);
+  }, [
+    hasValidKeynotes,
+    keynotes,
+    thumbnail,
+    watchedFields.description,
+    watchedFields.title,
+    watchedFields.translations
+  ]);
+
+  useEffect(() => {
+    const cleanKeynotes = keynotes.map((keynote) => keynote.trim()).filter(Boolean);
+    if (!cleanKeynotes.length) return undefined;
+
+    const timeoutId = setTimeout(async () => {
+      const source = cleanKeynotes.join(", ");
+
+      for (const language of requiredTranslationLanguages) {
+        const fieldName = `translations.${language}.keynotes`;
+        const current = getValues(fieldName);
+        if (normalizeKeynotes(current).length >= cleanKeynotes.length) continue;
+
+        try {
+          const response = await translateText({ text: source, to: language }).unwrap();
+          const translated = response?.data?.text || "";
+          if (translated) {
+            setValue(fieldName, normalizeKeynotes(translated), {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+          }
+        } catch (error) {
+          toast.error(error?.data?.description || "خطا در ترجمه خودکار کلمات کلیدی");
+        }
+      }
+    }, 700);
+
+    return () => clearTimeout(timeoutId);
+  }, [getValues, keynotes, setValue, translateText]);
 
   const nextStep = async () => {
     if (isUploadingMedia) {
@@ -92,7 +178,8 @@ const AddTag = () => {
 
     if (currentStep === 1) {
       const valid = await trigger(["title", "description"]);
-      if (!valid) {
+      const values = getValues();
+      if (!valid || !areMainTranslationsComplete(values.translations)) {
         toast.error("لطفاً عنوان و توضیحات تگ را کامل کنید");
         setInvalidSteps((prev) => ({ ...prev, 1: true }));
         return;
@@ -150,11 +237,23 @@ const AddTag = () => {
   };
 
   const handleAddKeynote = () => setKeynotes((prev) => [...prev, ""]);
-  const handleRemoveKeynote = (index) =>
+  const handleRemoveKeynote = (index) => {
+    requiredTranslationLanguages.forEach((language) => {
+      const fieldName = `translations.${language}.keynotes`;
+      const values = normalizeKeynotes(getValues(fieldName));
+      values.splice(index, 1);
+      setValue(fieldName, values, { shouldDirty: true, shouldValidate: true });
+    });
     setKeynotes((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+  };
   const handleKeynoteChange = (index, value) =>
     setKeynotes((prev) => {
+      const pastedKeynotes = normalizeKeynotes(value);
       const updated = [...prev];
+      if (pastedKeynotes.length > 1) {
+        updated.splice(index, 1, ...pastedKeynotes);
+        return updated;
+      }
       updated[index] = value;
       return updated;
     });
@@ -167,10 +266,23 @@ const AddTag = () => {
       return;
     }
 
+    if (
+      !areMainTranslationsComplete(data.translations) ||
+      !areKeynoteTranslationsComplete(cleanKeynotes, data.translations)
+    ) {
+      toast.error("لطفاً ترجمه‌های عنوان، توضیحات و کلمات کلیدی را کامل کنید");
+      setInvalidSteps((prev) => ({
+        ...prev,
+        1: !areMainTranslationsComplete(data.translations),
+        3: true,
+      }));
+      return;
+    }
+
     const body = new FormData();
     body.append("title", data.title);
     body.append("description", data.description);
-    body.append("translations", JSON.stringify(data.translations || {}));
+    body.append("translations", JSON.stringify(withKeynoteTranslations(data.translations || {})));
     body.append("keynotes", JSON.stringify(cleanKeynotes));
     appendMediaFields(body, { thumbnail });
     addTag(body);
@@ -255,7 +367,23 @@ const AddTag = () => {
 
     return (
       <>
-        <label className="w-full flex flex-col gap-y-4">
+        <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3 dark:border-gray-700">
+          {TRANSLATION_LANGUAGES.map((language) => (
+            <button
+              key={language.code}
+              type="button"
+              onClick={() => setActiveKeynoteLanguage(language.code)}
+              className={`rounded border px-3 py-1.5 text-sm transition-colors ${
+                activeKeynoteLanguage === language.code
+                  ? "border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-200"
+                  : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+            >
+              {language.label}
+            </button>
+          ))}
+        </div>
+        <label className={`w-full flex-col gap-y-4 ${activeKeynoteLanguage === "fa" ? "flex" : "hidden"}`}>
           <p className="text-sm flex flex-row justify-between items-center">
             کلمات کلیدی*
             <button
@@ -287,6 +415,48 @@ const AddTag = () => {
             </p>
           ))}
         </label>
+        <div className={`flex-col gap-y-3 rounded border p-3 ${activeKeynoteLanguage === "fa" ? "hidden" : "flex"}`}>
+          <p className="text-sm">ترجمه کلمات کلیدی*</p>
+          {keynotes.map((keynote, index) => (
+            <label className="flex flex-col gap-y-1" key={`${activeKeynoteLanguage}-${index}`}>
+              <span className="text-xs">{keynote || `کلمه ${index + 1}`}</span>
+              <input
+                className={`rounded border p-2 ${activeKeynoteLanguage === "ar" ? "" : "text-left"}`}
+                dir={activeKeynoteLanguage === "ar" ? "rtl" : "ltr"}
+                type="text"
+                {...register(`translations.${activeKeynoteLanguage}.keynotes.${index}`, {
+                  validate: (value) =>
+                    isFilled(value) || "ترجمه کلمات کلیدی کامل نیست"
+                })}
+              />
+            </label>
+          ))}
+        </div>
+        {false && (
+        <div className="flex flex-col gap-y-3 rounded border p-3">
+          <p className="text-sm">ترجمه کلمات کلیدی*</p>
+          {requiredTranslationLanguages.map((language) => (
+            <label className="flex flex-col gap-y-1" key={language}>
+              <span className="text-xs uppercase">{language}</span>
+              <textarea
+                className="rounded border p-2 text-left"
+                dir={language === "ar" ? "rtl" : "ltr"}
+                rows="3"
+                placeholder="keyword one, keyword two"
+                {...register(`translations.${language}.keynotes`, {
+                  validate: (value) => {
+                    const cleanKeynotes = keynotes.map((item) => item.trim()).filter(Boolean);
+                    return (
+                      splitKeynotes(value).length >= cleanKeynotes.length ||
+                      "ترجمه کلمات کلیدی کامل نیست"
+                    );
+                  }
+                })}
+              />
+            </label>
+          ))}
+        </div>
+        )}
         <div className="flex justify-between mt-8">
           <SendButton isLoading={isAdding || isUploadingMedia} />
           <NavigationButton direction="prev" onClick={prevStep} />
