@@ -70,6 +70,41 @@ export const uploadFilesToArvan = async ({
   return result.data?.[fieldName] || [];
 };
 
+export const deleteUploadedFileFromArvan = async (file) => {
+  const key = typeof file === "string" ? file : file?.key || file?.public_id;
+
+  if (!key || key === "N/A") {
+    return;
+  }
+
+  const token = localStorage.getItem("accessToken");
+  const response = await fetch(`${import.meta.env.VITE_BASE_URL}/upload`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ key }),
+  });
+
+  const responseText = await response.text();
+  let result = {};
+
+  try {
+    result = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    result = { description: responseText };
+  }
+
+  if (!response.ok || !result?.acknowledgement) {
+    const message = getUploadErrorMessage(result);
+    const deleteError = new Error(message);
+    deleteError.status = response.status;
+    deleteError.payload = result;
+    throw deleteError;
+  }
+};
+
 export const appendUploadedFiles = (formData, uploadedFiles) => {
   const cleanUploadedFiles = Object.fromEntries(
     Object.entries(uploadedFiles || {}).filter(([, files]) =>

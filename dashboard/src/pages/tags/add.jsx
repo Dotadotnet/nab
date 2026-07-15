@@ -18,7 +18,12 @@ import StepIndicator from "../categories/steps/StepIndicator";
 import TranslationTabs, {
   TRANSLATION_LANGUAGES,
 } from "@/components/shared/translation/TranslationTabs";
-import { appendMediaFields } from "@/utils/directUpload";
+import {
+  appendMediaFields,
+  deleteUploadedFileFromArvan,
+  getUploadErrorMessage,
+  isUploadedArvanFile,
+} from "@/utils/directUpload";
 import { useTranslateTextMutation } from "@/services/translation/translationApi";
 
 const totalSteps = 3;
@@ -210,9 +215,18 @@ const AddTag = () => {
     input.click();
   };
 
-  const handleRemoveThumbnail = (event) => {
+  const handleRemoveThumbnail = async (event) => {
     event.preventDefault();
     event.stopPropagation();
+
+    if (isUploadedArvanFile(thumbnail)) {
+      try {
+        await deleteUploadedFileFromArvan(thumbnail);
+      } catch (error) {
+        toast.error(getUploadErrorMessage(error));
+      }
+    }
+
     setThumbnail(null);
     setThumbnailPreview(null);
     resetField("thumbnail");

@@ -19,4 +19,6 @@ router.post("/:folder", verify, normalizeFolder, (req, res, next) => {
   upload(req.uploadFolder).any()(req, res, next);
 }, uploadController.uploadFiles);
 
+router.delete("/", verify, uploadController.deleteUploadedFile);
+
 module.exports = router;

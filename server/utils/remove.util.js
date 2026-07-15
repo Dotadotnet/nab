@@ -37,7 +37,7 @@ async function remove(bucketNameOrObjectName, objectName) {
   try {
     const { bucket, key } = resolveDeleteTarget(bucketNameOrObjectName, objectName);
 
-    if (!bucket || !key || key === "N/A") return;
+    if (!bucket || !key || key === "N/A") return false;
 
     const deleteCommand = new DeleteObjectCommand({
       Bucket: bucket,

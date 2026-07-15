@@ -1,6 +1,8 @@
 import ChevronRight from "@/components/icons/ChevronRight";
 import Minus from "@/components/icons/Minus";
+import Pencil from "@/components/icons/Pencil";
 import Plus from "@/components/icons/Plus";
+import Trash from "@/components/icons/Trash";
 import NavigationButton from "@/components/shared/button/NavigationButton";
 import SendButton from "@/components/shared/button/SendButton";
 import StatusSwitch from "@/components/shared/button/StatusSwitch";
@@ -14,7 +16,12 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import StepIndicator from "../categories/steps/StepIndicator";
-import { appendMediaFields } from "@/utils/directUpload";
+import {
+  appendMediaFields,
+  deleteUploadedFileFromArvan,
+  getUploadErrorMessage,
+  isUploadedArvanFile,
+} from "@/utils/directUpload";
 import TranslationTabs, {
   TRANSLATION_LANGUAGES,
 } from "@/components/shared/translation/TranslationTabs";
@@ -97,6 +104,7 @@ const UpdateTag = () => {
   const navigate = useNavigate();
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [isThumbnailRemoved, setIsThumbnailRemoved] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [keynotes, setKeynotes] = useState([""]);
   const [activeKeynoteLanguage, setActiveKeynoteLanguage] = useState("fa");
@@ -137,6 +145,7 @@ const UpdateTag = () => {
     });
     setKeynotes(tag.keynotes?.length ? tag.keynotes : [""]);
     setThumbnailPreview(tag.thumbnail?.url || null);
+    setIsThumbnailRemoved(false);
   }, [reset, tag]);
 
   useEffect(() => {
@@ -228,6 +237,33 @@ const UpdateTag = () => {
 
   const prevStep = () => setCurrentStep((step) => Math.max(step - 1, 1));
   const handleStepClick = (step) => step <= currentStep && setCurrentStep(step);
+  const handleEditThumbnail = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = document.getElementById("tag-update-thumbnail");
+    if (!input) return;
+
+    input.value = "";
+    input.click();
+  };
+  const handleRemoveThumbnail = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isUploadedArvanFile(thumbnail)) {
+      try {
+        await deleteUploadedFileFromArvan(thumbnail);
+      } catch (error) {
+        toast.error(getUploadErrorMessage(error));
+      }
+    } else if (tag?.thumbnail?.public_id && tag.thumbnail.public_id !== "N/A") {
+      setIsThumbnailRemoved(true);
+    }
+
+    setThumbnail(null);
+    setThumbnailPreview(null);
+  };
   const handleAddKeynote = () => setKeynotes((prev) => [...prev, ""]);
   const handleRemoveKeynote = (index) => {
     requiredTranslationLanguages.forEach((language) => {
@@ -277,6 +313,9 @@ const UpdateTag = () => {
     formData.append("translations", JSON.stringify(withKeynoteTranslations(data.translations || {})));
     formData.append("keynotes", JSON.stringify(cleanKeynotes));
     formData.append("status", data.status ? "active" : "inactive");
+    if (isThumbnailRemoved && !thumbnail) {
+      formData.append("removeThumbnail", "true");
+    }
     appendMediaFields(formData, { thumbnail });
     updateTag({ id, body: formData });
   };
@@ -337,9 +376,29 @@ const UpdateTag = () => {
       return (
         <>
           <div className="flex flex-col items-center gap-y-4">
-            <div className="profile-container shine-effect rounded-full flex justify-center">
+            <div className="profile-container shine-effect group rounded-full flex justify-center">
               {thumbnailPreview ? (
-                <PreviewableMedia alt="tag" className="h-[100px] w-[100px] profile-pic rounded-full object-cover" src={thumbnailPreview} />
+                <>
+                  <PreviewableMedia alt="tag" className="h-[100px] w-[100px] profile-pic rounded-full object-cover" src={thumbnailPreview} />
+                  <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-between rounded-full bg-black/45 px-4 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      aria-label="Edit thumbnail"
+                      className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-800 shadow transition hover:bg-green-100 hover:text-green-700"
+                      onClick={handleEditThumbnail}
+                    >
+                      <Pencil />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Remove thumbnail"
+                      className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-white text-red-600 shadow transition hover:bg-red-100"
+                      onClick={handleRemoveThumbnail}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </button>
+                  </div>
+                </>
               ) : (
                 <SkeletonImage />
               )}
@@ -352,6 +411,7 @@ const UpdateTag = () => {
                 setThumbnailPreview={setThumbnailPreview}
                 title="برای تغییر تصویر، فایل جدید انتخاب کنید"
                 folder="tag"
+                inputId="tag-update-thumbnail"
                 uploadOnSelect
                 onUploadStateChange={setIsUploadingMedia}
               />

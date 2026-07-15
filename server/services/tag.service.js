@@ -365,6 +365,14 @@ exports.updateTag = async (req, res) => {
       url: req.uploadedFiles.thumbnail[0].url,
       public_id: req.uploadedFiles.thumbnail[0].key
     };
+  } else if (req.body.removeThumbnail === "true") {
+    if (tag.thumbnail?.public_id) {
+      await remove(tag.thumbnail.public_id);
+    }
+    updatedTag.thumbnail = {
+      url: "https://placehold.co/300x300.png",
+      public_id: "N/A"
+    };
   }
 
   await Tag.findByIdAndUpdate(req.params.id, updatedTag);
