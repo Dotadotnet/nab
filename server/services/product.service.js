@@ -187,6 +187,11 @@ function hasDashboardProductTranslations(translations) {
     });
 }
 
+function getEnglishTitle(translations) {
+  const title = translations?.en?.title;
+  return typeof title === "string" ? title.trim() : "";
+}
+
 function isRequiredTranslationFilled(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -430,7 +435,9 @@ exports.addProduct = async (req, res) => {
       hasNestedTranslationValues(rawIngredientTranslations) ||
       hasNestedTranslationValues(rawAttributeTranslations);
     const manualEnglishTitle =
-      typeof titleEn === "string" ? titleEn.trim() : "";
+      getEnglishTitle(parsedProductTranslations) ||
+      (typeof titleEn === "string" ? titleEn.trim() : "");
+    const slug = await generateSlug(manualEnglishTitle || title);
 
     const resultCampaign = await Campaign.create({
       title: parsedCampaign.title,
@@ -488,6 +495,7 @@ exports.addProduct = async (req, res) => {
     const product = await Product.create({
       ...otherInformation,
       title: title,
+      slug,
       tags: parsedTags,
       creator: req.admin._id,
       thumbnail,
@@ -513,7 +521,6 @@ exports.addProduct = async (req, res) => {
     );
     product.variations = variationDocs.map((v) => v._id);
     const result = await product.save();
-    const slug = await generateSlug(title);
     const canonicalUrl = `${defaultDomain}/product/${result.productId}/${slug}`;
     const productCategory = await Category.findById(category).select("title");
     const { metaTitle, metaDescription } = generateSeoFields({
@@ -959,6 +966,19 @@ exports.updateProduct = async (req, res) => {
   }
   if (Object.prototype.hasOwnProperty.call(req.body, "attributes")) {
     updatedProduct.attributes = normalizeProductAttributes(req.body.attributes);
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(req.body, "productTranslations") ||
+    Object.prototype.hasOwnProperty.call(req.body, "titleEn") ||
+    Object.prototype.hasOwnProperty.call(req.body, "title")
+  ) {
+    const parsedProductTranslations = parseJsonObject(req.body.productTranslations, {});
+    const englishTitle =
+      getEnglishTitle(parsedProductTranslations) ||
+      (typeof req.body.titleEn === "string" ? req.body.titleEn.trim() : "");
+    const titleForSlug = englishTitle || req.body.title || product.title;
+    updatedProduct.slug = await generateSlug(titleForSlug);
+    updatedProduct.canonicalUrl = `${defaultDomain}/product/${product.productId}/${updatedProduct.slug}`;
   }
 
   await Product.findByIdAndUpdate(req.params.id, { $set: updatedProduct });

@@ -14,6 +14,13 @@ const tagSchema = new mongoose.Schema(
       unique: [true, "تگ مشابه از قبل وجود دارد"],
       maxLength: [70, "عنوان تگ نباید بیشتر از 70 کاراکتر باشد"]
     },
+    slug: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true
+    },
     translations: [
       {
         translation: {
@@ -58,6 +65,10 @@ const tagSchema = new mongoose.Schema(
 );
 
 tagSchema.pre("save", async function (next) {
+  if (!this.isNew || this.tagId) {
+    return next();
+  }
+
   try {
     const counter = await Counter.findOneAndUpdate(
       { name: "tagId" },

@@ -19,6 +19,13 @@ const productSchema = new mongoose.Schema(
       unique: [true, "محصول مشابه قبلاً ثبت شده است"],
       maxLength: [100, "عنوان نمی‌تواند بیشتر از ۱۰۰ کاراکتر باشد"]
     },
+    slug: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true
+    },
     translations: [
       {
         translation: {

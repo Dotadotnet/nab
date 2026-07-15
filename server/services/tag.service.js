@@ -44,6 +44,11 @@ function hasDashboardTranslations(translations) {
     });
 }
 
+function getEnglishTitle(translations) {
+  const title = translations?.en?.title;
+  return typeof title === "string" ? title.trim() : "";
+}
+
 /* add new tag */
 exports.addTag = async (req, res) => {
   try {
@@ -58,14 +63,15 @@ exports.addTag = async (req, res) => {
         }
       : undefined;
 
+    const slug = await generateSlug(getEnglishTitle(parsedTranslations) || title);
     const tag = new Tag({
       creator: req.admin._id,
       title: title,
+      slug,
       ...(thumbnail ? { thumbnail } : {})
     });
 
     const result = await tag.save();
-    const slug = await generateSlug(title);
     const canonicalUrl = `${defaultDomain}/tag/${result.tagId}/${slug}`;
     const { metaTitle, metaDescription } = generateSeoFields({
       title,
@@ -317,6 +323,12 @@ exports.updateTag = async (req, res) => {
   let updatedTag = req.body;
 
   updatedTag.keynotes = JSON.parse(req.body.keynotes);
+  if (updatedTag.title || updatedTag.translations) {
+    const updatedTranslations = parseJsonObject(updatedTag.translations);
+    updatedTag.slug = await generateSlug(
+      getEnglishTitle(updatedTranslations) || updatedTag.title || tag.title
+    );
+  }
   if (req.uploadedFiles?.thumbnail?.length) {
     if (tag.thumbnail?.public_id) {
       await remove(tag.thumbnail.public_id);
