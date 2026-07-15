@@ -1,11 +1,23 @@
 export const getUploadErrorMessage = (error) => {
   if (!error) return "Upload failed";
   if (typeof error === "string") return error;
-  return (
-    error.description ||
-    error.error ||
+
+  const payload = error.payload || error;
+  const description =
+    payload.description ||
+    payload.error ||
     error.message ||
-    error.details ||
+    payload.message ||
+    "Upload failed";
+  const details = payload.details;
+
+  if (details && !description.includes(details)) {
+    return `${description} | ${details}`;
+  }
+
+  return (
+    description ||
+    details ||
     "Upload failed"
   );
 };

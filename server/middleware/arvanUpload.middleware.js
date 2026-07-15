@@ -210,7 +210,12 @@ const uploadArvan = (customFolder = null) => {
         res.status(500).json({
           acknowledgement: false,
           message: "Upload Error",
-          description: `خطا در بارگذاری فایل‌ها روی Arvan Cloud: ${error.message}`,
+          details,
+          error: error.message,
+          code: error?.Code || error?.code || error?.name,
+          statusCode: error?.$metadata?.httpStatusCode,
+          requestId: error?.$metadata?.requestId,
+          description: `خطا در بارگذاری فایل‌ها روی Arvan Cloud: ${details}`,
         });
       }
     });
